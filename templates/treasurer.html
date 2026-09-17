@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verification Queue</title>
+<style>
+  :root {
+    --bg:#0b0c12; --panel:#14151f; --line:#262837; --ink:#eef0f6; --dim:#8b8ea3;
+    --accent:#7c5cff; --go:#1fb45c; --go-bg:#0d2617; --stop:#ef3b5c; --stop-bg:#2a0f16; --warn:#f0c419;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+  .wrap { max-width:600px; margin:0 auto; padding:16px 16px 32px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:8px 2px 18px; }
+  h1 { font-size:18px; margin:0; }
+  .dim { color:var(--dim); font-size:12px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; }
+  .name { font-weight:700; font-size:15px; }
+  .meta { font-size:12.5px; color:var(--dim); margin-top:3px; line-height:1.6; }
+  .warn-tag { display:inline-block; margin-top:6px; padding:3px 9px; border-radius:20px; background:#3a2200; color:var(--warn); font-size:11px; font-weight:700; }
+  .btn-row { display:flex; gap:8px; margin-top:12px; }
+  .btn-row button { flex:1; padding:10px; border:none; border-radius:9px; font-weight:700; font-size:13.5px; }
+  .approve-btn { background:var(--go-bg); color:var(--go); border:1px solid var(--go) !important; }
+  .reject-btn { background:var(--stop-bg); color:var(--stop); border:1px solid var(--stop) !important; }
+  .view-btn { background:#1b1d29; color:var(--ink); border:1px solid var(--line) !important; }
+  .empty { text-align:center; color:var(--dim); padding:40px 0; font-size:14px; }
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; padding:20px; z-index:10; }
+  .modal-bg.show { display:flex; }
+  .modal { background:var(--panel); border-radius:16px; padding:18px; max-width:400px; width:100%; max-height:80vh; overflow-y:auto; }
+  .modal img { width:100%; border-radius:10px; margin:10px 0; }
+  .modal textarea { width:100%; background:#0f1019; border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:10px; font-size:13px; margin-top:8px; }
+  .modal button { width:100%; padding:11px; border:none; border-radius:9px; font-weight:700; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>Verification Queue</h1><p class="dim" id="who">…</p></div>
+    <button id="logout" style="width:auto;background:none;color:var(--dim);font-size:11px;text-decoration:underline;padding:0;">Log out</button>
+  </header>
+  <div id="queue"></div>
+</div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+async function requireAuth() {
+  const res = await fetch("/me");
+  if (!res.ok) { window.location.href = "/login-page"; return; }
+  const me = await res.json();
+  if (!["treasurer", "admin"].includes(me.role)) { window.location.href = "/login-page"; return; }
+  document.getElementById("who").textContent = `Signed in as ${me.full_name}`;
+}
+document.getElementById("logout").addEventListener("click", async () => {
+  await fetch("/logout", { method: "POST" });
+  window.location.href = "/login-page";
+});
+
+async function loadQueue() {
+  const res = await fetch("/treasurer/pending-verifications");
+  const items = await res.json();
+  const el = document.getElementById("queue");
+  if (items.length === 0) {
+    el.innerHTML = `<div class="empty">No pending UPI payments to verify 🎉</div>`;
+    return;
+  }
+  el.innerHTML = items.map(item => `
+    <div class="card">
+      <div class="name">${item.name} <span class="dim">(${item.sap_id})</span></div>
+      <div class="meta">
+        ${item.branch} · ₹${item.amount} · sold by ${item.distributor_name}<br/>
+        UTR: ${item.utr_number || '—'}
+      </div>
+      ${item.duplicate_screenshot_warning ? '<div class="warn-tag">⚠ Screenshot reused elsewhere</div>' : ''}
+      <div class="btn-row">
+        <button class="view-btn" onclick="viewScreenshot(${item.student_id})">View Screenshot</button>
+        <button class="approve-btn" onclick="approve(${item.student_id})">Approve</button>
+        <button class="reject-btn" onclick="openReject(${item.student_id})">Reject</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function closeModal() { document.getElementById("modal-bg").classList.remove("show"); }
+document.getElementById("modal-bg").addEventListener("click", (e) => {
+  if (e.target.id === "modal-bg") closeModal();
+});
+
+async function viewScreenshot(studentId) {
+  const res = await fetch(`/treasurer/pending-verifications/${studentId}/screenshot`);
+  if (!res.ok) { alert("No screenshot on file"); return; }
+  const data = await res.json();
+  document.getElementById("modal-content").innerHTML = `
+    <div class="name">${data.sap_id}</div>
+    <img src="data:image/png;base64,${data.screenshot_base64}" />
+    <button class="view-btn" onclick="closeModal()">Close</button>
+  `;
+  document.getElementById("modal-bg").classList.add("show");
+}
+
+async function approve(studentId) {
+  if (!confirm("Approve this payment? The pass will be emailed immediately.")) return;
+  const res = await fetch(`/treasurer/verify/${studentId}`, { method: "POST" });
+  const data = await res.json();
+  alert(res.ok ? data.message : (data.detail || "Failed"));
+  loadQueue();
+}
+
+function openReject(studentId) {
+  document.getElementById("modal-content").innerHTML = `
+    <div class="name">Reject payment</div>
+    <textarea id="reject-reason" rows="3" placeholder="Reason (e.g. UTR not found in bank statement)"></textarea>
+    <button class="reject-btn" style="border:1px solid var(--stop);" onclick="submitReject(${studentId})">Confirm Reject</button>
+    <button class="view-btn" onclick="closeModal()">Cancel</button>
+  `;
+  document.getElementById("modal-bg").classList.add("show");
+}
+
+async function submitReject(studentId) {
+  const reason = document.getElementById("reject-reason").value.trim();
+  if (!reason) { alert("Please enter a reason"); return; }
+  const res = await fetch(`/treasurer/reject/${studentId}`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reason }),
+  });
+  const data = await res.json();
+  closeModal();
+  alert(res.ok ? data.message : (data.detail || "Failed"));
+  loadQueue();
+}
+
+requireAuth();
+loadQueue();
+setInterval(loadQueue, 15000);
+</script>
+</body>
+</html>

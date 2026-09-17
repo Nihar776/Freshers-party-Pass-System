@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Gate Login</title>
+<style>
+  :root {
+    --bg: #0b0c12; --panel: #14151f; --panel-line: #262837;
+    --ink: #eef0f6; --ink-dim: #8b8ea3; --accent: #7c5cff;
+    --stop: #ef3b5c; --stop-bg: #2a0f16;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card {
+    width: 100%; max-width: 360px; margin: 20px;
+    background: var(--panel); border: 1px solid var(--panel-line);
+    border-radius: 18px; padding: 28px 22px;
+  }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  p.sub { color: var(--ink-dim); font-size: 13px; margin: 0 0 22px; }
+  label { display: block; font-size: 12.5px; color: var(--ink-dim); margin-bottom: 6px; }
+  input {
+    width: 100%; padding: 12px 12px; margin-bottom: 16px;
+    background: #0f1019; border: 1px solid var(--panel-line); border-radius: 10px;
+    color: var(--ink); font-size: 15px;
+  }
+  button {
+    width: 100%; padding: 13px; border: none; border-radius: 10px;
+    background: var(--accent); color: #fff; font-weight: 700; font-size: 15px;
+  }
+  button:active { opacity: 0.85; }
+  .error {
+    display: none; margin-top: 14px; padding: 10px 12px;
+    background: var(--stop-bg); border: 1px solid var(--stop); border-radius: 10px;
+    color: #f3b7c2; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Gate Volunteer Login</h1>
+    <p class="sub">Sign in to start scanning entry passes</p>
+    <form id="login-form">
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" required />
+      <label for="password">PIN / Password</label>
+      <input id="password" name="password" type="password" inputmode="numeric" autocomplete="current-password" required />
+      <button type="submit">Log In</button>
+    </form>
+    <div class="error" id="error-box"></div>
+  </div>
+
+<script>
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const errorBox = document.getElementById("error-box");
+  errorBox.style.display = "none";
+
+  try {
+    const res = await fetch("/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      const dest = { volunteer: "/scanner", distributor: "/distributor-page",
+                     treasurer: "/treasurer-page", admin: "/scanner" }[data.role] || "/scanner";
+      window.location.href = dest;
+    } else {
+      errorBox.textContent = data.detail || "Login failed";
+      errorBox.style.display = "block";
+    }
+  } catch (err) {
+    errorBox.textContent = "Network error — check your connection";
+    errorBox.style.display = "block";
+  }
+});
+</script>
+</body>
+</html>

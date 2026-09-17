@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Gate Scanner</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0c12;
+    --panel: #14151f;
+    --panel-line: #262837;
+    --ink: #eef0f6;
+    --ink-dim: #8b8ea3;
+    --accent: #7c5cff;
+    --accent-dim: #3a2e78;
+    --go: #1fb45c;
+    --go-bg: #0d2617;
+    --stop: #ef3b5c;
+    --stop-bg: #2a0f16;
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 14px 24px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px 16px;
+  }
+
+  header h1 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  .stats {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .stats b { color: var(--ink); font-weight: 700; }
+
+  .scan-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: var(--radius);
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #reader {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  #reader video { border-radius: 12px; }
+  /* hide the library's default file-upload / dashboard chrome, we run our own controls */
+  #reader__dashboard_section_csr,
+  #reader__filescan_input,
+  #reader__status_span,
+  #reader__header_message {
+    display: none !important;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .btn {
+    flex: 1;
+    border: 1px solid var(--panel-line);
+    background: #1b1d29;
+    color: var(--ink);
+    padding: 12px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); }
+
+  .banner {
+    margin-top: 14px;
+    border-radius: var(--radius);
+    padding: 22px 18px;
+    min-height: 132px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+  }
+
+  .banner .status-word {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  .banner .status-sub {
+    font-size: 14px;
+    margin-top: 6px;
+    color: var(--ink-dim);
+  }
+  .banner.idle .status-word { color: var(--ink-dim); font-weight: 600; font-size: 17px; }
+
+  .banner.go {
+    background: var(--go-bg);
+    border-color: var(--go);
+  }
+  .banner.go .status-word { color: var(--go); }
+  .banner.go .status-sub { color: #b6e6c8; }
+
+  .banner.stop {
+    background: var(--stop-bg);
+    border-color: var(--stop);
+  }
+  .banner.stop .status-word { color: var(--stop); }
+  .banner.stop .status-sub { color: #f3b7c2; }
+
+  .banner .detail-row {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 10px;
+  }
+  .banner .detail-row span:first-child { color: var(--ink-dim); }
+  .banner .detail-row span:last-child { font-weight: 700; }
+
+  .manual {
+    margin-top: 14px;
+  }
+  .manual summary {
+    color: var(--ink-dim);
+    font-size: 12.5px;
+    cursor: pointer;
+    padding: 4px 2px;
+  }
+  .manual textarea {
+    width: 100%;
+    margin-top: 8px;
+    background: #0f1019;
+    border: 1px solid var(--panel-line);
+    border-radius: 10px;
+    color: var(--ink);
+    font-size: 12px;
+    padding: 10px;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .manual button {
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    background: var(--accent-dim);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  footer {
+    margin-top: auto;
+    padding-top: 18px;
+    text-align: center;
+    color: var(--ink-dim);
+    font-size: 11px;
+  }
+
+  @media (min-width: 520px) {
+    .wrap { padding-top: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Gate Scanner</h1>
+      <p id="event-label">Connecting…</p>
+    </div>
+    <div style="text-align:right;">
+      <div class="stats" id="stats">— / —</div>
+      <button id="logout-btn" style="margin-top:6px;background:none;border:none;color:var(--ink-dim);font-size:11px;text-decoration:underline;padding:0;">Log out</button>
+    </div>
+  </header>
+
+  <div class="scan-card">
+    <div id="reader"></div>
+    <div class="controls">
+      <button class="btn" id="toggle-cam">Flip Camera</button>
+      <button class="btn primary" id="toggle-scan">Pause</button>
+    </div>
+  </div>
+
+  <div class="banner idle" id="banner">
+    <div class="status-word" id="status-word">Point camera at a pass QR code</div>
+    <div class="status-sub" id="status-sub">Ready to scan</div>
+  </div>
+
+  <details class="manual">
+    <summary>Trouble scanning? Enter code manually</summary>
+    <textarea id="manual-token" placeholder="Paste the raw pass token here"></textarea>
+    <button id="manual-submit">Verify manually</button>
+  </details>
+
+  <footer>2-second cooldown between scans · verified server-side every time</footer>
+</div>
+
+<script>
+const API_VERIFY = "/verify";
+const API_STATS = "/gate-stats";
+const API_ME = "/me";
+const SCAN_COOLDOWN_MS = 2000;
+
+let html5QrCode;
+let cameras = [];
+let currentCameraIndex = 0;
+let isPaused = false;
+let isBusy = false;          // true while a /verify request is in flight
+let lastScanTime = 0;
+
+const bannerEl = document.getElementById("banner");
+const statusWordEl = document.getElementById("status-word");
+const statusSubEl = document.getElementById("status-sub");
+const statsEl = document.getElementById("stats");
+const eventLabelEl = document.getElementById("event-label");
+
+// ---- Audio cues (no external files, generated via Web Audio API) ----
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+function beep(frequency, durationMs, type = "sine") {
+  try {
+    ensureAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durationMs / 1000);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + durationMs / 1000);
+  } catch (e) { /* audio is best-effort */ }
+}
+function playAllow() { beep(880, 160); setTimeout(() => beep(1174, 180), 140); }
+function playDeny()  { beep(220, 260, "square"); }
+
+// ---- Banner rendering ----
+function setIdle(message) {
+  bannerEl.className = "banner idle";
+  statusWordEl.textContent = message || "Point camera at a pass QR code";
+  statusSubEl.textContent = "Ready to scan";
+  removeDetailRow();
+}
+function removeDetailRow() {
+  const existing = bannerEl.querySelector(".detail-row");
+  if (existing) existing.remove();
+}
+function addDetailRow(label, value) {
+  const row = document.createElement("div");
+  row.className = "detail-row";
+  row.innerHTML = `<span>${label}</span><span>${value}</span>`;
+  bannerEl.appendChild(row);
+}
+function setAllow(name, sapId) {
+  bannerEl.className = "banner go";
+  statusWordEl.textContent = "ENTRY ALLOWED";
+  statusSubEl.textContent = "Issue wristband now";
+  removeDetailRow();
+  addDetailRow("Student", name);
+  addDetailRow("SAP ID", sapId);
+  playAllow();
+  if (navigator.vibrate) navigator.vibrate(120);
+}
+function setDeny(reason) {
+  bannerEl.className = "banner stop";
+  statusWordEl.textContent = "ENTRY DENIED";
+  statusSubEl.textContent = reason;
+  removeDetailRow();
+  playDeny();
+  if (navigator.vibrate) navigator.vibrate([100, 60, 100]);
+}
+
+// ---- Auth guard: must be logged in as volunteer/admin, or bounce to login ----
+async function requireAuth() {
+  try {
+    const res = await fetch(API_ME);
+    if (!res.ok) {
+      window.location.href = "/login-page";
+      return false;
+    }
+    const me = await res.json();
+    if (!["volunteer", "admin"].includes(me.role)) {
+      window.location.href = "/login-page";
+      return false;
+    }
+    eventLabelEl.textContent = `Signed in as ${me.full_name}`;
+    return true;
+  } catch (e) {
+    window.location.href = "/login-page";
+    return false;
+  }
+}
+
+document.getElementById("logout-btn").addEventListener("click", async () => {
+  await fetch("/logout", { method: "POST" });
+  window.location.href = "/login-page";
+});
+
+// ---- Stats polling ----
+async function refreshStats() {
+  try {
+    const res = await fetch(API_STATS);
+    if (res.status === 401 || res.status === 403) {
+      window.location.href = "/login-page";
+      return;
+    }
+    if (!res.ok) return;
+    const data = await res.json();
+    statsEl.innerHTML = `<b>${data.total_entered}</b>&nbsp;in&nbsp;·&nbsp;<b>${data.pending_entry}</b>&nbsp;pending`;
+  } catch (e) { /* non-critical */ }
+}
+
+// ---- Verification ----
+async function verifyToken(token) {
+  if (isBusy) return;
+  const now = Date.now();
+  if (now - lastScanTime < SCAN_COOLDOWN_MS) return; // debounce
+  lastScanTime = now;
+  isBusy = true;
+
+  setIdle("Checking pass…");
+  statusWordEl.textContent = "Checking pass…";
+
+  try {
+    const res = await fetch(API_VERIFY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+    const data = await res.json();
+
+    if (res.status === 401) {
+      window.location.href = "/login-page";
+      return;
+    } else if (res.ok) {
+      setAllow(data.student_name, data.sap_id);
+    } else if (res.status === 409) {
+      setDeny(data.detail || "Already scanned");
+    } else if (res.status === 400) {
+      setDeny(data.detail || "Invalid / counterfeit pass");
+    } else if (res.status === 404) {
+      setDeny("Pass not found");
+    } else {
+      setDeny(data.detail || "Verification failed");
+    }
+  } catch (e) {
+    setDeny("Network error — check connection");
+  } finally {
+    refreshStats();
+    isBusy = false;
+  }
+}
+
+// ---- Camera setup ----
+async function startScanner() {
+  html5QrCode = new Html5Qrcode("reader");
+  try {
+    cameras = await Html5Qrcode.getCameras();
+  } catch (e) {
+    setDeny("Camera permission denied");
+    return;
+  }
+  if (!cameras || cameras.length === 0) {
+    setDeny("No camera found on this device");
+    return;
+  }
+
+  // Prefer the back/environment camera by default at the gate.
+  currentCameraIndex = cameras.findIndex(c => /back|rear|environment/i.test(c.label));
+  if (currentCameraIndex === -1) currentCameraIndex = 0;
+
+  await runCamera(cameras[currentCameraIndex].id);
+}
+
+async function runCamera(cameraId) {
+  const config = {
+    fps: 10,
+    qrbox: { width: 250, height: 250 },
+    aspectRatio: 1.0,
+  };
+  await html5QrCode.start(
+    cameraId,
+    config,
+    (decodedText) => verifyToken(decodedText.trim()),
+    () => { /* per-frame scan failure, ignore — expected between scans */ }
+  );
+}
+
+async function flipCamera() {
+  if (cameras.length < 2) return;
+  currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+  await html5QrCode.stop();
+  await runCamera(cameras[currentCameraIndex].id);
+}
+
+async function togglePause() {
+  const btn = document.getElementById("toggle-scan");
+  if (!isPaused) {
+    await html5QrCode.pause(true);
+    isPaused = true;
+    btn.textContent = "Resume";
+    setIdle("Scanning paused");
+  } else {
+    await html5QrCode.resume();
+    isPaused = false;
+    btn.textContent = "Pause";
+    setIdle("Point camera at a pass QR code");
+  }
+}
+
+document.getElementById("toggle-cam").addEventListener("click", flipCamera);
+document.getElementById("toggle-scan").addEventListener("click", togglePause);
+document.getElementById("manual-submit").addEventListener("click", () => {
+  const val = document.getElementById("manual-token").value.trim();
+  if (val) {
+    lastScanTime = 0; // manual entry bypasses camera debounce
+    verifyToken(val);
+  }
+});
+
+(async () => {
+  const ok = await requireAuth();
+  if (!ok) return; // already redirected to /login-page
+  startScanner();
+  refreshStats();
+  setInterval(refreshStats, 8000);
+})();
+</script>
+</body>
+</html>

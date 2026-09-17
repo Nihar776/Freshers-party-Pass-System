@@ -1,0 +1,273 @@
+"""
+distributor_routes.py
+The distributor's world: search the pre-loaded roster, sell a pass (cash
+issues the QR immediately; UPI goes into the treasurer's verification
+queue), and check their own sales / outstanding cash balance.
+"""
+import hashlib
+import base64
+from io import BytesIO
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from pydantic import BaseModel
+from sqlalchemy import update, func
+from sqlalchemy.orm import Session
+from PIL import Image
+
+from database import get_db
+from schema_v2 import Student, User, UserRole, PaymentStatus, PaymentMode, PassType, CashHandover
+from session_auth import require_role
+from audit import write_audit_log
+from auth import generate_pass_token, generate_qr_image
+from mailer import send_pass_email
+
+router = APIRouter(prefix="/distributor", tags=["distributor"])
+
+
+# ---------------------------------------------------------------------------
+# Perceptual hash - deliberately simple (average hash over PIL only, no
+# extra dependency). Good enough to catch "exact same screenshot reused for
+# a second SAP ID" which is the common cheat; won't catch a screenshot
+# that's been cropped/re-photographed. Flag for human review, never
+# auto-block - false positives are possible.
+# ---------------------------------------------------------------------------
+def _average_hash(image_bytes: bytes, hash_size: int = 8) -> str:
+    img = Image.open(BytesIO(image_bytes)).convert("L").resize((hash_size, hash_size))
+    pixels = list(img.getdata())
+    avg = sum(pixels) / len(pixels)
+    bits = "".join("1" if p > avg else "0" for p in pixels)
+    return hashlib.sha256(bits.encode()).hexdigest()[:16]
+
+
+# ---------------------------------------------------------------------------
+# Schemas
+# ---------------------------------------------------------------------------
+class StudentSearchResult(BaseModel):
+    sap_id: str
+    name: str
+    branch: str
+    gender: Optional[str]
+    payment_status: PaymentStatus
+
+    class Config:
+        from_attributes = True
+
+
+class SellResult(BaseModel):
+    message: str
+    sap_id: str
+    payment_status: PaymentStatus
+    duplicate_screenshot_warning: bool = False
+
+
+class MySaleSummary(BaseModel):
+    sap_id: str
+    name: str
+    pass_type: PassType
+    payment_mode: Optional[PaymentMode]
+    amount: Optional[float]
+    payment_status: PaymentStatus
+    sold_at: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class CashBalanceResponse(BaseModel):
+    total_cash_collected: float
+    total_handed_over: float
+    outstanding_with_you: float
+
+
+# ---------------------------------------------------------------------------
+# Search - read-only, scoped to what a distributor actually needs to see
+# ---------------------------------------------------------------------------
+@router.get("/search", response_model=list[StudentSearchResult])
+def search_students(
+    query: str = Query(..., min_length=2, description="Partial name or SAP ID"),
+    branch: Optional[str] = None,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+):
+    like = f"%{query}%"
+    q = db.query(Student).filter((Student.name.ilike(like)) | (Student.sap_id.ilike(like)))
+    if branch:
+        q = q.filter(Student.branch == branch)
+    return q.order_by(Student.name).limit(20).all()
+
+
+# ---------------------------------------------------------------------------
+# Sell a pass
+# ---------------------------------------------------------------------------
+@router.post("/sell", response_model=SellResult)
+def sell_pass(
+    sap_id: str = Form(...),
+    pass_type: PassType = Form(PassType.FULL),
+    payment_mode: PaymentMode = Form(...),
+    amount: float = Form(...),
+    utr_number: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),  # only needed if the roster row lacks one
+    screenshot: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+):
+    student = db.query(Student).filter(Student.sap_id == sap_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="SAP ID not found in roster")
+
+    if student.payment_status in (PaymentStatus.PENDING_VERIFICATION, PaymentStatus.VERIFIED):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Pass already {student.payment_status.value} for {student.name} ({student.sap_id})",
+        )
+
+    if payment_mode == PaymentMode.UPI:
+        if not utr_number or not utr_number.strip():
+            raise HTTPException(status_code=400, detail="UTR number is required for UPI payments")
+        if not screenshot:
+            raise HTTPException(status_code=400, detail="Payment screenshot is required for UPI payments")
+
+    resolved_email = email or student.email
+    if not resolved_email:
+        raise HTTPException(status_code=400, detail="No email on file - please provide one to send the pass")
+
+    old_snapshot = {"payment_status": student.payment_status.value}
+
+    duplicate_warning = False
+    screenshot_b64 = None
+    phash = None
+    if screenshot:
+        img_bytes = screenshot.file.read()
+        try:
+            phash = _average_hash(img_bytes)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Uploaded file isn't a readable image")
+        duplicate_warning = db.query(Student).filter(
+            Student.screenshot_phash == phash, Student.sap_id != sap_id
+        ).first() is not None
+        screenshot_b64 = base64.b64encode(img_bytes).decode("utf-8")
+
+    # --- Atomic guard: only proceed if still unsold (handles two distributors racing) ---
+    result = db.execute(
+        update(Student)
+        .where(
+            Student.id == student.id,
+            Student.payment_status.in_([PaymentStatus.NOT_PURCHASED, PaymentStatus.REJECTED]),
+        )
+        .values(
+            pass_type=pass_type,
+            payment_mode=payment_mode,
+            amount=amount,
+            email=resolved_email,
+            distributor_id=distributor.id,
+            utr_number=utr_number,
+            payment_screenshot=screenshot_b64,
+            screenshot_phash=phash,
+            sold_at=func.now(),
+            payment_status=(
+                PaymentStatus.VERIFIED if payment_mode == PaymentMode.CASH
+                else PaymentStatus.PENDING_VERIFICATION
+            ),
+            # cash sales are self-verified by the distributor collecting real money
+            verified_by_id=distributor.id if payment_mode == PaymentMode.CASH else None,
+            verified_at=func.now() if payment_mode == PaymentMode.CASH else None,
+            rejection_reason=None,
+        )
+    )
+    if result.rowcount == 0:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Pass was just sold by someone else - refresh and check")
+
+    db.refresh(student)
+
+    write_audit_log(
+        db,
+        user_id=distributor.id,
+        action="sale_created",
+        table_name="students",
+        record_id=student.id,
+        old_value=old_snapshot,
+        new_value={
+            "payment_status": student.payment_status.value,
+            "payment_mode": payment_mode.value,
+            "amount": amount,
+            "duplicate_screenshot_warning": duplicate_warning,
+        },
+    )
+    db.commit()
+    db.refresh(student)
+
+    if payment_mode == PaymentMode.CASH:
+        # Cash is trusted immediately - issue the QR now.
+        token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+        qr_image = generate_qr_image(token)
+        try:
+            send_pass_email(
+                recipient_email=student.email,
+                student_name=student.name,
+                qr_image_bytes=qr_image,
+                sap_id=student.sap_id,
+            )
+        except Exception as exc:
+            # Sale is already recorded - don't lose it over an email hiccup,
+            # surface the failure so it can be resent.
+            raise HTTPException(
+                status_code=502, detail=f"Pass recorded but email failed to send: {exc}"
+            ) from exc
+        message = "Cash sale recorded - pass emailed immediately"
+    else:
+        message = "UPI sale recorded - pending treasurer verification before the pass is sent"
+
+    return SellResult(
+        message=message,
+        sap_id=student.sap_id,
+        payment_status=student.payment_status,
+        duplicate_screenshot_warning=duplicate_warning,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Distributor's own view: their sales, their outstanding cash
+# ---------------------------------------------------------------------------
+@router.get("/my-sales", response_model=list[MySaleSummary])
+def my_sales(
+    db: Session = Depends(get_db),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+):
+    rows = (
+        db.query(Student)
+        .filter(Student.distributor_id == distributor.id)
+        .order_by(Student.sold_at.desc())
+        .all()
+    )
+    return [
+        MySaleSummary(
+            sap_id=r.sap_id, name=r.name, pass_type=r.pass_type, payment_mode=r.payment_mode,
+            amount=r.amount, payment_status=r.payment_status,
+            sold_at=r.sold_at.isoformat() if r.sold_at else None,
+        )
+        for r in rows
+    ]
+
+
+@router.get("/my-cash-balance", response_model=CashBalanceResponse)
+def my_cash_balance(
+    db: Session = Depends(get_db),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+):
+    total_cash = db.query(func.coalesce(func.sum(Student.amount), 0.0)).filter(
+        Student.distributor_id == distributor.id,
+        Student.payment_mode == PaymentMode.CASH,
+        Student.payment_status == PaymentStatus.VERIFIED,
+    ).scalar()
+
+    total_handed_over = db.query(func.coalesce(func.sum(CashHandover.amount), 0.0)).filter(
+        CashHandover.distributor_id == distributor.id
+    ).scalar()
+
+    return CashBalanceResponse(
+        total_cash_collected=total_cash,
+        total_handed_over=total_handed_over,
+        outstanding_with_you=total_cash - total_handed_over,
+    )
