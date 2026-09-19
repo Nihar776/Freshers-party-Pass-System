@@ -8,8 +8,15 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from config import DATABASE_URL
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+engine_kwargs = {"connect_args": connect_args, "future": True}
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args, future=True)
+if not DATABASE_URL.startswith("sqlite"):
+    engine_kwargs.update({
+        "pool_pre_ping": True,
+        "pool_recycle": 3600,
+    })
+
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
 
 Base = declarative_base()

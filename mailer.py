@@ -131,12 +131,22 @@ def send_pass_email(
     )
     msg.attach(attachment_img)
 
-    if SMTP_USE_STARTTLS:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_USER, [recipient_email], msg.as_string())
-    else:
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as server:
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_USER, [recipient_email], msg.as_string())
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            if SMTP_USE_STARTTLS:
+                with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
+                    server.starttls()
+                    server.login(SMTP_USER, SMTP_PASS)
+                    server.sendmail(SMTP_USER, [recipient_email], msg.as_string())
+            else:
+                with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as server:
+                    server.login(SMTP_USER, SMTP_PASS)
+                    server.sendmail(SMTP_USER, [recipient_email], msg.as_string())
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                import time
+                time.sleep(2)
+            else:
+                raise e

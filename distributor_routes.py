@@ -9,6 +9,7 @@ import base64
 from io import BytesIO
 from typing import Optional, List
 from datetime import datetime
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from pydantic import BaseModel
@@ -22,6 +23,7 @@ from session_auth import require_role
 from audit import write_audit_log
 from auth import generate_pass_token, generate_qr_image
 from mailer import send_pass_email
+from config import PASS_PRICE
 
 router = APIRouter(prefix="/distributor", tags=["distributor"])
 
@@ -112,7 +114,6 @@ def sell_pass(
     sap_id: str = Form(...),
     pass_type: PassType = Form(PassType.FULL),
     payment_mode: PaymentMode = Form(...),
-    amount: float = Form(...),
     utr_number: Optional[str] = Form(None),
     email: Optional[str] = Form(None),  # only needed if the roster row lacks one
     screenshot: Optional[UploadFile] = File(None),
@@ -165,7 +166,7 @@ def sell_pass(
         .values(
             pass_type=pass_type,
             payment_mode=payment_mode,
-            amount=amount,
+            amount=PASS_PRICE,
             email=resolved_email,
             distributor_id=distributor.id,
             utr_number=utr_number,
@@ -198,7 +199,7 @@ def sell_pass(
         new_value={
             "payment_status": student.payment_status.value,
             "payment_mode": payment_mode.value,
-            "amount": amount,
+            "amount": PASS_PRICE,
             "duplicate_screenshot_warning": duplicate_warning,
         },
     )
@@ -262,7 +263,7 @@ def calculate_discount(group_size: int, date: Optional[datetime] = None) -> floa
 @router.post("/sell-group", response_model=GroupSellResult)
 def sell_group(
     sap_ids: List[str] = Form(...),
-    amount: float = Form(...),
+    payer_sap_id: str = Form(...),
     payment_mode: PaymentMode = Form(...),
     utr_number: Optional[str] = Form(None),
     screenshot: Optional[UploadFile] = File(None),
@@ -295,7 +296,7 @@ def sell_group(
 
     group_size = len(sap_ids)
     discount = calculate_discount(group_size)
-    total_base_amount = amount * group_size
+    total_base_amount = PASS_PRICE * group_size
     final_total_amount = total_base_amount * (1.0 - discount)
     amount_per_student = final_total_amount / group_size
 
@@ -315,6 +316,8 @@ def sell_group(
 
     # --- Atomic guard: update all selected students ---
     student_ids = [s.id for s in students]
+    group_id = uuid.uuid4().hex
+
     result = db.execute(
         update(Student)
         .where(
@@ -326,9 +329,7 @@ def sell_group(
             payment_mode=payment_mode,
             amount=amount_per_student,
             distributor_id=distributor.id,
-            utr_number=utr_number,
-            payment_screenshot=screenshot_b64,
-            screenshot_phash=phash,
+            group_id=group_id,
             sold_at=func.now(),
             payment_status=(
                 PaymentStatus.VERIFIED if payment_mode == PaymentMode.CASH
@@ -342,6 +343,22 @@ def sell_group(
     if result.rowcount != len(students):
         db.rollback()
         raise HTTPException(status_code=409, detail="One or more passes were sold by someone else - refresh and check")
+
+    payer_student = next((s for s in students if s.sap_id == payer_sap_id), None)
+    if not payer_student:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Payer SAP ID not found in group")
+
+    db.execute(
+        update(Student)
+        .where(Student.id == payer_student.id)
+        .values(
+            is_group_payer=True,
+            utr_number=utr_number,
+            payment_screenshot=screenshot_b64,
+            screenshot_phash=phash,
+        )
+    )
 
     for student in students:
         db.refresh(student)
@@ -362,6 +379,7 @@ def sell_group(
         )
     db.commit()
 
+    email_failures = 0
     if payment_mode == PaymentMode.CASH:
         for student in students:
             db.refresh(student)
@@ -375,9 +393,14 @@ def sell_group(
                     sap_id=student.sap_id,
                 )
             except Exception as exc:
-                # Log email failure but don't fail the transaction
-                pass
-        message = f"Cash sale recorded for group - {len(students)} passes emailed immediately"
+                import logging
+                logging.error(f"Failed to send group pass email to {student.sap_id}: {exc}")
+                email_failures += 1
+        
+        if email_failures > 0:
+            message = f"Cash sale recorded. {len(students) - email_failures} emails sent, {email_failures} failed."
+        else:
+            message = f"Cash sale recorded for group - {len(students)} passes emailed immediately"
     else:
         message = f"UPI sale recorded for group - {len(students)} passes pending treasurer verification"
 
@@ -432,3 +455,32 @@ def my_cash_balance(
         total_handed_over=total_handed_over,
         outstanding_with_you=total_cash - total_handed_over,
     )
+
+
+@router.post("/resend-email/{sap_id}")
+def resend_email(
+    sap_id: str,
+    db: Session = Depends(get_db),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+):
+    student = db.query(Student).filter(Student.sap_id == sap_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    if student.payment_status != PaymentStatus.VERIFIED:
+        raise HTTPException(status_code=400, detail="Cannot resend email - pass is not verified")
+    if not student.email:
+        raise HTTPException(status_code=400, detail="No email address on file for this student")
+
+    token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+    qr_image = generate_qr_image(token)
+    try:
+        send_pass_email(
+            recipient_email=student.email,
+            student_name=student.name,
+            qr_image_bytes=qr_image,
+            sap_id=student.sap_id,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Failed to resend email: {exc}") from exc
+
+    return {"message": "Email sent successfully"}

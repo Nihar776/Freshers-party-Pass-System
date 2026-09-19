@@ -63,3 +63,7 @@ SMTP_USE_STARTTLS: bool = os.getenv("SMTP_USE_STARTTLS", "true").lower() == "tru
 # --- App ---
 # Base URL where /scanner and /verify are reachable, used only for logging/QR fallback text.
 APP_BASE_URL: str = os.getenv("APP_BASE_URL", "http://localhost:8000")
+
+IS_PRODUCTION: bool = APP_BASE_URL.startswith("https")
+
+PASS_PRICE: float = 499.0

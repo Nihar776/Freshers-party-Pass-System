@@ -101,6 +101,25 @@ class StudentOverrideRequest(BaseModel):
     is_used: Optional[bool] = None
 
 
+class AdminStudentSummary(BaseModel):
+    id: int
+    sap_id: str
+    name: str
+    branch: str
+    payment_status: PaymentStatus
+    is_used: bool
+    sold_at: Optional[str]
+
+
+class AdminSellerDetail(BaseModel):
+    id: int
+    name: str
+    passes_sold: int
+    cash_collected: float
+    upi_collected: float
+    outstanding_cash: float
+
+
 class AuditIntegrityResult(BaseModel):
     intact: bool
     first_broken_entry_id: Optional[int]
@@ -223,6 +242,76 @@ def dashboard(
         total_entered=total_entered,
         pending_entry=total_verified - total_entered,
     )
+
+
+@router.get("/students", response_model=list[AdminStudentSummary])
+def list_students_admin(
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    q = db.query(Student)
+    if search:
+        q = q.filter((Student.name.ilike(f"%{search}%")) | (Student.sap_id.ilike(f"%{search}%")))
+    if status == "entered":
+        q = q.filter(Student.is_used == True)
+    elif status == "bought":
+        q = q.filter(Student.payment_status == PaymentStatus.VERIFIED)
+    elif status == "pending":
+        q = q.filter(Student.payment_status == PaymentStatus.PENDING_VERIFICATION)
+    elif status == "not_purchased":
+        q = q.filter(Student.payment_status == PaymentStatus.NOT_PURCHASED)
+
+    rows = q.order_by(Student.name).limit(limit).all()
+    return [
+        AdminStudentSummary(
+            id=r.id, sap_id=r.sap_id, name=r.name, branch=r.branch,
+            payment_status=r.payment_status, is_used=r.is_used,
+            sold_at=r.sold_at.isoformat() if r.sold_at else None,
+        ) for r in rows
+    ]
+
+
+@router.get("/sellers-detail", response_model=list[AdminSellerDetail])
+def sellers_detail(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    sellers = db.query(User).filter(User.role == UserRole.DISTRIBUTOR).all()
+    result = []
+    for s in sellers:
+        # Passes sold (verified)
+        passes_sold = db.query(func.count(Student.id)).filter(
+            Student.distributor_id == s.id, Student.payment_status == PaymentStatus.VERIFIED
+        ).scalar() or 0
+
+        # Cash collected
+        cash_collected = db.query(func.coalesce(func.sum(Student.amount), 0.0)).filter(
+            Student.distributor_id == s.id, 
+            Student.payment_status == PaymentStatus.VERIFIED,
+            Student.payment_mode == PaymentMode.CASH
+        ).scalar()
+        
+        # UPI collected
+        upi_collected = db.query(func.coalesce(func.sum(Student.amount), 0.0)).filter(
+            Student.distributor_id == s.id, 
+            Student.payment_status == PaymentStatus.VERIFIED,
+            Student.payment_mode == PaymentMode.UPI
+        ).scalar()
+
+        # Handed over
+        handed_over = db.query(func.coalesce(func.sum(CashHandover.amount), 0.0)).filter(
+            CashHandover.distributor_id == s.id
+        ).scalar()
+
+        result.append(AdminSellerDetail(
+            id=s.id, name=s.full_name, passes_sold=passes_sold,
+            cash_collected=cash_collected, upi_collected=upi_collected,
+            outstanding_cash=cash_collected - handed_over
+        ))
+    return result
 
 
 # ---------------------------------------------------------------------------

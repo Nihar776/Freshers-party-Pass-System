@@ -12,6 +12,7 @@ from database import get_db
 from schema_v2 import User, UserRole
 from security import hash_password, verify_password
 from session_auth import create_session_token, require_role, get_current_user, SESSION_COOKIE_NAME
+from config import IS_PRODUCTION
 
 router = APIRouter()
 
@@ -62,7 +63,7 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
         key=SESSION_COOKIE_NAME,
         value=token,
         httponly=True,       # not readable by JS - blocks XSS token theft
-        secure=True,          # only sent over HTTPS (fine, prod is HTTPS-only)
+        secure=IS_PRODUCTION,
         samesite="lax",
         max_age=12 * 3600,
     )

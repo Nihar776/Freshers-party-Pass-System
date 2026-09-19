@@ -96,6 +96,10 @@ class Student(Base):
     distributor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     sold_at = Column(DateTime, nullable=True)
 
+    # --- Group Sale data ---
+    group_id = Column(String(32), nullable=True, index=True)
+    is_group_payer = Column(Boolean, default=False, nullable=False)
+
     # --- UPI-specific verification fields ---
     utr_number = Column(String(32), nullable=True)          # student/distributor-entered UTR
     payment_screenshot = Column(Text, nullable=True)         # base64 or file path

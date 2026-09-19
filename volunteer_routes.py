@@ -119,26 +119,4 @@ def gate_stats(
                       pending_entry=total_verified - entered)
 
 
-@router.get("/scanner", response_class=HTMLResponse)
-def scanner_page():
-    return HTMLResponse(content=(BASE_DIR / "templates" / "scanner.html").read_text(encoding="utf-8"))
 
-
-@router.get("/distributor-page", response_class=HTMLResponse)
-def distributor_page():
-    return HTMLResponse(content=(BASE_DIR / "templates" / "distributor.html").read_text(encoding="utf-8"))
-
-
-@router.get("/treasurer-page", response_class=HTMLResponse)
-def treasurer_page():
-    return HTMLResponse(content=(BASE_DIR / "templates" / "treasurer.html").read_text(encoding="utf-8"))
-
-
-@router.get("/login-page", response_class=HTMLResponse)
-def login_page():
-    return HTMLResponse(content=(BASE_DIR / "templates" / "login.html").read_text(encoding="utf-8"))
-
-
-@router.get("/admin-page", response_class=HTMLResponse)
-def admin_page():
-    return HTMLResponse(content=(BASE_DIR / "templates" / "admin.html").read_text(encoding="utf-8"))
