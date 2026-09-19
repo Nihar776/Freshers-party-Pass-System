@@ -95,6 +95,9 @@ def create_user(
     existing = db.query(User).filter(User.username == payload.username).first()
     if existing:
         raise HTTPException(status_code=409, detail=f"Username '{payload.username}' already exists")
+    
+    if payload.role == UserRole.ADMIN and admin.id != 1:
+        raise HTTPException(status_code=403, detail="Only the super-admin (id=1) can create other admins")
 
     new_user = User(
         username=payload.username,
