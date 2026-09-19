@@ -137,3 +137,8 @@ def treasurer_page():
 @router.get("/login-page", response_class=HTMLResponse)
 def login_page():
     return HTMLResponse(content=(BASE_DIR / "templates" / "login.html").read_text(encoding="utf-8"))
+
+
+@router.get("/admin-page", response_class=HTMLResponse)
+def admin_page():
+    return HTMLResponse(content=(BASE_DIR / "templates" / "admin.html").read_text(encoding="utf-8"))

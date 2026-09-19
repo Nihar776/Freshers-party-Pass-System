@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Sell a Pass</title>
+<title>Sell Group Pass</title>
 <style>
   :root {
     --bg:#0b0c12; --panel:#14151f; --line:#262837; --ink:#eef0f6; --dim:#8b8ea3;
@@ -29,48 +29,47 @@
   .badge.verified { background:var(--go-bg); color:var(--go); }
   .badge.pending_verification { background:#3a2e00; color:#f0c419; }
   .badge.rejected { background:var(--stop-bg); color:var(--stop); }
-  button { width:100%; padding:13px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:700; font-size:15px; margin-top:16px; }
+  button { width:100%; padding:13px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:700; font-size:15px; margin-top:16px; cursor:pointer;}
   button:disabled { opacity:0.5; }
-  .row { display:flex; gap:8px; }
-  .row > div { flex:1; }
   .banner { border-radius:14px; padding:14px; margin-top:14px; font-size:14px; display:none; }
   .banner.ok { background:var(--go-bg); border:1px solid var(--go); color:#b6e6c8; display:block; }
   .banner.err { background:var(--stop-bg); border:1px solid var(--stop); color:#f3b7c2; display:block; }
-  .selected-student { padding:12px; background:#0f1019; border-radius:10px; margin-bottom:4px; }
-  .clear-link { font-size:12px; color:var(--dim); text-decoration:underline; float:right; }
+  .selected-student { padding:12px; background:#0f1019; border-radius:10px; margin-bottom:4px; display:flex; justify-content:space-between;}
+  .clear-link { font-size:12px; color:var(--stop); text-decoration:underline; cursor:pointer; }
+  #breakdown { margin-top: 15px; font-size: 14px; background: #1e2130; padding: 10px; border-radius: 8px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div><h1>Sell a Pass</h1><p class="dim" id="who">…</p></div>
+    <div><h1>Sell Group Pass</h1><p class="dim" id="who">…</p></div>
     <button id="logout" style="width:auto;background:none;color:var(--dim);font-size:11px;text-decoration:underline;padding:0;margin:0;">Log out</button>
   </header>
 
   <div class="card" id="search-card">
-    <label for="search">Search by name or SAP ID</label>
+    <label for="search">Search & Add to Cart</label>
     <input id="search" placeholder="e.g. Asha or 03" autocomplete="off" />
     <div class="result-list" id="results"></div>
   </div>
 
-  <div class="card" id="sell-card" style="display:none;">
-    <span class="clear-link" id="clear-selection">change student</span>
-    <div class="selected-student" id="selected-student"></div>
-
-    <label for="pass_type">Pass type</label>
-    <select id="pass_type">
-      <option value="full">Full Pass</option>
-      <option value="no_food">No Food Coupon Pass</option>
-    </select>
+  <div class="card" id="sell-card">
+    <h3>Cart</h3>
+    <div id="cart-list">
+        <div class="dim">Cart is empty.</div>
+    </div>
+    
+    <label for="amount">Base Amount per Pass (₹)</label>
+    <input id="amount" type="number" inputmode="decimal" value="300" oninput="updateCartUI()" />
+    
+    <div id="breakdown">
+        0 passes selected. Base price: ₹300. Group discount applied: 0%. Total: ₹0
+    </div>
 
     <label for="payment_mode">Payment mode</label>
     <select id="payment_mode">
       <option value="cash">Cash</option>
       <option value="upi">UPI</option>
     </select>
-
-    <label for="amount">Amount (₹)</label>
-    <input id="amount" type="number" inputmode="decimal" value="300" />
 
     <div id="upi-fields" style="display:none;">
       <label for="utr">UTR / Transaction reference number</label>
@@ -79,16 +78,13 @@
       <input id="screenshot" type="file" accept="image/*" />
     </div>
 
-    <label for="email">Email (only if not already on file)</label>
-    <input id="email" type="email" placeholder="student@example.com" />
-
-    <button id="submit-sale">Confirm Sale</button>
+    <button id="submit-sale" disabled>Confirm Sale</button>
     <div class="banner" id="result-banner"></div>
   </div>
 </div>
 
 <script>
-let selected = null;
+let cart = [];
 
 async function requireAuth() {
   const res = await fetch("/me");
@@ -119,38 +115,73 @@ async function runSearch(q) {
   const students = await res.json();
   resultsEl.innerHTML = "";
   students.forEach(s => {
+    // Hide if already in cart
+    if (cart.find(c => c.sap_id === s.sap_id)) return;
+    
     const div = document.createElement("div");
     div.className = "result-item";
     div.innerHTML = `<div class="name">${s.name} <span class="badge ${s.payment_status}">${s.payment_status.replace('_',' ')}</span></div>
                       <div class="meta">${s.sap_id} · ${s.branch}${s.gender ? ' · ' + s.gender : ''}</div>`;
-    div.addEventListener("click", () => selectStudent(s));
+    
+    if (s.payment_status === "not_purchased" || s.payment_status === "rejected") {
+        div.addEventListener("click", () => addToCart(s));
+    } else {
+        div.style.opacity = "0.5";
+        div.style.cursor = "not-allowed";
+    }
     resultsEl.appendChild(div);
   });
 }
 
-function selectStudent(s) {
-  selected = s;
-  document.getElementById("search-card").style.display = "none";
-  document.getElementById("sell-card").style.display = "block";
-  document.getElementById("selected-student").innerHTML =
-    `<strong>${s.name}</strong><br/><span class="dim">${s.sap_id} · ${s.branch}</span>`;
-  document.getElementById("result-banner").className = "banner";
-  document.getElementById("result-banner").textContent = "";
-
-  if (s.payment_status !== "not_purchased" && s.payment_status !== "rejected") {
-    document.getElementById("submit-sale").disabled = true;
-    showBanner(`This pass is already ${s.payment_status.replace('_', ' ')} - cannot sell again.`, "err");
-  } else {
-    document.getElementById("submit-sale").disabled = false;
-  }
+function addToCart(s) {
+  cart.push(s);
+  searchInput.value = "";
+  resultsEl.innerHTML = "";
+  updateCartUI();
 }
 
-document.getElementById("clear-selection").addEventListener("click", () => {
-  selected = null;
-  document.getElementById("sell-card").style.display = "none";
-  document.getElementById("search-card").style.display = "block";
-  searchInput.value = ""; resultsEl.innerHTML = "";
-});
+window.removeFromCart = function(sap_id) {
+    cart = cart.filter(s => s.sap_id !== sap_id);
+    updateCartUI();
+};
+
+function updateCartUI() {
+    const cartEl = document.getElementById("cart-list");
+    if (cart.length === 0) {
+        cartEl.innerHTML = `<div class="dim">Cart is empty.</div>`;
+    } else {
+        cartEl.innerHTML = cart.map(s => `
+            <div class="selected-student">
+                <div><strong>${s.name}</strong> <span class="dim">(${s.sap_id})</span></div>
+                <span class="clear-link" onclick="removeFromCart('${s.sap_id}')">remove</span>
+            </div>
+        `).join("");
+    }
+    
+    const amount = parseFloat(document.getElementById("amount").value) || 0;
+    const groupSize = cart.length;
+    let discount = 0;
+    
+    // Quick client-side mock for group discount logic (mirrors backend)
+    const today = new Date();
+    if (today.getMonth() === 8) { // September is 8
+        if (today.getDate() === 21) {
+            if (groupSize >= 8) discount = 0.12;
+            else if (groupSize >= 6) discount = 0.10;
+        } else if (today.getDate() === 22) {
+            if (groupSize >= 10) discount = 0.12;
+            else if (groupSize >= 8) discount = 0.10;
+        }
+    }
+    
+    const totalBase = amount * groupSize;
+    const finalTotal = totalBase * (1 - discount);
+    
+    document.getElementById("breakdown").innerHTML = 
+        `${groupSize} passes selected. Base price: ₹${amount}. Group discount applied: ${discount*100}%. Total: <strong>₹${finalTotal.toFixed(2)}</strong>`;
+        
+    document.getElementById("submit-sale").disabled = groupSize === 0;
+}
 
 document.getElementById("payment_mode").addEventListener("change", (e) => {
   document.getElementById("upi-fields").style.display = e.target.value === "upi" ? "block" : "none";
@@ -163,17 +194,15 @@ function showBanner(msg, kind) {
 }
 
 document.getElementById("submit-sale").addEventListener("click", async () => {
-  if (!selected) return;
+  if (cart.length === 0) return;
   const btn = document.getElementById("submit-sale");
   btn.disabled = true; btn.textContent = "Submitting…";
 
   const formData = new FormData();
-  formData.append("sap_id", selected.sap_id);
-  formData.append("pass_type", document.getElementById("pass_type").value);
+  cart.forEach(s => formData.append("sap_ids", s.sap_id));
+  
   formData.append("payment_mode", document.getElementById("payment_mode").value);
   formData.append("amount", document.getElementById("amount").value);
-  const email = document.getElementById("email").value.trim();
-  if (email) formData.append("email", email);
 
   if (document.getElementById("payment_mode").value === "upi") {
     formData.append("utr_number", document.getElementById("utr").value.trim());
@@ -182,21 +211,24 @@ document.getElementById("submit-sale").addEventListener("click", async () => {
   }
 
   try {
-    const res = await fetch("/distributor/sell", { method: "POST", body: formData });
+    const res = await fetch("/distributor/sell-group", { method: "POST", body: formData });
     const data = await res.json();
     if (res.ok) {
       let msg = data.message;
       if (data.duplicate_screenshot_warning) msg += " ⚠️ This screenshot matches another submission - flagged for treasurer review.";
       showBanner(msg, "ok");
-      setTimeout(() => document.getElementById("clear-selection").click(), 2500);
+      setTimeout(() => {
+          cart = [];
+          updateCartUI();
+          showBanner("", "");
+      }, 2500);
     } else {
       showBanner(data.detail || "Sale failed", "err");
-      btn.disabled = false;
     }
   } catch (e) {
     showBanner("Network error — check connection", "err");
-    btn.disabled = false;
   }
+  btn.disabled = false;
   btn.textContent = "Confirm Sale";
 });
 

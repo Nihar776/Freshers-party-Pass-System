@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Verification Queue</title>
+<title>Treasurer Dashboard</title>
 <style>
   :root {
     --bg:#0b0c12; --panel:#14151f; --line:#262837; --ink:#eef0f6; --dim:#8b8ea3;
@@ -15,31 +15,98 @@
   header { display:flex; justify-content:space-between; align-items:center; padding:8px 2px 18px; }
   h1 { font-size:18px; margin:0; }
   .dim { color:var(--dim); font-size:12px; }
+  
+  .tabs { display:flex; gap:10px; margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 10px;}
+  .tab-btn { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 14px; font-weight: bold; padding: 5px 10px; }
+  .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+  
   .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; }
   .name { font-weight:700; font-size:15px; }
   .meta { font-size:12.5px; color:var(--dim); margin-top:3px; line-height:1.6; }
   .warn-tag { display:inline-block; margin-top:6px; padding:3px 9px; border-radius:20px; background:#3a2200; color:var(--warn); font-size:11px; font-weight:700; }
   .btn-row { display:flex; gap:8px; margin-top:12px; }
-  .btn-row button { flex:1; padding:10px; border:none; border-radius:9px; font-weight:700; font-size:13.5px; }
+  .btn-row button { flex:1; padding:10px; border:none; border-radius:9px; font-weight:700; font-size:13.5px; cursor:pointer;}
   .approve-btn { background:var(--go-bg); color:var(--go); border:1px solid var(--go) !important; }
   .reject-btn { background:var(--stop-bg); color:var(--stop); border:1px solid var(--stop) !important; }
-  .view-btn { background:#1b1d29; color:var(--ink); border:1px solid var(--line) !important; }
+  .view-btn { background:#1b1d29; color:var(--ink); border:1px solid var(--line) !important; cursor:pointer;}
   .empty { text-align:center; color:var(--dim); padding:40px 0; font-size:14px; }
   .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; padding:20px; z-index:10; }
   .modal-bg.show { display:flex; }
   .modal { background:var(--panel); border-radius:16px; padding:18px; max-width:400px; width:100%; max-height:80vh; overflow-y:auto; }
   .modal img { width:100%; border-radius:10px; margin:10px 0; }
   .modal textarea { width:100%; background:#0f1019; border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:10px; font-size:13px; margin-top:8px; }
-  .modal button { width:100%; padding:11px; border:none; border-radius:9px; font-weight:700; margin-top:10px; }
+  .modal button { width:100%; padding:11px; border:none; border-radius:9px; font-weight:700; margin-top:10px; cursor:pointer;}
+  
+  .form-group { margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 12.5px; color: var(--dim); margin-bottom: 6px; }
+  .form-group input, .form-group select { width: 100%; padding: 10px; background: #0f1019; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); }
+  .submit-btn { background: var(--accent); color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor:pointer;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div><h1>Verification Queue</h1><p class="dim" id="who">…</p></div>
-    <button id="logout" style="width:auto;background:none;color:var(--dim);font-size:11px;text-decoration:underline;padding:0;">Log out</button>
+    <div><h1>Treasurer Dashboard</h1><p class="dim" id="who">…</p></div>
+    <button id="logout" style="width:auto;background:none;color:var(--dim);font-size:11px;text-decoration:underline;padding:0;border:none;cursor:pointer;">Log out</button>
   </header>
-  <div id="queue"></div>
+  
+  <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('verify')">Verifications</button>
+      <button class="tab-btn" onclick="showTab('expenses')">Expenses</button>
+      <button class="tab-btn" onclick="showTab('budget')">Budget</button>
+  </div>
+
+  <div id="tab-verify" class="tab-content">
+      <div id="queue"></div>
+  </div>
+  
+  <div id="tab-expenses" class="tab-content" style="display:none;">
+      <div class="card">
+          <h3>Record Expense</h3>
+          <div class="form-group">
+              <label>Description</label>
+              <input type="text" id="exp-desc">
+          </div>
+          <div class="form-group">
+              <label>Category</label>
+              <input type="text" id="exp-cat" placeholder="e.g. Food, Decor">
+          </div>
+          <div class="form-group">
+              <label>Fund Type</label>
+              <select id="exp-fund">
+                  <option value="cash">Cash</option>
+                  <option value="upi">UPI</option>
+              </select>
+          </div>
+          <div class="form-group">
+              <label>Amount (₹)</label>
+              <input type="number" id="exp-amt">
+          </div>
+          <button class="submit-btn" onclick="submitExpense()">Save Expense</button>
+      </div>
+  </div>
+  
+  <div id="tab-budget" class="tab-content" style="display:none;">
+      <div class="card">
+          <h3>Allocate Budget</h3>
+          <div class="form-group">
+              <label>Category</label>
+              <input type="text" id="bud-cat">
+          </div>
+          <div class="form-group">
+              <label>Fund Type</label>
+              <select id="bud-fund">
+                  <option value="cash">Cash</option>
+                  <option value="upi">UPI</option>
+              </select>
+          </div>
+          <div class="form-group">
+              <label>Amount (₹)</label>
+              <input type="number" id="bud-amt">
+          </div>
+          <button class="submit-btn" onclick="submitBudget()">Set Budget</button>
+      </div>
+  </div>
 </div>
 
 <div class="modal-bg" id="modal-bg">
@@ -61,6 +128,14 @@ document.getElementById("logout").addEventListener("click", async () => {
   window.location.href = "/login-page";
 });
 
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(`tab-${tabName}`).style.display = 'block';
+    event.currentTarget.classList.add('active');
+}
+
+// Verification Queue Logic
 async function loadQueue() {
   const res = await fetch("/treasurer/pending-verifications");
   const items = await res.json();
@@ -134,9 +209,52 @@ async function submitReject(studentId) {
   loadQueue();
 }
 
+// Expense Logic
+async function submitExpense() {
+    const formData = new FormData();
+    formData.append("description", document.getElementById("exp-desc").value);
+    formData.append("category", document.getElementById("exp-cat").value);
+    formData.append("fund_type", document.getElementById("exp-fund").value);
+    formData.append("amount", document.getElementById("exp-amt").value);
+    
+    const res = await fetch("/treasurer/expenses", { method: "POST", body: formData });
+    const data = await res.json();
+    alert(res.ok ? data.message : data.detail);
+    if(res.ok) {
+        document.getElementById("exp-desc").value = "";
+        document.getElementById("exp-cat").value = "";
+        document.getElementById("exp-amt").value = "";
+    }
+}
+
+// Budget Logic
+async function submitBudget() {
+    const payload = {
+        category: document.getElementById("bud-cat").value,
+        fund_type: document.getElementById("bud-fund").value,
+        allocated_amount: parseFloat(document.getElementById("bud-amt").value)
+    };
+    
+    const res = await fetch("/treasurer/budget", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    alert(res.ok ? data.message : data.detail);
+    if(res.ok) {
+        document.getElementById("bud-cat").value = "";
+        document.getElementById("bud-amt").value = "";
+    }
+}
+
 requireAuth();
 loadQueue();
-setInterval(loadQueue, 15000);
+setInterval(() => {
+    if(document.getElementById('tab-verify').style.display !== 'none') {
+        loadQueue();
+    }
+}, 15000);
 </script>
 </body>
 </html>

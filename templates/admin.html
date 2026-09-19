@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard</title>
+<style>
+  :root {
+    --bg:#0b0c12; --panel:#14151f; --line:#262837; --ink:#eef0f6; --dim:#8b8ea3;
+    --accent:#7c5cff; --go:#1fb45c; --go-bg:#0d2617; --stop:#ef3b5c; --stop-bg:#2a0f16;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+  .wrap { max-width:480px; margin:0 auto; padding:16px 16px 32px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:8px 2px 18px; }
+  h1 { font-size:18px; margin:0; }
+  .dim { color:var(--dim); font-size:12px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; }
+  label { display:block; font-size:12.5px; color:var(--dim); margin:12px 0 6px; }
+  input, select { width:100%; padding:11px 12px; background:#0f1019; border:1px solid var(--line); border-radius:10px; color:var(--ink); font-size:15px; margin-bottom:10px; }
+  button { width:100%; padding:13px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:700; font-size:15px; margin-top:6px; cursor:pointer; }
+  .export-btn { background:#1e2130; border:1px solid var(--line); color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>Admin Dashboard</h1><p class="dim" id="who">…</p></div>
+    <button id="logout" style="width:auto;background:none;color:var(--dim);font-size:11px;text-decoration:underline;padding:0;margin:0;">Log out</button>
+  </header>
+
+  <div class="card">
+    <h3>Data Exports</h3>
+    <button class="export-btn" onclick="window.location.href='/admin/export/attendees'">Download Attendees CSV</button>
+    <button class="export-btn" onclick="window.location.href='/admin/export/sales'">Download Sales CSV</button>
+  </div>
+
+  <div class="card">
+    <h3>Student Override</h3>
+    <label>Student ID (Internal DB ID)</label>
+    <input id="override-id" type="number" placeholder="e.g. 1" />
+
+    <label>Payment Status</label>
+    <select id="override-status">
+      <option value="">-- No Change --</option>
+      <option value="not_purchased">Not Purchased</option>
+      <option value="pending_verification">Pending Verification</option>
+      <option value="verified">Verified</option>
+      <option value="rejected">Rejected</option>
+    </select>
+
+    <label>Gate Entry Status</label>
+    <select id="override-used">
+      <option value="">-- No Change --</option>
+      <option value="true">Entered (Used)</option>
+      <option value="false">Not Entered</option>
+    </select>
+
+    <button onclick="submitOverride()">Apply Override</button>
+  </div>
+</div>
+
+<script>
+async function requireAuth() {
+  const res = await fetch("/me");
+  if (!res.ok) { window.location.href = "/login-page"; return; }
+  const me = await res.json();
+  if (me.role !== "admin") { window.location.href = "/login-page"; return; }
+  document.getElementById("who").textContent = `Signed in as ${me.full_name}`;
+}
+document.getElementById("logout").addEventListener("click", async () => {
+  await fetch("/logout", { method: "POST" });
+  window.location.href = "/login-page";
+});
+
+async function submitOverride() {
+  const id = document.getElementById("override-id").value;
+  if (!id) return alert("Enter a Student ID");
+
+  const status = document.getElementById("override-status").value;
+  const used = document.getElementById("override-used").value;
+
+  const payload = {};
+  if (status) payload.payment_status = status;
+  if (used) payload.is_used = used === "true";
+
+  if (Object.keys(payload).length === 0) return alert("Select a change to apply");
+
+  const res = await fetch(`/admin/students/${id}/override`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  alert(res.ok ? data.message : (data.detail || "Failed"));
+}
+
+requireAuth();
+</script>
+</body>
+</html>
