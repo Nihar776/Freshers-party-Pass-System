@@ -7,7 +7,8 @@ queue), and check their own sales / outstanding cash balance.
 import hashlib
 import base64
 from io import BytesIO
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from pydantic import BaseModel
@@ -58,6 +59,12 @@ class SellResult(BaseModel):
     message: str
     sap_id: str
     payment_status: PaymentStatus
+    duplicate_screenshot_warning: bool = False
+
+
+class GroupSellResult(BaseModel):
+    message: str
+    sap_ids: List[str]
     duplicate_screenshot_warning: bool = False
 
 
@@ -223,6 +230,160 @@ def sell_pass(
         message=message,
         sap_id=student.sap_id,
         payment_status=student.payment_status,
+        duplicate_screenshot_warning=duplicate_warning,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Group Sales and Discounts
+# ---------------------------------------------------------------------------
+def calculate_discount(group_size: int, date: Optional[datetime] = None) -> float:
+    if date is None:
+        date = datetime.now()
+    
+    # Mon (21/9): Group of 6 gets 10% off, Group of 8 gets 12% off.
+    # Tue (22/9): Group of 8 gets 10% off, Group of 10 gets 12% off.
+    # Wed (23/9): No discounts.
+    if date.month == 9:
+        if date.day == 21:  # Monday
+            if group_size >= 8:
+                return 0.12
+            elif group_size >= 6:
+                return 0.10
+        elif date.day == 22:  # Tuesday
+            if group_size >= 10:
+                return 0.12
+            elif group_size >= 8:
+                return 0.10
+    
+    return 0.0
+
+
+@router.post("/sell-group", response_model=GroupSellResult)
+def sell_group(
+    sap_ids: List[str] = Form(...),
+    amount: float = Form(...),
+    payment_mode: PaymentMode = Form(...),
+    utr_number: Optional[str] = Form(None),
+    screenshot: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+):
+    if not sap_ids:
+        raise HTTPException(status_code=400, detail="Group must have at least one student")
+
+    if payment_mode == PaymentMode.UPI:
+        if not utr_number or not utr_number.strip():
+            raise HTTPException(status_code=400, detail="UTR number is required for UPI payments")
+        if not screenshot:
+            raise HTTPException(status_code=400, detail="Payment screenshot is required for UPI payments")
+
+    students = db.query(Student).filter(Student.sap_id.in_(sap_ids)).all()
+    if len(students) != len(sap_ids):
+        found_saps = {s.sap_id for s in students}
+        missing = set(sap_ids) - found_saps
+        raise HTTPException(status_code=404, detail=f"SAP IDs not found: {', '.join(missing)}")
+
+    for student in students:
+        if student.payment_status in (PaymentStatus.PENDING_VERIFICATION, PaymentStatus.VERIFIED):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Pass already {student.payment_status.value} for {student.name} ({student.sap_id})"
+            )
+        if not student.email:
+            raise HTTPException(status_code=400, detail=f"No email on file for {student.sap_id} - cannot process group sale")
+
+    group_size = len(sap_ids)
+    discount = calculate_discount(group_size)
+    total_base_amount = amount * group_size
+    final_total_amount = total_base_amount * (1.0 - discount)
+    amount_per_student = final_total_amount / group_size
+
+    duplicate_warning = False
+    screenshot_b64 = None
+    phash = None
+    if screenshot:
+        img_bytes = screenshot.file.read()
+        try:
+            phash = _average_hash(img_bytes)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Uploaded file isn't a readable image")
+        duplicate_warning = db.query(Student).filter(
+            Student.screenshot_phash == phash, ~Student.sap_id.in_(sap_ids)
+        ).first() is not None
+        screenshot_b64 = base64.b64encode(img_bytes).decode("utf-8")
+
+    # --- Atomic guard: update all selected students ---
+    student_ids = [s.id for s in students]
+    result = db.execute(
+        update(Student)
+        .where(
+            Student.id.in_(student_ids),
+            Student.payment_status.in_([PaymentStatus.NOT_PURCHASED, PaymentStatus.REJECTED]),
+        )
+        .values(
+            pass_type=PassType.FULL,
+            payment_mode=payment_mode,
+            amount=amount_per_student,
+            distributor_id=distributor.id,
+            utr_number=utr_number,
+            payment_screenshot=screenshot_b64,
+            screenshot_phash=phash,
+            sold_at=func.now(),
+            payment_status=(
+                PaymentStatus.VERIFIED if payment_mode == PaymentMode.CASH
+                else PaymentStatus.PENDING_VERIFICATION
+            ),
+            verified_by_id=distributor.id if payment_mode == PaymentMode.CASH else None,
+            verified_at=func.now() if payment_mode == PaymentMode.CASH else None,
+            rejection_reason=None,
+        )
+    )
+    if result.rowcount != len(students):
+        db.rollback()
+        raise HTTPException(status_code=409, detail="One or more passes were sold by someone else - refresh and check")
+
+    for student in students:
+        db.refresh(student)
+
+        write_audit_log(
+            db,
+            user_id=distributor.id,
+            action="group_sale_created",
+            table_name="students",
+            record_id=student.id,
+            old_value={"payment_status": PaymentStatus.NOT_PURCHASED.value},
+            new_value={
+                "payment_status": student.payment_status.value,
+                "payment_mode": payment_mode.value,
+                "amount": amount_per_student,
+                "duplicate_screenshot_warning": duplicate_warning,
+            },
+        )
+    db.commit()
+
+    if payment_mode == PaymentMode.CASH:
+        for student in students:
+            db.refresh(student)
+            token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+            qr_image = generate_qr_image(token)
+            try:
+                send_pass_email(
+                    recipient_email=student.email,
+                    student_name=student.name,
+                    qr_image_bytes=qr_image,
+                    sap_id=student.sap_id,
+                )
+            except Exception as exc:
+                # Log email failure but don't fail the transaction
+                pass
+        message = f"Cash sale recorded for group - {len(students)} passes emailed immediately"
+    else:
+        message = f"UPI sale recorded for group - {len(students)} passes pending treasurer verification"
+
+    return GroupSellResult(
+        message=message,
+        sap_ids=sap_ids,
         duplicate_screenshot_warning=duplicate_warning,
     )
 

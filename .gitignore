@@ -3,3 +3,7 @@
 __pycache__/
 venv/
 *.pyc
+code_context.txt
+.venv
+security_tester.py
+seed_mock_data.py
