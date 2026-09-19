@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode,
-    CashHandover, Expense, BudgetAllocation,
+    CashHandover, Expense, BudgetAllocation, FundType
 )
 from session_auth import require_role
 from audit import write_audit_log
@@ -73,16 +73,19 @@ class CashHandoverRequest(BaseModel):
 class ExpenseCreateRequest(BaseModel):
     description: str
     category: str
+    fund_type: FundType
     amount: float
 
 
 class BudgetSetRequest(BaseModel):
     category: str
+    fund_type: FundType
     allocated_amount: float
 
 
 class BudgetStatusItem(BaseModel):
     category: str
+    fund_type: FundType
     allocated: float
     spent: float
     remaining: float
@@ -94,6 +97,8 @@ class FinanceSummary(BaseModel):
     total_cash_verified: float
     total_expenses: float
     net_funds_remaining: float
+    total_cash_remaining: float
+    total_upi_remaining: float
 
 
 # ---------------------------------------------------------------------------
@@ -278,6 +283,7 @@ def record_cash_handover(
 def add_expense(
     description: str = Form(...),
     category: str = Form(...),
+    fund_type: FundType = Form(...),
     amount: float = Form(...),
     receipt: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
@@ -291,7 +297,7 @@ def add_expense(
         receipt_b64 = base64.b64encode(receipt.file.read()).decode("utf-8")
 
     expense = Expense(
-        description=description, category=category, amount=amount,
+        description=description, category=category, fund_type=fund_type, amount=amount,
         recorded_by_id=treasurer.id, receipt_image=receipt_b64,
     )
     db.add(expense)
@@ -300,7 +306,7 @@ def add_expense(
     write_audit_log(
         db, user_id=treasurer.id, action="expense_added", table_name="expenses",
         record_id=expense.id,
-        new_value={"description": description, "category": category, "amount": amount},
+        new_value={"description": description, "category": category, "fund_type": fund_type.value, "amount": amount},
     )
     db.commit()
 
@@ -319,7 +325,7 @@ def list_expenses(
     rows = q.order_by(Expense.spent_at.desc()).all()
     return [
         {"id": e.id, "description": e.description, "category": e.category,
-         "amount": e.amount, "spent_at": e.spent_at.isoformat(),
+         "fund_type": e.fund_type, "amount": e.amount, "spent_at": e.spent_at.isoformat(),
          "recorded_by": e.recorded_by.full_name}
         for e in rows
     ]
@@ -331,7 +337,10 @@ def set_budget(
     db: Session = Depends(get_db),
     treasurer: User = Depends(require_role(*TREASURY_ROLES)),
 ):
-    existing = db.query(BudgetAllocation).filter(BudgetAllocation.category == payload.category).first()
+    existing = db.query(BudgetAllocation).filter(
+        BudgetAllocation.category == payload.category,
+        BudgetAllocation.fund_type == payload.fund_type
+    ).first()
     old_snapshot = {"allocated_amount": existing.allocated_amount} if existing else None
 
     if existing:
@@ -340,7 +349,7 @@ def set_budget(
         record_id = existing.id
     else:
         existing = BudgetAllocation(
-            category=payload.category, allocated_amount=payload.allocated_amount, set_by_id=treasurer.id,
+            category=payload.category, fund_type=payload.fund_type, allocated_amount=payload.allocated_amount, set_by_id=treasurer.id,
         )
         db.add(existing)
         db.flush()
@@ -349,11 +358,11 @@ def set_budget(
     write_audit_log(
         db, user_id=treasurer.id, action="budget_set", table_name="budget_allocations",
         record_id=record_id, old_value=old_snapshot,
-        new_value={"category": payload.category, "allocated_amount": payload.allocated_amount},
+        new_value={"category": payload.category, "fund_type": payload.fund_type.value, "allocated_amount": payload.allocated_amount},
     )
     db.commit()
 
-    return {"message": f"Budget for '{payload.category}' set to ₹{payload.allocated_amount}"}
+    return {"message": f"Budget for '{payload.category}' ({payload.fund_type.value}) set to ₹{payload.allocated_amount}"}
 
 
 @router.get("/budget-status", response_model=list[BudgetStatusItem])
@@ -365,10 +374,11 @@ def budget_status(
     result = []
     for a in allocations:
         spent = db.query(func.coalesce(func.sum(Expense.amount), 0.0)).filter(
-            Expense.category == a.category
+            Expense.category == a.category,
+            Expense.fund_type == a.fund_type
         ).scalar()
         result.append(BudgetStatusItem(
-            category=a.category, allocated=a.allocated_amount, spent=spent,
+            category=a.category, fund_type=a.fund_type, allocated=a.allocated_amount, spent=spent,
             remaining=a.allocated_amount - spent,
         ))
     return result
@@ -385,7 +395,14 @@ def finance_summary(
     cash_verified = db.query(func.coalesce(func.sum(Student.amount), 0.0)).filter(
         Student.payment_mode == PaymentMode.CASH, Student.payment_status == PaymentStatus.VERIFIED,
     ).scalar()
-    total_expenses = db.query(func.coalesce(func.sum(Expense.amount), 0.0)).scalar()
+    total_cash_expenses = db.query(func.coalesce(func.sum(Expense.amount), 0.0)).filter(
+        Expense.fund_type == FundType.CASH
+    ).scalar()
+    total_upi_expenses = db.query(func.coalesce(func.sum(Expense.amount), 0.0)).filter(
+        Expense.fund_type == FundType.UPI
+    ).scalar()
+    
+    total_expenses = total_cash_expenses + total_upi_expenses
     net = upi_verified + cash_verified
 
     return FinanceSummary(
@@ -394,4 +411,6 @@ def finance_summary(
         total_cash_verified=cash_verified,
         total_expenses=total_expenses,
         net_funds_remaining=net - total_expenses,
+        total_cash_remaining=cash_verified - total_cash_expenses,
+        total_upi_remaining=upi_verified - total_upi_expenses,
     )

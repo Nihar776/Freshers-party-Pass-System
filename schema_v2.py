@@ -56,6 +56,11 @@ class PaymentMode(str, enum.Enum):
     UPI = "upi"
 
 
+class FundType(str, enum.Enum):
+    CASH = "cash"
+    UPI = "upi"
+
+
 class PassType(str, enum.Enum):
     FULL = "full"
     NO_FOOD = "no_food"
@@ -144,6 +149,7 @@ class Expense(Base):
     id = Column(Integer, primary_key=True)
     description = Column(String(255), nullable=False)
     category = Column(String(64), nullable=False, index=True)  # e.g. "Food", "Decor", "DJ"
+    fund_type = Column(Enum(FundType), nullable=False)
     amount = Column(Float, nullable=False)
     spent_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     recorded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -156,7 +162,8 @@ class BudgetAllocation(Base):
     __tablename__ = "budget_allocations"
 
     id = Column(Integer, primary_key=True)
-    category = Column(String(64), unique=True, nullable=False)
+    category = Column(String(64), nullable=False) # Removed unique=True because a category can have CASH and UPI allocations
+    fund_type = Column(Enum(FundType), nullable=False)
     allocated_amount = Column(Float, nullable=False)
     set_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
