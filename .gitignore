@@ -7,3 +7,4 @@ code_context.txt
 .venv
 security_tester.py
 seed_mock_data.py
+seed.py
