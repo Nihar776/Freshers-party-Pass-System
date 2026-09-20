@@ -32,7 +32,7 @@ app = FastAPI(
     title="Event Pass & Verification System",
     description=f"Full pass sales, verification, and gate-check system for {EVENT_NAME}",
     version="2.0.0",
-    # docs_url=None, redoc_url=None
+    docs_url=None, redoc_url=None
 )
 
 app.add_middleware(
