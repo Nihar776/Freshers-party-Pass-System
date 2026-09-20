@@ -77,6 +77,11 @@ class PassType(str, enum.Enum):
     NO_FOOD = "no_food"
 
 
+class FoodPreference(str, enum.Enum):
+    VEG = "veg"
+    JAIN = "jain"
+
+
 class PaymentStatus(str, enum.Enum):
     NOT_PURCHASED = "not_purchased"        # roster row, no sale yet
     PENDING_VERIFICATION = "pending_verification"  # UPI sale, awaiting treasurer
@@ -99,6 +104,7 @@ class Student(Base):
 
     # --- Sale data (filled by distributor at point of sale) ---
     pass_type = Column(Enum(PassType), default=PassType.FULL, nullable=False)
+    food_preference = Column(Enum(FoodPreference, values_callable=lambda obj: [e.value for e in obj]), default=FoodPreference.VEG, nullable=False)
     payment_mode = Column(Enum(PaymentMode), nullable=True)
     amount = Column(Float, nullable=True)
     payment_status = Column(Enum(PaymentStatus), default=PaymentStatus.NOT_PURCHASED,

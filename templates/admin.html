@@ -170,10 +170,26 @@
                     </select>
                     <button class="btn btn-primary" onclick="loadStudents()">Search</button>
                 </div>
+                <div class="filter-row mt-4" style="justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="bulk-action" class="form-control" style="width: auto;">
+                            <option value="">-- Bulk Actions --</option>
+                            <option value="payment_status:verified">Mark Verified (Paid)</option>
+                            <option value="payment_status:pending_verification">Mark Pending</option>
+                            <option value="payment_status:rejected">Mark Rejected</option>
+                            <option value="is_used:true">Mark Entered</option>
+                            <option value="is_used:false">Mark Not Entered</option>
+                            <option value="food_preference:veg">Set Food: Veg</option>
+                            <option value="food_preference:jain">Set Food: Jain</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="applyBulkAction()">Apply</button>
+                    </div>
+                </div>
                 <div class="table-container mt-4">
                     <table id="students-table">
                         <thead>
                             <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="select-all-students" onclick="toggleAllStudents(this)"></th>
                                 <th>Name</th>
                                 <th>SAP ID</th>
                                 <th>Branch</th>
@@ -367,6 +383,13 @@
                     <option value="true">Entered (Used)</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label class="form-label">Food Preference</label>
+                <select id="edit-food-pref" class="form-control">
+                    <option value="veg">Veg</option>
+                    <option value="jain">Jain</option>
+                </select>
+            </div>
             <div class="flex gap-4 mt-6">
                 <button class="btn btn-secondary" style="flex: 1;" onclick="closeEditModal()">Cancel</button>
                 <button class="btn btn-primary" style="flex: 1;" onclick="saveStudentEdit()">Save Changes</button>
@@ -392,8 +415,38 @@
                 <label class="form-label">New Password</label>
                 <input type="password" id="new-password-input" class="form-control" placeholder="Enter new password (min 4 chars)">
             </div>
-            <button class="btn btn-primary w-full mb-2" onclick="submitPasswordChange()">Change Password</button>
-            <button class="btn btn-secondary w-full" onclick="closePasswordModal()">Cancel</button>
+            <div class="flex gap-4 mt-6">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closePasswordModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="savePassword()">Update Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div class="panel" style="width: 400px; position: relative;">
+            <h3 class="mb-4">Edit User Profile</h3>
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="edit-user-name" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" id="edit-user-username" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Role</label>
+                <select id="edit-user-role" class="form-control">
+                    <option value="distributor">Distributor</option>
+                    <option value="treasurer">Treasurer</option>
+                    <option value="volunteer">Volunteer (Scanner)</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeEditUserModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveUserEdit()">Save Changes</button>
+            </div>
         </div>
     </div>
 
@@ -494,20 +547,63 @@
 
                 return `
                 <tr>
+                    <td><input type="checkbox" class="student-checkbox" value="${s.id}"></td>
                     <td class="font-semibold">${s.name}</td>
                     <td class="text-muted">${s.sap_id}</td>
                     <td>${s.branch}</td>
                     <td><span class="badge ${badgeClass}">${s.payment_status.replace('_', ' ')}</span></td>
                     <td>${s.is_used ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-neutral">No</span>'}</td>
-                    <td><button class="btn btn-secondary py-1 px-3 text-sm" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}')">Edit</button></td>
+                    <td><button class="btn btn-secondary py-1 px-3 text-sm" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}', '${s.food_preference}')">Edit</button></td>
                 </tr>
             `}).join('');
         }
 
-        function openEditModal(id, currentStatus, currentUsed, paymentMode) {
+        function toggleAllStudents(source) {
+            checkboxes = document.querySelectorAll('.student-checkbox');
+            for (let i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = source.checked;
+            }
+        }
+
+        async function applyBulkAction() {
+            const actionVal = document.getElementById('bulk-action').value;
+            if (!actionVal) return showToast("Select a bulk action", "warning");
+
+            const [actionStr, valueStr] = actionVal.split(':');
+            
+            const selected = Array.from(document.querySelectorAll('.student-checkbox:checked')).map(cb => parseInt(cb.value));
+            if (selected.length === 0) return showToast("Select at least one student", "warning");
+
+            if (!confirm(`Apply action to ${selected.length} students?`)) return;
+
+            try {
+                const res = await fetch('/admin/students/bulk-update', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        student_ids: selected,
+                        action: actionStr,
+                        value: valueStr
+                    })
+                });
+                if (res.ok) {
+                    showToast(`Successfully updated ${selected.length} students`);
+                    loadStudents();
+                    document.getElementById('select-all-students').checked = false;
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Bulk update failed', 'error');
+                }
+            } catch(e) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        function openEditModal(id, currentStatus, currentUsed, paymentMode, foodPref) {
             currentEditStudentId = id;
             document.getElementById('edit-status').value = currentStatus;
             document.getElementById('edit-used').value = currentUsed.toString();
+            document.getElementById('edit-food-pref').value = foodPref || 'veg';
             
             const screenshotBtn = document.getElementById('screenshot-btn-container');
             if (paymentMode === 'upi') {
@@ -527,11 +623,12 @@
         async function saveStudentEdit() {
             const status = document.getElementById('edit-status').value;
             const used = document.getElementById('edit-used').value === 'true';
+            const foodPref = document.getElementById('edit-food-pref').value;
             
             const res = await fetch(`/admin/students/${currentEditStudentId}/override`, {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({payment_status: status, is_used: used})
+                body: JSON.stringify({payment_status: status, is_used: used, food_preference: foodPref})
             });
             
             if (res.ok) {
@@ -579,17 +676,58 @@
                 <tr>
                     <td class="font-semibold">${u.full_name}</td>
                     <td>${u.username}</td>
-                    <td><span class="badge badge-neutral">${u.role}</span></td>
-                    <td>${u.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Disabled</span>'}</td>
+                    <td><span class="badge ${u.role === 'admin' ? 'badge-primary' : (u.role==='treasurer' ? 'badge-warning' : 'badge-neutral')}">${u.role}</span></td>
+                    <td>${u.is_active ? '<span class="text-success">Active</span>' : '<span class="text-danger">Disabled</span>'}</td>
                     <td>
-                        ${u.is_active 
-                            ? `<button class="btn btn-danger py-1 px-3 text-sm" onclick="toggleUser(${u.id}, false)">Disable</button>`
-                            : `<button class="btn btn-success py-1 px-3 text-sm" onclick="toggleUser(${u.id}, true)">Enable</button>`
-                        }
-                        <button class="btn btn-secondary py-1 px-3 text-sm ml-2" onclick="openPasswordModal(${u.id})">Change Password</button>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="openEditUserModal(${u.id}, '${u.full_name}', '${u.username}', '${u.role}')">Edit</button>
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="openPasswordModal(${u.id})">Password</button>
+                            <button class="btn ${u.is_active ? 'btn-danger' : 'btn-success'}" style="padding: 4px 8px; font-size: 12px;" onclick="toggleUser(${u.id}, ${!u.is_active})">
+                                ${u.is_active ? 'Disable' : 'Enable'}
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
+        }
+
+        let currentEditUserId = null;
+
+        function openEditUserModal(id, name, username, role) {
+            currentEditUserId = id;
+            document.getElementById('edit-user-name').value = name;
+            document.getElementById('edit-user-username').value = username;
+            document.getElementById('edit-user-role').value = role;
+            document.getElementById('edit-user-modal').classList.remove('hidden');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('edit-user-modal').classList.add('hidden');
+        }
+
+        async function saveUserEdit() {
+            const name = document.getElementById('edit-user-name').value;
+            const username = document.getElementById('edit-user-username').value;
+            const role = document.getElementById('edit-user-role').value;
+            
+            try {
+                const res = await fetch(`/admin/users/${currentEditUserId}`, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({full_name: name, username: username, role: role})
+                });
+                
+                if (res.ok) {
+                    showToast('User updated successfully');
+                    closeEditUserModal();
+                    loadUsers();
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Failed to update user', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            }
         }
 
         async function toggleUser(id, enable) {
@@ -698,20 +836,38 @@
             if (!res.ok) return;
             const data = await res.json();
             
-            document.querySelector('#audit-table tbody').innerHTML = data.map(r => `
+            document.querySelector('#audit-table tbody').innerHTML = data.map(r => {
+                let badgeClass = 'badge-neutral';
+                if (r.action === 'payment_verified' || r.action === 'pass_sold') badgeClass = 'badge-success';
+                else if (r.action === 'admin_override' || r.action === 'user_disabled') badgeClass = 'badge-danger';
+                else if (r.action === 'user_created') badgeClass = 'badge-primary';
+                else if (r.action === 'cash_handover') badgeClass = 'badge-warning';
+                
+                let detailsHtml = '-';
+                if (r.new_value) {
+                    detailsHtml = '<ul style="margin:0; padding-left:15px; list-style-type:circle;">';
+                    for (const [k, v] of Object.entries(r.new_value)) {
+                        let oldV = r.old_value && r.old_value[k] !== undefined ? r.old_value[k] : null;
+                        if (oldV !== null && oldV !== v) {
+                            detailsHtml += `<li><strong>${k}:</strong> ${oldV} &rarr; ${v}</li>`;
+                        } else {
+                            detailsHtml += `<li><strong>${k}:</strong> ${v}</li>`;
+                        }
+                    }
+                    detailsHtml += '</ul>';
+                }
+                
+                return `
                 <tr>
                     <td class="text-sm text-muted">${new Date(r.timestamp).toLocaleString()}</td>
                     <td class="font-semibold">${r.user_name || 'System'}</td>
-                    <td><span class="badge badge-neutral">${r.action}</span></td>
-                    <td class="text-muted">${r.table_name}:${r.record_id}</td>
+                    <td><span class="badge ${badgeClass}">${r.action.replace('_', ' ')}</span></td>
+                    <td class="text-muted text-sm">${r.table_name} (#${r.record_id})</td>
                     <td class="text-sm">
-                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
-                             title='${JSON.stringify(r.new_value)}'>
-                            ${r.new_value ? JSON.stringify(r.new_value) : '-'}
-                        </div>
+                        ${detailsHtml}
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         async function checkAuditIntegrity() {

@@ -38,6 +38,12 @@ class CreateUserRequest(BaseModel):
     role: UserRole
 
 
+class UserUpdateRequest(BaseModel):
+    full_name: str | None = None
+    username: str | None = None
+    role: UserRole | None = None
+
+
 class UserSummary(BaseModel):
     id: int
     username: str
@@ -133,11 +139,43 @@ def list_users(
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.ADMIN)),
 ):
-    users = db.query(User).order_by(User.role, User.full_name).all()
-    return [
-        UserSummary(id=u.id, username=u.username, full_name=u.full_name, role=u.role, is_active=u.is_active)
-        for u in users
-    ]
+    users = db.query(User).order_by(User.full_name).all()
+    return users
+
+
+@router.patch("/admin/users/{user_id}")
+def update_user(
+    user_id: int,
+    payload: UserUpdateRequest,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(UserRole.ADMIN)),
+):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if target.id == 1 and admin.id != 1:
+        raise HTTPException(status_code=403, detail="Cannot modify the primary admin account")
+        
+    old_values = {}
+    new_values = {}
+    
+    if payload.full_name is not None and payload.full_name != target.full_name:
+        old_values['full_name'] = target.full_name
+        new_values['full_name'] = payload.full_name
+        target.full_name = payload.full_name
+        
+    if payload.username is not None and payload.username != target.username:
+        old_values['username'] = target.username
+        new_values['username'] = payload.username
+        target.username = payload.username
+        
+    if payload.role is not None and payload.role != target.role:
+        old_values['role'] = target.role
+        new_values['role'] = payload.role
+        target.role = payload.role
+        
+    db.commit()
+    return {"message": "User updated successfully"}
 
 
 @router.patch("/admin/users/{user_id}/disable")
@@ -149,6 +187,8 @@ def disable_user(
     target = db.query(User).filter(User.id == user_id).first()
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if target.id == 1 and admin.id != 1:
+        raise HTTPException(status_code=403, detail="Cannot disable the primary admin account")
     if target.id == admin.id:
         raise HTTPException(status_code=400, detail="Cannot disable your own account")
 
@@ -166,6 +206,8 @@ def enable_user(
     target = db.query(User).filter(User.id == user_id).first()
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if target.id == 1 and admin.id != 1:
+        raise HTTPException(status_code=403, detail="Cannot modify the primary admin account")
 
     target.is_active = True
     db.commit()
@@ -185,7 +227,9 @@ def change_user_password(
     target = db.query(User).filter(User.id == user_id).first()
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if target.id == 1 and admin.id != 1:
+        raise HTTPException(status_code=403, detail="Cannot change password for the primary admin account")
 
-    target.password_hash = get_password_hash(payload.new_password)
+    target.password_hash = hash_password(payload.new_password)
     db.commit()
     return {"message": f"Password for {target.full_name} updated successfully"}

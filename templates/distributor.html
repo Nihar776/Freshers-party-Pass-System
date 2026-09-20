@@ -439,6 +439,7 @@
             } else {
                 student.is_payer = false;
             }
+            student.food_pref = 'veg'; // Default
             cart.push(student);
             document.getElementById('search').value = '';
             document.getElementById('results').innerHTML = '';
@@ -456,6 +457,12 @@
 
         function setPayer(sap_id) {
             cart.forEach(c => c.is_payer = (c.sap_id === sap_id));
+            updateCartUI();
+        }
+
+        function setFoodPref(sap_id, val) {
+            const item = cart.find(c => c.sap_id === sap_id);
+            if (item) item.food_pref = val;
         }
 
         function updateCartUI() {
@@ -481,7 +488,11 @@
                             <input type="radio" name="payer" class="payer-radio" ${s.is_payer ? 'checked' : ''} onclick="setPayer('${s.sap_id}')">
                             <span class="text-sm">Payer</span>
                         </label>
-                        <span class="text-danger" onclick="removeFromCart('${s.sap_id}')">Remove</span>
+                        <select class="form-control" style="width: 80px; padding: 4px; font-size: 12px; height: auto;" onchange="setFoodPref('${s.sap_id}', this.value)">
+                            <option value="veg" ${s.food_pref === 'veg' ? 'selected' : ''}>Veg</option>
+                            <option value="jain" ${s.food_pref === 'jain' ? 'selected' : ''}>Jain</option>
+                        </select>
+                        <span class="text-danger" style="cursor: pointer;" onclick="removeFromCart('${s.sap_id}')">Remove</span>
                     </div>
                 </div>
             `).join('');
@@ -581,10 +592,14 @@
             if (cart.length === 1) {
                 // Single sale
                 formData.append('sap_id', cart[0].sap_id);
+                formData.append('food_preference', cart[0].food_pref);
                 formData.append('payment_mode', mode);
             } else {
                 // Group sale
-                cart.forEach(c => formData.append('sap_ids', c.sap_id));
+                cart.forEach(c => {
+                    formData.append('sap_ids', c.sap_id);
+                    formData.append('food_preferences', c.food_pref);
+                });
                 formData.append('payer_sap_id', payer.sap_id);
                 formData.append('payment_mode', mode);
             }

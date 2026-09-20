@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
-    Expense, CashHandover, AuditLog, DiscountCode, DiscountType
+    FoodPreference, Expense, CashHandover, AuditLog, DiscountCode, DiscountType
 )
 from session_auth import require_role
 from audit import verify_chain_integrity, write_audit_log
@@ -120,6 +120,13 @@ class DiscountCodeResponse(BaseModel):
 class StudentOverrideRequest(BaseModel):
     payment_status: Optional[PaymentStatus] = None
     is_used: Optional[bool] = None
+    food_preference: Optional[FoodPreference] = None
+
+
+class StudentBulkUpdateRequest(BaseModel):
+    student_ids: list[int]
+    action: str
+    value: str
 
 
 class AdminStudentSummary(BaseModel):
@@ -129,6 +136,7 @@ class AdminStudentSummary(BaseModel):
     branch: str
     payment_status: PaymentStatus
     payment_mode: Optional[PaymentMode] = None
+    food_preference: FoodPreference
     is_used: bool
     sold_at: Optional[str]
 
@@ -295,6 +303,7 @@ def list_students_admin(
             branch=s.branch,
             payment_status=s.payment_status,
             payment_mode=s.payment_mode,
+            food_preference=s.food_preference,
             is_used=s.is_used,
             sold_at=s.sold_at.isoformat() if s.sold_at else None,
         )
@@ -323,7 +332,7 @@ def sellers_detail(
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(*ADMIN_ONLY)),
 ):
-    sellers = db.query(User).filter(User.role == UserRole.DISTRIBUTOR).all()
+    sellers = db.query(User).filter(User.role.in_([UserRole.DISTRIBUTOR, UserRole.ADMIN])).all()
     result = []
     for s in sellers:
         # Passes sold (verified)
@@ -446,7 +455,8 @@ def override_student(
 
     old_snapshot = {
         "payment_status": student.payment_status.value if student.payment_status else None,
-        "is_used": student.is_used
+        "is_used": student.is_used,
+        "food_preference": student.food_preference.value if student.food_preference else None
     }
     
     new_snapshot = {}
@@ -456,6 +466,9 @@ def override_student(
     if payload.is_used is not None:
         student.is_used = payload.is_used
         new_snapshot["is_used"] = payload.is_used
+    if payload.food_preference is not None:
+        student.food_preference = payload.food_preference
+        new_snapshot["food_preference"] = payload.food_preference.value
 
     if not new_snapshot:
         return {"message": "No changes requested"}
@@ -470,6 +483,62 @@ def override_student(
     db.refresh(student)
 
     return {"message": "Student record overridden successfully"}
+
+
+@router.post("/students/bulk-update")
+def bulk_update_students(
+    payload: StudentBulkUpdateRequest,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    if not payload.student_ids:
+        raise HTTPException(status_code=400, detail="No students selected")
+
+    students = db.query(Student).filter(Student.id.in_(payload.student_ids)).all()
+    if not students:
+        raise HTTPException(status_code=404, detail="No matching students found")
+
+    updated_count = 0
+    for student in students:
+        old_snapshot = {
+            "payment_status": student.payment_status.value if student.payment_status else None,
+            "is_used": student.is_used,
+            "food_preference": student.food_preference.value if student.food_preference else None
+        }
+        new_snapshot = {}
+
+        if payload.action == "payment_status":
+            try:
+                new_status = PaymentStatus(payload.value)
+                if student.payment_status != new_status:
+                    student.payment_status = new_status
+                    new_snapshot["payment_status"] = new_status.value
+            except ValueError:
+                continue
+        elif payload.action == "is_used":
+            new_used = payload.value.lower() == "true"
+            if student.is_used != new_used:
+                student.is_used = new_used
+                new_snapshot["is_used"] = new_used
+        elif payload.action == "food_preference":
+            try:
+                new_food = FoodPreference(payload.value)
+                if student.food_preference != new_food:
+                    student.food_preference = new_food
+                    new_snapshot["food_preference"] = new_food.value
+            except ValueError:
+                continue
+
+        if new_snapshot:
+            db.flush()
+            write_audit_log(
+                db, user_id=admin.id, action="admin_override", table_name="students",
+                record_id=student.id, old_value=old_snapshot, new_value=new_snapshot,
+            )
+            updated_count += 1
+
+    db.commit()
+    return {"message": f"Successfully updated {updated_count} students"}
 
 
 # ---------------------------------------------------------------------------

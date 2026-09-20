@@ -37,6 +37,7 @@ class VerifyResponse(BaseModel):
     student_name: str
     sap_id: str
     entered_at: datetime
+    food_preference: str
 
 
 class GateStats(BaseModel):
@@ -103,6 +104,7 @@ def verify_and_check_in(
     return VerifyResponse(
         message="Entry approved - issue wristband",
         student_name=student.name, sap_id=student.sap_id, entered_at=student.entered_at,
+        food_preference=student.food_preference.value if student.food_preference else "veg"
     )
 
 

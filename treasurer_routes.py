@@ -34,17 +34,23 @@ TREASURY_ROLES = (UserRole.TREASURER, UserRole.ADMIN)
 # ---------------------------------------------------------------------------
 # Schemas
 # ---------------------------------------------------------------------------
-class PendingVerificationItem(BaseModel):
+class VerificationMemberItem(BaseModel):
     student_id: int
     sap_id: str
     name: str
     branch: str
-    amount: Optional[float]
+
+class PendingVerificationGroupItem(BaseModel):
+    group_id: str
+    total_amount: float
+    member_count: int
     utr_number: Optional[str]
     distributor_name: str
     sold_at: Optional[str]
     duplicate_screenshot_warning: bool
     has_screenshot: bool
+    members: list[VerificationMemberItem]
+    payer_student_id: Optional[int]
 
 
 class VerifyActionResult(BaseModel):
@@ -105,7 +111,7 @@ class FinanceSummary(BaseModel):
 # ---------------------------------------------------------------------------
 # Verification queue
 # ---------------------------------------------------------------------------
-@router.get("/pending-verifications", response_model=list[PendingVerificationItem])
+@router.get("/pending-verifications", response_model=list[PendingVerificationGroupItem])
 def pending_verifications(
     db: Session = Depends(get_db),
     treasurer: User = Depends(require_role(*TREASURY_ROLES)),
@@ -113,24 +119,45 @@ def pending_verifications(
     rows = (
         db.query(Student)
         .filter(Student.payment_status == PaymentStatus.PENDING_VERIFICATION)
-        .order_by(Student.sold_at.asc())  # oldest first - first come first verified
+        .order_by(Student.sold_at.asc())
         .all()
     )
-    result = []
+    
+    # Group by group_id
+    groups = {}
     for r in rows:
+        gid = r.group_id or str(r.id)  # fallback to id if no group_id (legacy data)
+        if gid not in groups:
+            groups[gid] = []
+        groups[gid].append(r)
+
+    result = []
+    for gid, members in groups.items():
+        payer = next((m for m in members if m.is_group_payer), members[0])
+        
         dup = False
-        if r.screenshot_phash:
+        if payer.screenshot_phash:
             dup = db.query(Student).filter(
-                Student.screenshot_phash == r.screenshot_phash, Student.id != r.id
+                Student.screenshot_phash == payer.screenshot_phash, Student.id != payer.id
             ).first() is not None
-        result.append(PendingVerificationItem(
-            student_id=r.id, sap_id=r.sap_id, name=r.name, branch=r.branch,
-            amount=r.amount, utr_number=r.utr_number,
-            distributor_name=r.distributor.full_name if r.distributor else "unknown",
-            sold_at=r.sold_at.isoformat() if r.sold_at else None,
+
+        result.append(PendingVerificationGroupItem(
+            group_id=gid,
+            total_amount=sum((m.amount or 0) for m in members),
+            member_count=len(members),
+            utr_number=payer.utr_number,
+            distributor_name=payer.distributor.full_name if payer.distributor else "unknown",
+            sold_at=payer.sold_at.isoformat() if payer.sold_at else None,
             duplicate_screenshot_warning=dup,
-            has_screenshot=bool(r.payment_screenshot),
+            has_screenshot=bool(payer.payment_screenshot),
+            members=[
+                VerificationMemberItem(
+                    student_id=m.id, sap_id=m.sap_id, name=m.name, branch=m.branch
+                ) for m in members
+            ],
+            payer_student_id=payer.id
         ))
+
     return result
 
 
@@ -145,6 +172,97 @@ def get_screenshot(
     if not student or not student.payment_screenshot:
         raise HTTPException(status_code=404, detail="No screenshot on file")
     return {"sap_id": student.sap_id, "screenshot_base64": student.payment_screenshot}
+
+
+@router.post("/verify-group/{group_id}", response_model=VerifyActionResult)
+def verify_group(
+    group_id: str,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    # Try finding by group_id or fallback to single ID for legacy data
+    students = db.query(Student).filter(
+        (Student.group_id == group_id) | (Student.id == (int(group_id) if group_id.isdigit() else 0))
+    ).all()
+    
+    if not students:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    verified_count = 0
+    errors = []
+    
+    for student in students:
+        if student.payment_status != PaymentStatus.PENDING_VERIFICATION:
+            continue
+            
+        old_snapshot = {"payment_status": student.payment_status.value}
+        student.payment_status = PaymentStatus.VERIFIED
+        student.verified_by_id = treasurer.id
+        student.verified_at = func.now()
+        db.flush()
+
+        write_audit_log(
+            db, user_id=treasurer.id, action="payment_verified", table_name="students",
+            record_id=student.id, old_value=old_snapshot, new_value={"payment_status": "verified"},
+        )
+        
+        try:
+            token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+            qr_image = generate_qr_image(token)
+            send_pass_email(
+                recipient_email=student.email, student_name=student.name,
+                qr_image_bytes=qr_image, sap_id=student.sap_id,
+            )
+            verified_count += 1
+        except Exception as exc:
+            errors.append(f"{student.sap_id}: {exc}")
+
+    db.commit()
+
+    if errors:
+        raise HTTPException(status_code=502, detail=f"Verified {verified_count}, but some emails failed: {', '.join(errors)}")
+
+    return VerifyActionResult(message=f"{verified_count} payments verified and passes emailed", sap_id=group_id,
+                               payment_status=PaymentStatus.VERIFIED)
+
+
+@router.post("/reject-group/{group_id}", response_model=VerifyActionResult)
+def reject_group(
+    group_id: str,
+    payload: RejectRequest,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    students = db.query(Student).filter(
+        (Student.group_id == group_id) | (Student.id == (int(group_id) if group_id.isdigit() else 0))
+    ).all()
+    
+    if not students:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    rejected_count = 0
+    for student in students:
+        if student.payment_status != PaymentStatus.PENDING_VERIFICATION:
+            continue
+            
+        old_snapshot = {"payment_status": student.payment_status.value}
+        student.payment_status = PaymentStatus.REJECTED
+        student.verified_by_id = treasurer.id
+        student.verified_at = func.now()
+        student.rejection_reason = payload.reason
+        db.flush()
+
+        write_audit_log(
+            db, user_id=treasurer.id, action="payment_rejected", table_name="students",
+            record_id=student.id, old_value=old_snapshot,
+            new_value={"payment_status": "rejected", "reason": payload.reason},
+        )
+        rejected_count += 1
+        
+    db.commit()
+
+    return VerifyActionResult(message=f"{rejected_count} payments rejected (distributors can retry)", sap_id=group_id,
+                               payment_status=PaymentStatus.REJECTED)
 
 
 @router.post("/verify/{student_id}", response_model=VerifyActionResult)

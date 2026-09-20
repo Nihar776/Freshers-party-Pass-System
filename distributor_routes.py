@@ -20,7 +20,7 @@ from PIL import Image
 from database import get_db
 from schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
-    CashHandover, DiscountCode, DiscountType, CashHandoverRequest,
+    FoodPreference, CashHandover, DiscountCode, DiscountType, CashHandoverRequest,
     HandoverRequestStatus
 )
 from session_auth import require_role
@@ -119,6 +119,7 @@ def search_students(
 def sell_pass(
     sap_id: str = Form(...),
     pass_type: PassType = Form(PassType.FULL),
+    food_preference: FoodPreference = Form(FoodPreference.VEG),
     payment_mode: PaymentMode = Form(...),
     utr_number: Optional[str] = Form(None),
     email: Optional[str] = Form(None),  # only needed if the roster row lacks one
@@ -193,6 +194,7 @@ def sell_pass(
         )
         .values(
             pass_type=pass_type,
+            food_preference=food_preference,
             payment_mode=payment_mode,
             amount=amount,
             email=resolved_email,
@@ -315,6 +317,7 @@ def validate_discount_code(
 @router.post("/sell-group", response_model=GroupSellResult)
 def sell_group(
     sap_ids: List[str] = Form(...),
+    food_preferences: List[str] = Form(None),
     payer_sap_id: str = Form(...),
     payment_mode: PaymentMode = Form(...),
     utr_number: Optional[str] = Form(None),
@@ -426,6 +429,17 @@ def sell_group(
     if result.rowcount != len(students):
         db.rollback()
         raise HTTPException(status_code=409, detail="One or more passes were sold by someone else - refresh and check")
+
+    # Update food preferences individually since they vary per student
+    if food_preferences and len(food_preferences) == len(sap_ids):
+        # Map sap_id to its food preference
+        pref_map = dict(zip(sap_ids, food_preferences))
+        for student in students:
+            pref_val = pref_map.get(student.sap_id, FoodPreference.VEG.value)
+            student.food_preference = FoodPreference(pref_val)
+    else:
+        for student in students:
+            student.food_preference = FoodPreference.VEG
 
     payer_student = next((s for s in students if s.sap_id == payer_sap_id), None)
     if not payer_student:

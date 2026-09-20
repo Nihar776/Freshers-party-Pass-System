@@ -330,21 +330,32 @@
                 <div class="queue-card">
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <div class="font-bold" style="font-size: 16px;">${item.name} <span class="text-muted text-sm ml-2">${item.sap_id}</span></div>
-                            <div class="text-muted mt-1">${item.branch} · ₹${item.amount}</div>
+                            <div class="font-bold" style="font-size: 16px;">
+                                ${item.member_count > 1 ? 'Group Payment' : 'Single Payment'} 
+                                <span class="badge badge-neutral ml-2">${item.member_count} Member(s)</span>
+                            </div>
+                            <div class="text-muted mt-2">
+                                <details>
+                                    <summary class="cursor-pointer font-semibold text-primary">View Members</summary>
+                                    <div class="mt-2 ml-4">
+                                        ${item.members.map(m => `<div>- ${m.name} (${m.sap_id})</div>`).join('')}
+                                    </div>
+                                </details>
+                            </div>
+                            <div class="font-bold mt-2 text-success">Total: ₹${item.total_amount}</div>
                         </div>
                         <div class="text-right">
                             <div class="font-bold">UTR: ${item.utr_number || 'N/A'}</div>
-                            <div class="text-muted text-sm">Sold by ${item.distributor_name}</div>
+                            <div class="text-muted text-sm mt-1">Sold by ${item.distributor_name}</div>
                         </div>
                     </div>
                     
                     ${item.duplicate_screenshot_warning ? '<div class="badge badge-warning mb-4">⚠ Screenshot reused elsewhere</div>' : ''}
                     
                     <div class="flex gap-4 mt-4">
-                        <button class="btn btn-secondary" onclick="viewScreenshot(${item.student_id})">🔍 View Screenshot</button>
-                        <button class="btn btn-success" onclick="approve(${item.student_id})" style="flex:1">Approve</button>
-                        <button class="btn btn-danger" onclick="openReject(${item.student_id})" style="flex:1">Reject</button>
+                        <button class="btn btn-secondary" onclick="viewScreenshot(${item.payer_student_id})">🔍 View Screenshot</button>
+                        <button class="btn btn-success" onclick="approveGroup('${item.group_id}')" style="flex:1">Approve Group</button>
+                        <button class="btn btn-danger" onclick="openRejectGroup('${item.group_id}')" style="flex:1">Reject Group</button>
                     </div>
                 </div>
             `).join('');
@@ -370,50 +381,54 @@
             document.getElementById('modal-bg').classList.add('active');
         }
 
-        function openReject(id) {
+        function openRejectGroup(groupId) {
             document.getElementById('modal-content').innerHTML = `
-                <h3 class="mb-4">Reject Payment</h3>
+                <h3 class="mb-4">Reject Group Payment</h3>
                 <div class="form-group">
                     <label class="form-label">Rejection Reason</label>
                     <textarea id="reject-reason" class="form-control" rows="3" placeholder="e.g. UTR not found in bank statement, amount mismatch"></textarea>
                 </div>
                 <div class="flex gap-4">
                     <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
-                    <button class="btn btn-danger" style="flex:1" onclick="submitReject(${id})">Confirm Reject</button>
+                    <button class="btn btn-danger" style="flex:1" onclick="submitRejectGroup('${groupId}')">Confirm Reject</button>
                 </div>
             `;
             document.getElementById('modal-bg').classList.add('active');
         }
 
-        async function approve(id) {
-            if (!confirm("Approve this payment? The pass will be emailed immediately.")) return;
-            const res = await fetch(`/treasurer/verify/${id}`, { method: 'POST' });
+        async function approveGroup(groupId) {
+            if (!confirm("Approve this group payment? All passes will be emailed immediately.")) return;
+            const res = await fetch(`/treasurer/verify-group/${groupId}`, { method: 'POST' });
+            
             if (res.ok) {
-                showToast("Payment approved, pass emailed");
+                showToast("Group approved successfully!");
                 loadQueue();
             } else {
                 const data = await res.json();
-                showToast(data.detail || "Approval failed", "error");
+                showToast(data.detail || "Error approving group", "error");
             }
         }
 
-        async function submitReject(id) {
+        async function submitRejectGroup(groupId) {
             const reason = document.getElementById('reject-reason').value.trim();
-            if (!reason) { showToast("Please enter a reason", "error"); return; }
+            if (!reason) {
+                showToast("Please provide a reason", "warning");
+                return;
+            }
             
-            const res = await fetch(`/treasurer/reject/${id}`, {
+            const res = await fetch(`/treasurer/reject-group/${groupId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ reason })
             });
             
             if (res.ok) {
-                showToast("Payment rejected");
+                showToast("Group rejected");
                 closeModal();
                 loadQueue();
             } else {
                 const data = await res.json();
-                showToast(data.detail || "Rejection failed", "error");
+                showToast(data.detail || "Error rejecting group", "error");
             }
         }
 

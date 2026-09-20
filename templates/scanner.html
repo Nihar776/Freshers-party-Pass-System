@@ -195,13 +195,14 @@
             bannerEl.appendChild(row);
         }
         
-        function setAllow(name, sapId) {
+        function setAllow(name, sapId, foodPref) {
             bannerEl.className = "banner go";
             statusWordEl.textContent = "ENTRY ALLOWED";
             statusSubEl.textContent = "Issue wristband now";
             bannerEl.querySelectorAll('.detail-row').forEach(e => e.remove());
             addDetailRow("Student", name);
             addDetailRow("SAP ID", sapId);
+            addDetailRow("Food", foodPref === 'jain' ? 'Jain' : 'Veg (Normal)');
             playAllow();
             if (navigator.vibrate) navigator.vibrate(120);
         }
@@ -250,16 +251,12 @@
         // --- Verify ---
         async function verifyToken(token) {
             if (isBusy) return;
-            const now = Date.now();
-            
-            // Prevent scanning the exact same QR code twice rapidly
-            if (token === lastScannedToken && (now - lastScanTime < SAME_QR_COOLDOWN_MS)) return;
-            // Prevent scanning any QR code too rapidly
-            if (now - lastScanTime < ANY_QR_COOLDOWN_MS) return;
-            
-            lastScanTime = now;
-            lastScannedToken = token;
             isBusy = true;
+            
+            // Hard pause the scanner to prevent subsequent async frame triggers
+            if (html5QrCode && html5QrCode.getState() === Html5QrcodeScannerState.SCANNING) {
+                try { await html5QrCode.pause(true); } catch (e) {}
+            }
 
             setIdle("Checking...");
             try {
@@ -271,13 +268,19 @@
                 const data = await res.json();
 
                 if (res.status === 401) window.location.href = "/login-page";
-                else if (res.ok) setAllow(data.student_name, data.sap_id);
+                else if (res.ok) setAllow(data.student_name, data.sap_id, data.food_preference);
                 else setDeny(data.detail || "Verification failed");
             } catch (e) {
                 setDeny("Network error");
             } finally {
                 refreshStats();
-                isBusy = false;
+                // Enforce a strict 3 second freeze before resuming the camera
+                setTimeout(async () => {
+                    isBusy = false;
+                    if (!isPaused && html5QrCode && html5QrCode.getState() === Html5QrcodeScannerState.PAUSED) {
+                        try { await html5QrCode.resume(); } catch (e) {}
+                    }
+                }, 3000);
             }
         }
 
