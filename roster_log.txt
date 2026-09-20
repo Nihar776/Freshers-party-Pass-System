@@ -1,0 +1,1512 @@
+Raw file length: 15286
+Row 2: {'sap_id ': '57601260061', 'name ': 'SIDDHIKA POOJARY', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'siddhikapoojary062@gmail.com'}
+Skipped missing fields
+Row 3: {'sap_id ': '57601260028', 'name ': 'HET JANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pjani001@yahoo.co.in'}
+Skipped missing fields
+Row 4: {'sap_id ': '57601260027', 'name ': 'HIYAAN VAKHARIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'hiyaanv7@gmail.com'}
+Skipped missing fields
+Row 5: {'sap_id ': '57601260025', 'name ': 'JASH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shahjash885@gmail.com'}
+Skipped missing fields
+Row 6: {'sap_id ': '57601260063', 'name ': 'MEET MODI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'meetmodi1608@gmail.com'}
+Skipped missing fields
+Row 7: {'sap_id ': '57601260024', 'name ': 'HARSHADA BALI', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'harshadabali073@gmail.com'}
+Skipped missing fields
+Row 8: {'sap_id ': '57601260023', 'name ': 'AUM MOKANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'aummokani@gmail.com'}
+Skipped missing fields
+Row 9: {'sap_id ': '57601260021', 'name ': 'JIA SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'jiashah9909@gmail.com'}
+Skipped missing fields
+Row 10: {'sap_id ': '57601260020', 'name ': 'DHARMIK PANDAV', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pandavdharmik03@gmail.com'}
+Skipped missing fields
+Row 11: {'sap_id ': '57601260019', 'name ': 'JIMIT MEHTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jimitmehta123456@gmail.com'}
+Skipped missing fields
+Row 12: {'sap_id ': '57601260065', 'name ': 'ZOYA SHAIKH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'zshaikh18463420@gmail.com'}
+Skipped missing fields
+Row 13: {'sap_id ': '57601260018', 'name ': 'PARSHVA SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parshvashah2402@gmail.com'}
+Skipped missing fields
+Row 14: {'sap_id ': '57601260066', 'name ': 'JEET MAKWANA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jeetmakwana5772@gmail.com'}
+Skipped missing fields
+Row 15: {'sap_id ': '57601260016', 'name ': 'DHANVI KAVA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'dhanvikava12@gmail.com'}
+Skipped missing fields
+Row 16: {'sap_id ': '57601260067', 'name ': 'JAY PRAJAPATI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jay.prajapati1705@gmail.com'}
+Skipped missing fields
+Row 17: {'sap_id ': '57601260015', 'name ': 'NAMIT BORA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'namithbora07@gmail.com'}
+Skipped missing fields
+Row 18: {'sap_id ': '57601260014', 'name ': 'SHREYAS DAUD', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shreyasdaud7@gmail.com'}
+Skipped missing fields
+Row 19: {'sap_id ': '57601260012', 'name ': 'TANBIR SINGH KHURANA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'tanbirsingh04032009@gmail.com'}
+Skipped missing fields
+Row 20: {'sap_id ': '57601260068', 'name ': 'ARIHA JAIN', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'arihajain26@gmail.com'}
+Skipped missing fields
+Row 21: {'sap_id ': '57601260069', 'name ': 'MAYANK GUPTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'mayank170445@gmail.com'}
+Skipped missing fields
+Row 22: {'sap_id ': '57601260011', 'name ': 'AKHILESH SURYAVANSHI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jsuryavanshi2122@gmail.com'}
+Skipped missing fields
+Row 23: {'sap_id ': '57601260070', 'name ': 'HETANSH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'hetanshshah115@gmail.com'}
+Skipped missing fields
+Row 24: {'sap_id ': '57601260048', 'name ': 'KASHISH GUPTA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'KASHISHGUPTAA07@GMAIL.COM'}
+Skipped missing fields
+Row 25: {'sap_id ': '57601260049', 'name ': 'NITYA KAWA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'nityakawa36@gmail.com'}
+Skipped missing fields
+Row 26: {'sap_id ': '57601260050', 'name ': 'DHRUMIL GANDHI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dhrumil1908@gmail.com'}
+Skipped missing fields
+Row 27: {'sap_id ': '57601260051', 'name ': 'DHARMI GOR', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'gordharmi05@gmail.com'}
+Skipped missing fields
+Row 28: {'sap_id ': '57601260054', 'name ': 'KHUSHI SARDA', 'branch ': 'CE', 'gender ': 'Female', 'email ': '4khushisarda@gmail.com'}
+Skipped missing fields
+Row 29: {'sap_id ': '57601260055', 'name ': 'JAINAM PATEL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pjainam035@gmail.com'}
+Skipped missing fields
+Row 30: {'sap_id ': '57601260046', 'name ': 'PARTH BHANUSHALI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parthdineshnanda@gmail.com'}
+Skipped missing fields
+Row 31: {'sap_id ': '57601260057', 'name ': 'CHOLINA SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'cholina729@gmail.com'}
+Skipped missing fields
+Row 32: {'sap_id ': '57601260058', 'name ': 'AZAD GUPTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'azadgupta8009890@gmail.com'}
+Skipped missing fields
+Row 33: {'sap_id ': '57601260044', 'name ': 'SAMARTH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shahsamarth0101@gmail.com'}
+Skipped missing fields
+Row 34: {'sap_id ': '57601260041', 'name ': 'HONEY SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'honeyshahh123@gmail.com'}
+Skipped missing fields
+Row 35: {'sap_id ': '57601260059', 'name ': 'SHUBH PATEL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kiritpatel4864@gmail.com'}
+Skipped missing fields
+Row 36: {'sap_id ': '57601260040', 'name ': 'PALASH MAROLIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'palashaug5@gmail.com'}
+Skipped missing fields
+Row 37: {'sap_id ': '57601260060', 'name ': 'DAKSH PARIHAR', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dakshpl070@gmail.com'}
+Skipped missing fields
+Row 38: {'sap_id ': '57601260039', 'name ': 'VISHESH DODIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'vishesh.dodia030608@gmail.com'}
+Skipped missing fields
+Row 39: {'sap_id ': '57601260038', 'name ': 'JANAK KHOT', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'janakkhot627@gmail.com'}
+Skipped missing fields
+Row 40: {'sap_id ': '57601260037', 'name ': 'RUTVI SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'tarikashah09@gmail.com'}
+Skipped missing fields
+Row 41: {'sap_id ': '57601260035', 'name ': 'AMOGH KEVADIYA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'amoghkevadiya@gmail.com'}
+Skipped missing fields
+Row 42: {'sap_id ': '57601260034', 'name ': 'PRATHAM VAJA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'prathamvaja16@gmail.com'}
+Skipped missing fields
+Row 43: {'sap_id ': '57601260033', 'name ': 'TEJAS PATIL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'tejas.patil9010@gmail.com'}
+Skipped missing fields
+Row 44: {'sap_id ': '57601260031', 'name ': 'SWET CHAUHAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'DYNAMICSWET@GMAIL.COM'}
+Skipped missing fields
+Row 45: {'sap_id ': '57601260029', 'name ': 'JENEEL BHUTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhutajeneel@gmail.com'}
+Skipped missing fields
+Row 46: {'sap_id ': '57601260064', 'name ': 'JASH VITHLANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'vithlanijash5@gmail.com'}
+Skipped missing fields
+Row 47: {'sap_id ': '57601260074', 'name ': 'DEEP BHANUSHALI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhanushalideep2404@gmail.com'}
+Skipped missing fields
+Row 48: {'sap_id ': '57601260009', 'name ': 'PRANET SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'SPRANET2@GMAIL.COM'}
+Skipped missing fields
+Row 49: {'sap_id ': '57601260075', 'name ': 'JASH DHENIYA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dheniyajash@gmail.com'}
+Skipped missing fields
+Row 50: {'sap_id ': '57601260001', 'name ': 'KUSH TRIVEDI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kushdts@gmail.com'}
+Skipped missing fields
+Row 51: {'sap_id ': '57601260079', 'name ': 'ATHARVA PARAB', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'apparab31@gmail.com'}
+Skipped missing fields
+Row 52: {'sap_id ': '57601260080', 'name ': 'DHRUMIL BHOJAK', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhojakdhrumil@gmail.com'}
+Skipped missing fields
+Row 53: {'sap_id ': '57601260006', 'name ': 'MANTHAN KAWATHIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kawathiamanthan@gmail.com'}
+Skipped missing fields
+Row 54: {'sap_id ': '57601260078', 'name ': 'HARSHVARDHAN DARAK', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'Harshvardhandarakk19@gmail.com'}
+Skipped missing fields
+Row 55: {'sap_id ': '57601260072', 'name ': 'VEER DESAI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'desaiveer1602@gmail.com'}
+Skipped missing fields
+Row 56: {'sap_id ': '57601260081', 'name ': 'VRISHANK PAREKH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parekhvrishank@gmail.com'}
+Skipped missing fields
+Row 57: {'sap_id ': '57601260010', 'name ': 'SHRIKANT CHAWAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shrikantchawan1210@gmail.com'}
+Skipped missing fields
+Row 58: {'sap_id ': '57601260071', 'name ': 'DHRUVI VORA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'voradhruvi47@gmail.com'}
+Skipped missing fields
+Row 59: {'sap_id ': '57601260082', 'name ': 'DEVANSH BALLAL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'devanshnjb@gmail.com'}
+Skipped missing fields
+Row 60: {'sap_id ': '57601260083', 'name ': 'HAZEL KANABAR', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'HAZEL.KANABAR.HK@ICLOUD.COM'}
+Skipped missing fields
+Row 61: {'sap_id ': '57601260077', 'name ': 'ADITI TETGURE', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'adititetgure@10gmail.com'}
+Skipped missing fields
+Row 62: {'sap_id ': '57601260005', 'name ': 'YUVRAJ CHAUHAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'yc181612@gmail.com'}
+Skipped missing fields
+Row 63: {'sap_id ': '57601260076', 'name ': 'YUG MISTRY', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'yugmistry8@gmail.com'}
+Skipped missing fields
+Row 64: {'sap_id ': '57603260071', 'name ': 'PUSHKAR RABARI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'pushkarrabari7021@gmail.com'}
+Skipped missing fields
+Row 65: {'sap_id ': '57603260055', 'name ': 'KHUSHI SHAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'meenashah26780@gmail.com'}
+Skipped missing fields
+Row 66: {'sap_id ': '57603260054', 'name ': 'HET SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hetamitshah1105@gmail.com'}
+Skipped missing fields
+Row 67: {'sap_id ': '57603260069', 'name ': 'CHAITANYA CHALKE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'chalkechaitanya7@gmail.com'}
+Skipped missing fields
+Row 68: {'sap_id ': '57603260077', 'name ': 'AASHI KHATRI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'aashikhatri08@gmail.com'}
+Skipped missing fields
+Row 69: {'sap_id ': '57603260056', 'name ': 'DEV FOTARIYA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'dfotariya@gmail.com'}
+Skipped missing fields
+Row 70: {'sap_id ': '57603260068', 'name ': 'SHIV BHANUSHALI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'shivbhanushali@zohomail.in'}
+Skipped missing fields
+Row 71: {'sap_id ': '57603260067', 'name ': 'JAY VAIDYA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'jayvaidya6348@gmail.com'}
+Skipped missing fields
+Row 72: {'sap_id ': '57603260076', 'name ': 'HARSHIL SOLANKI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'harshilsolanki116@gmail.com'}
+Skipped missing fields
+Row 73: {'sap_id ': '57603260075', 'name ': 'ADITI RAVLE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'aditiravle83@gmail.com'}
+Skipped missing fields
+Row 74: {'sap_id ': '57603260073', 'name ': 'ISHAN PATIL', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ishanpatil126@gmail.com'}
+Skipped missing fields
+Row 75: {'sap_id ': '57603260057', 'name ': 'HITH SOMANI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hithsomani@gmail.com'}
+Skipped missing fields
+Row 76: {'sap_id ': '57603260066', 'name ': 'AKSHAY SHARMA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'asharma321456@gmail.com'}
+Skipped missing fields
+Row 77: {'sap_id ': '57603260074', 'name ': 'HENAL PANCHAL', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'henalpan2@gmail.com'}
+Skipped missing fields
+Row 78: {'sap_id ': '57603260065', 'name ': 'SONIYA WANKHEDE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'soniya.wankhede2008@gmail.com'}
+Skipped missing fields
+Row 79: {'sap_id ': '57603260058', 'name ': 'REHAN KHAN', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'khanrehan8a@gmail.com'}
+Skipped missing fields
+Row 80: {'sap_id ': '57603260064', 'name ': 'SNEH SUDRA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'sudrasneh80@gmail.com'}
+Skipped missing fields
+Row 81: {'sap_id ': '57603260063', 'name ': 'RRIDDHI PARMAR', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'rriddhi.parmar2008@gmail.com'}
+Skipped missing fields
+Row 82: {'sap_id ': '57603260061', 'name ': 'TANISH THORAT', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'tanish4912@gmail.com'}
+Skipped missing fields
+Row 83: {'sap_id ': '57603260060', 'name ': 'DHRUVI WAGHELA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'dhruviwaghela30@gmail.com'}
+Skipped missing fields
+Row 84: {'sap_id ': '57603260059', 'name ': 'BHAVYA KIKANI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'bhavyakikani7@gmail.com'}
+Skipped missing fields
+Row 85: {'sap_id ': '57603260036', 'name ': 'HARSH MEHTA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'harshh.mehta23@gmail.com'}
+Skipped missing fields
+Row 86: {'sap_id ': '57603260035', 'name ': 'SAMARTH BHUJBAL', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'samarthbhujbal07@email.com'}
+Skipped missing fields
+Row 87: {'sap_id ': '57603260033', 'name ': 'TIRTH SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'tirthtshah2008@gmail.com'}
+Skipped missing fields
+Row 88: {'sap_id ': '57603260032', 'name ': 'DAKSHAYANI PAWAR', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'donna414d@gmail.com'}
+Skipped missing fields
+Row 89: {'sap_id ': '57603260031', 'name ': 'NIRALI BHALANI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'niralibhalani31@gmail.com'}
+Skipped missing fields
+Row 90: {'sap_id ': '57603260030', 'name ': 'PRANSHU DARJI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'pbdarji2710@gmail.com'}
+Skipped missing fields
+Row 91: {'sap_id ': '57603260029', 'name ': 'AYUSHYA ASODIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ayushyaasodia24@gmail.com'}
+Skipped missing fields
+Row 92: {'sap_id ': '57603260028', 'name ': 'RATISH RAUT', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ratish.raut.08@gmail.com'}
+Skipped missing fields
+Row 93: {'sap_id ': '57603260027', 'name ': 'KHANTIL MODI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'khantilmodi7@gmail.com'}
+Skipped missing fields
+Row 94: {'sap_id ': '57603260026', 'name ': 'DHRITI GANDHI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'Dhritigandhi2712@gmail.com'}
+Skipped missing fields
+Row 95: {'sap_id ': '57603260025', 'name ': 'KIRANDEEPKAUR BOMRAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'bumrahkirandeepkaur2025@gmail.com'}
+Skipped missing fields
+Row 96: {'sap_id ': '57603260024', 'name ': 'ZAIBA KHAN', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'khanzaiba525@gmail.com'}
+Skipped missing fields
+Row 97: {'sap_id ': '57603260023', 'name ': 'SUNIDHI AWAGALE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'latapatil1911@gmail.com'}
+Skipped missing fields
+Row 98: {'sap_id ': '57603260021', 'name ': 'SADIQ UR REHMAN QURESHI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'qureshisadiq1230@gmail.com'}
+Skipped missing fields
+Row 99: {'sap_id ': '57603260020', 'name ': 'PRIYANSHU GORE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'priyanshuagore@gmail.com'}
+Skipped missing fields
+Row 100: {'sap_id ': '57603260019', 'name ': 'PIYUSH ZOPE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'mjpiyush2@gmail.com'}
+Skipped missing fields
+Row 101: {'sap_id ': '57603260015', 'name ': 'ATHARVA ANJARA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'atharva.banku@gmail.com'}
+Skipped missing fields
+Row 102: {'sap_id ': '57603260014', 'name ': 'JIYYAA RATHOD', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'jiyyaarathod29@gmail.com'}
+Skipped missing fields
+Row 103: {'sap_id ': '57603260013', 'name ': 'DEV KAPURIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'devkapuria6@gmail.com'}
+Skipped missing fields
+Row 104: {'sap_id ': '57603260012', 'name ': 'PIYUSH TATHE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'piyushtathe2008@outlook.com'}
+Skipped missing fields
+Row 105: {'sap_id ': '57603260011', 'name ': 'YAKSH DAVE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ydave3052@gmail.com'}
+Skipped missing fields
+Row 106: {'sap_id ': '57603260010', 'name ': 'KRISHA MODI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'modikrisha0606@gmail.com'}
+Skipped missing fields
+Row 107: {'sap_id ': '57603260009', 'name ': 'SWARAJ CHANDURKAR', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'swarajchandurkar2@gmail.com'}
+Skipped missing fields
+Row 108: {'sap_id ': '57603260008', 'name ': 'RIVA JAIN', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'rivajain26@gmail.com'}
+Skipped missing fields
+Row 109: {'sap_id ': '57603260007', 'name ': 'MITI MESTRY', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'miti.km08@gmail.com'}
+Skipped missing fields
+Row 110: {'sap_id ': '57603260004', 'name ': 'HEET DAVE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'heetmanojdave19@gmail.com'}
+Skipped missing fields
+Row 111: {'sap_id ': '57603260003', 'name ': 'MOHAMMED CHAROLIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'charoliamohammed09@gmail.com'}
+Skipped missing fields
+Row 112: {'sap_id ': '57603260002', 'name ': 'PRIYA KATARIA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'priyakataria2007@gmail.com'}
+Skipped missing fields
+Row 113: {'sap_id ': '57603260001', 'name ': 'MOHAMMED ALI SHAIKH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'mohammedalihanifshaikh786@gmail.com'}
+Skipped missing fields
+Row 114: {'sap_id ': '57603260043', 'name ': 'PRIYANSHI JALUTHARIA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'priiyanshi0907@gmail.com'}
+Skipped missing fields
+Row 115: {'sap_id ': '57603260050', 'name ': 'LAKSH SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'jaswin.shah@gmail.com'}
+Skipped missing fields
+Row 116: {'sap_id ': '57603260049', 'name ': 'SHOURYA SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'shouryashah2008@gmail.com'}
+Skipped missing fields
+Row 117: {'sap_id ': '57603260052', 'name ': 'KANAK SANGHAVI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'kanaksanghavi1702@gmail.com'}
+Skipped missing fields
+Row 118: {'sap_id ': '57603260037', 'name ': 'HARDIK CHAUDHARY', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hardikkchaudhary2008@gmail.com'}
+Skipped missing fields
+Row 119: {'sap_id ': '57603260038', 'name ': 'VANSHI BHAGAT', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'VANSHIBHAGAT2120@GMAIL.COM'}
+Skipped missing fields
+Row 120: {'sap_id ': '57603260041', 'name ': 'VISHAKA MARATHE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'marathevishaka7@gmail.com'}
+Skipped missing fields
+Row 121: {'sap_id ': '57603260044', 'name ': 'ATHARVA BHAMARE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ATHARVABHAMAREE@GMAIL.COM'}
+Skipped missing fields
+Row 122: {'sap_id ': '57603260053', 'name ': 'VIDEHI SHAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'videhishah19@gmail.com'}
+Skipped missing fields
+Row 123: {'sap_id ': '57603260051', 'name ': 'KESHAVI NIRMAL', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'keshavinirmal@gmail.com'}
+Skipped missing fields
+Row 124: {'sap_id ': '57603260048', 'name ': 'BHAVYA CHAWDA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'bhavyachawda74@gmail.com'}
+Skipped missing fields
+Row 125: {'sap_id ': '57603260046', 'name ': 'DEVIKA PILLAI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'devikapillai2007@gmail.com'}
+Skipped missing fields
+Row 126: {'sap_id ': '57603260045', 'name ': 'PRINCE MAKWANA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'princemakwana1804@gmail.com'}
+Skipped missing fields
+Row 127: {'sap_id ': '57602260084', 'name ': 'EASHAN SHAH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'itseashan@gmail.com'}
+Skipped missing fields
+Row 128: {'sap_id ': '57602260031', 'name ': 'MEHA SHAH', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'shahmeha825@gmail.com'}
+Skipped missing fields
+Row 129: {'sap_id ': '57602260032', 'name ': 'KASHYAP MISTRY', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kashyapmistry1611@gmail.com'}
+Skipped missing fields
+Row 130: {'sap_id ': '57602260055', 'name ': 'ADITI SHINDE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'aditishinde37688@gmail.com'}
+Skipped missing fields
+Row 131: {'sap_id ': '57602260083', 'name ': 'SHRUTI MANIAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'skm9876@gmail.com'}
+Skipped missing fields
+Row 132: {'sap_id ': '57602260085', 'name ': 'MANAV VISHRIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'manavvishriya@gmail.com'}
+Skipped missing fields
+Row 133: {'sap_id ': '57602260034', 'name ': 'AMAN DEVADIGA', 'branch ': 'IT', 'gender ': 'Male', 'email ': '2008aman.r.d@gmail.com'}
+Skipped missing fields
+Row 134: {'sap_id ': '57602260057', 'name ': 'PARI AHIR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'ahirpari27@gmail.com'}
+Skipped missing fields
+Row 135: {'sap_id ': '57602260030', 'name ': 'HIMANSHI WADERA', 'branch ': 'IT', 'gender ': 'Female', 'email ': '61waderahiamshi7c@gmail.com'}
+Skipped missing fields
+Row 136: {'sap_id ': '57602260086', 'name ': 'SANJEET PRASAD', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'prasadsanjeet007@gmail.com'}
+Skipped missing fields
+Row 137: {'sap_id ': '57602260087', 'name ': 'JIYA PAWAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'jiyadpawar@gmail.com'}
+Skipped missing fields
+Row 138: {'sap_id ': '57602260088', 'name ': 'ARFAA AIBANI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'arfaaaibani15@gmail.com'}
+Skipped missing fields
+Row 139: {'sap_id ': '57602260029', 'name ': 'NIYOMI GOLAKIYA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'niyomigolakiya@gmail.com'}
+Skipped missing fields
+Row 140: {'sap_id ': '57602260089', 'name ': 'SHREYA VAJA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'shreyavaja280@gmail.com'}
+Skipped missing fields
+Row 141: {'sap_id ': '57602260035', 'name ': 'JIL DAVE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'payaljite81@gmail.com'}
+Skipped missing fields
+Row 142: {'sap_id ': '57602260054', 'name ': 'NEEV DADHANIA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'neevdadhania88@gmail.com'}
+Skipped missing fields
+Row 143: {'sap_id ': '57602260037', 'name ': 'JAINAM PARMAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jainamparmar008@gmail.com'}
+Skipped missing fields
+Row 144: {'sap_id ': '57602260053', 'name ': 'KEYUR JETHWA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'keyurjethwa97@gmail.com'}
+Skipped missing fields
+Row 145: {'sap_id ': '57602260051', 'name ': 'YASHRAJ PASHANKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yashrajaccess@gmail.com'}
+Skipped missing fields
+Row 146: {'sap_id ': '57602260038', 'name ': 'ACHAL AMBILDHUKE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'achalambildhuke@gmail.com'}
+Skipped missing fields
+Row 147: {'sap_id ': '57602260091', 'name ': 'YASHIKA MEHTA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'yashik.mehta08@gmail.com'}
+Skipped missing fields
+Row 148: {'sap_id ': '57602260050', 'name ': 'JEEL PARKHIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jeelparkhiya041@gmail.com'}
+Skipped missing fields
+Row 149: {'sap_id ': '57602260040', 'name ': 'SWAYAM MEHTA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'swayammehta686@gmail.com'}
+Skipped missing fields
+Row 150: {'sap_id ': '57602260041', 'name ': 'TRISHA SHETTY', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'RENUKATRISHA15@GMAIL.COM'}
+Skipped missing fields
+Row 151: {'sap_id ': '57602260042', 'name ': 'AASHVI SHAH', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'aashvi.vs@gmail.com'}
+Skipped missing fields
+Row 152: {'sap_id ': '57602260043', 'name ': 'OM DESHMUKH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'omdeshmukh0122@gmail.com'}
+Skipped missing fields
+Row 153: {'sap_id ': '57602260044', 'name ': 'APURVA GUDHKA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'apurvagudhka@gmail.com'}
+Skipped missing fields
+Row 154: {'sap_id ': '57602260092', 'name ': 'AALOK PATEL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aalokpatel0601@gmail.com'}
+Skipped missing fields
+Row 155: {'sap_id ': '57602260048', 'name ': 'AADITYA BHANUSHALI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aadityabhanushali33@gmail.com'}
+Skipped missing fields
+Row 156: {'sap_id ': '57602260093', 'name ': 'KRISH PANCHAL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'krishpanchal0707@gmail.com'}
+Skipped missing fields
+Row 157: {'sap_id ': '57602260045', 'name ': 'PIYUSH RATHOD', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'piyushrathoddd30@gmail.com'}
+Skipped missing fields
+Row 158: {'sap_id ': '57602260094', 'name ': 'HIMESH AGALE', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'goldyagale@gmail.com'}
+Skipped missing fields
+Row 159: {'sap_id ': '57602260047', 'name ': 'AKSHAY SALAGRE', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'akshusalagre07@gmail.com'}
+Skipped missing fields
+Row 160: {'sap_id ': '57602260068', 'name ': 'PARTH TANNA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'parthtanna044@gmail.com'}
+Skipped missing fields
+Row 161: {'sap_id ': '57602260007', 'name ': 'SHAILESH SINGH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'singhshailesh250708@gmail.com'}
+Skipped missing fields
+Row 162: {'sap_id ': '57602260016', 'name ': 'KAUSHAL TALEKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kaushallll.pt@gmail.com'}
+Skipped missing fields
+Row 163: {'sap_id ': '57602260077', 'name ': 'UTSAVI MODY', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'utsavimody@gmail.com'}
+Skipped missing fields
+Row 164: {'sap_id ': '57602260017', 'name ': 'JENIL GOHEL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'gojenil16@gmail.com'}
+Skipped missing fields
+Row 165: {'sap_id ': '57602260018', 'name ': 'AKSHAY KUMAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'akshay130408@gmail.com'}
+Skipped missing fields
+Row 166: {'sap_id ': '57602260069', 'name ': 'RUSHIL MATHAKIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mathakiyaxdrushil@gmail.com'}
+Skipped missing fields
+Row 167: {'sap_id ': '57602260015', 'name ': 'SHIVAM YADAV', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yadavshivam2816@gmail.com'}
+Skipped missing fields
+Row 168: {'sap_id ': '57602260070', 'name ': 'YASH MEENA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yashmeenapersonal@gmail.com'}
+Skipped missing fields
+Row 169: {'sap_id ': '57602260019', 'name ': 'JUILEE PAWAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'juileepawar20@gmail.com'}
+Skipped missing fields
+Row 170: {'sap_id ': '57602260005', 'name ': 'OM MAKWANA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'ommakwana3211@gmail.com'}
+Skipped missing fields
+Row 171: {'sap_id ': '57602260008', 'name ': 'ABHISHEK JAISWAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jaiswarabhishek972@gmail.com'}
+Skipped missing fields
+Row 172: {'sap_id ': '57602260014', 'name ': 'NISHANT SHAH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'nishantbshah1@gmail.com'}
+Skipped missing fields
+Row 173: {'sap_id ': '57602260004', 'name ': 'VINIT TRIVEDI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'Trivedivinit412@gmail.com'}
+Skipped missing fields
+Row 174: {'sap_id ': '57602260022', 'name ': 'BHAVYA PRAJAPATI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'bhavyaprajapati526@gmail.com'}
+Skipped missing fields
+Row 175: {'sap_id ': '57602260073', 'name ': 'YASHIKA RAJPUROHIT', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'rajpurohityashika74@gmail.com'}
+Skipped missing fields
+Row 176: {'sap_id ': '57602260064', 'name ': 'ARCHI MODI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'archi.modi1203@gmail.com'}
+Skipped missing fields
+Row 177: {'sap_id ': '57602260011', 'name ': 'MRUNAL PAWAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mrunalpawar681@gmail.com'}
+Skipped missing fields
+Row 178: {'sap_id ': '57602260003', 'name ': 'DEVANG JADHAV', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'W3836914@GMAIL.COM'}
+Skipped missing fields
+Row 179: {'sap_id ': '57602260010', 'name ': 'NIYATI DESAI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'niyatidesai228@gmail.com'}
+Skipped missing fields
+Row 180: {'sap_id ': '57602260012', 'name ': 'KINJAL TAVADIA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'kinjaltavadia8thd@gmail.com'}
+Skipped missing fields
+Row 181: {'sap_id ': '57602260081', 'name ': 'DHYEEY MISTRY', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'dhyeeymistry@gmail.com'}
+Skipped missing fields
+Row 182: {'sap_id ': '57602260009', 'name ': 'ADARSH JHA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'adarsh.jha291429@gmail.com'}
+Skipped missing fields
+Row 183: {'sap_id ': '57602260025', 'name ': 'HARSHIT BANKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'harshitbankar0718@gmail.com'}
+Skipped missing fields
+Row 184: {'sap_id ': '57602260076', 'name ': 'AADI GALA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aadi10dec2008@gmail.com'}
+Skipped missing fields
+Row 185: {'sap_id ': '57602260027', 'name ': 'HETVI PANCHAL', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'hetviipanchal2318@gmail.com'}
+Skipped missing fields
+Row 186: {'sap_id ': '57602260074', 'name ': 'JASH DOSHI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jash2368@gmail.com'}
+Skipped missing fields
+Row 187: {'sap_id ': '57602260058', 'name ': 'KAUSTUBH PATWA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kaustubhpatwa357@gmail.com'}
+Skipped missing fields
+Row 188: {'sap_id ': '57602260028', 'name ': 'DHAIRYA MEHTA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mehtadhairya710@gmail.com'}
+Skipped missing fields
+Row 189: {'sap_id ': '57602260002', 'name ': 'PARAM TRIVEDI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'paramtrivedi013@gmail.com'}
+Skipped missing fields
+Row 190: {'sap_id ': '57604260013', 'name ': 'MANDHAR NAIK', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'baliram32naik@gmail.com'}
+Skipped missing fields
+Row 191: {'sap_id ': '57604260078', 'name ': 'NEVIL MARU', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'marunevil7@gmail.com'}
+Skipped missing fields
+Row 192: {'sap_id ': '57604260014', 'name ': 'HARSHRAJ LENDAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'harshrajlendave@gmail.com'}
+Skipped missing fields
+Row 193: {'sap_id ': '57604260015', 'name ': 'SNEH SANGHAVI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sanghavisneh158@gmail.com'}
+Skipped missing fields
+Row 194: {'sap_id ': '57604260053', 'name ': 'SHREEVARDHAN DASHMUKHE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'shreevardhandashmukhe51@gmail.com'}
+Skipped missing fields
+Row 195: {'sap_id ': '57604260016', 'name ': 'VEDANT PAWAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '12vedantpawar@gmail.com'}
+Skipped missing fields
+Row 196: {'sap_id ': '57604260054', 'name ': 'BRINDA DOSHI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'brindadoshi174@gmail.com'}
+Skipped missing fields
+Row 197: {'sap_id ': '57604260017', 'name ': 'SARTHAK JAIN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sarathakjain7@gmail.com'}
+Skipped missing fields
+Row 198: {'sap_id ': '57604260056', 'name ': 'KSHITIJ SANGHAVI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'kshitij.sangahvi08@gmail.com'}
+Skipped missing fields
+Row 199: {'sap_id ': '57604260057', 'name ': 'MAHI SHINDE', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'mahishaurya@gmail.com'}
+Skipped missing fields
+Row 200: {'sap_id ': '57604260052', 'name ': 'ZAHRA NOORANI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'nooranizahra1987@gmail.com'}
+Skipped missing fields
+Row 201: {'sap_id ': '57604260079', 'name ': 'TEJ SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'tejshah022@gmail.com'}
+Skipped missing fields
+Row 202: {'sap_id ': '57604260012', 'name ': 'HAMZA ATHANIA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'athaniahamza7@gmail.com'}
+Skipped missing fields
+Row 203: {'sap_id ': '57604260009', 'name ': 'PRANAMYA SHETTY', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'shettypranamya994@gmail.com'}
+Skipped missing fields
+Row 204: {'sap_id ': '57604260080', 'name ': 'MOHAMMAD NOOH ANSARI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'noohansari479@gmail.com'}
+Skipped missing fields
+Row 205: {'sap_id ': '57604260081', 'name ': 'VIVAAN GANDHI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'gandhivivaan01072008@gmail.com'}
+Skipped missing fields
+Row 206: {'sap_id ': '57604260008', 'name ': 'DHIMANT SONARA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'dhimantsonara71@gmail.com'}
+Skipped missing fields
+Row 207: {'sap_id ': '57604260048', 'name ': 'DHRUVA SHETA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'dhruvasheta@gmail.com'}
+Skipped missing fields
+Row 208: {'sap_id ': '57604260082', 'name ': 'TANUSHREE PANCHAL', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'tanushreepanchal6@gmail.com'}
+Skipped missing fields
+Row 209: {'sap_id ': '57604260007', 'name ': 'PRACHI KAKKAD', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'kakkadprachi412@gmail.com'}
+Skipped missing fields
+Row 210: {'sap_id ': '57604260006', 'name ': 'MUSTAFA AGWAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'naproducts@yahoo.com'}
+Skipped missing fields
+Row 211: {'sap_id ': '57604260049', 'name ': 'JIVAKSHI JAIN', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'jivakshij@gmail.com'}
+Skipped missing fields
+Row 212: {'sap_id ': '57604260083', 'name ': 'JAY RAWAL', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'jayrawal8795@gmail.com'}
+Skipped missing fields
+Row 213: {'sap_id ': '57604260005', 'name ': 'ALIFEYAH KANCHWALA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'kanchwalamustaali@gmail.com'}
+Skipped missing fields
+Row 214: {'sap_id ': '57604260004', 'name ': 'KRISHEET KARELIA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'krisheetkarelia@gmail.com'}
+Skipped missing fields
+Row 215: {'sap_id ': '57604260050', 'name ': 'DHRUVI JETHWA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'DHRUVIJETHWA07@GMAIL.COM'}
+Skipped missing fields
+Row 216: {'sap_id ': '57604260003', 'name ': 'VANSH DAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'davevansh08@gmail.com'}
+Skipped missing fields
+Row 217: {'sap_id ': '57604260002', 'name ': 'RUCHI MEHTA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'ruchimehta654@gmail.com'}
+Skipped missing fields
+Row 218: {'sap_id ': '57604260001', 'name ': 'RISHI PARMAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rishiparmar312@gmail.com'}
+Skipped missing fields
+Row 219: {'sap_id ': '57604260077', 'name ': 'SOHAM SAWANT', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sohamsawant1808@gmail.com'}
+Skipped missing fields
+Row 220: {'sap_id ': '57604260064', 'name ': 'JIHANN CHOUDHARI JAIN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'jihannchoudhari09@gmail.com'}
+Skipped missing fields
+Row 221: {'sap_id ': '57604260065', 'name ': 'MANASVI MARSHA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'marshamanasvi@gmail.com'}
+Skipped missing fields
+Row 222: {'sap_id ': '57604260063', 'name ': 'HETVI PAREKH', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'hetviparekh08@gmail.com'}
+Skipped missing fields
+Row 223: {'sap_id ': '57604260040', 'name ': 'MURTAZA SADRIWALA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'murtaza7d59@gmail.com'}
+Skipped missing fields
+Row 224: {'sap_id ': '57604260062', 'name ': 'SMIT ZALA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'Smit.81206@gmail.com'}
+Skipped missing fields
+Row 225: {'sap_id ': '57604260037', 'name ': 'CHIRAG VADHER', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'vadherchirag08@gmail.com'}
+Skipped missing fields
+Row 226: {'sap_id ': '57604260066', 'name ': 'RAHIL SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'srahil2901@gmail.com'}
+Skipped missing fields
+Row 227: {'sap_id ': '57604260036', 'name ': 'AJIJEET SHAIKH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'AJIJEETSK26@GMAIL.COM'}
+Skipped missing fields
+Row 228: {'sap_id ': '57604260067', 'name ': 'AYAAN SHARIFF', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'ayaan.i.shariff@gmail.com'}
+Skipped missing fields
+Row 229: {'sap_id ': '57604260068', 'name ': 'KALP SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'KALPVRISHTI@GMAIL.COM'}
+Skipped missing fields
+Row 230: {'sap_id ': '57604260035', 'name ': 'TANMAY BIRANJE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'tanmaybiranje@gmail.com'}
+Skipped missing fields
+Row 231: {'sap_id ': '57604260061', 'name ': 'POOJA RAGHVANI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'poojaraghvani25@gmail.com'}
+Skipped missing fields
+Row 232: {'sap_id ': '57604260034', 'name ': 'KRISHNA GOTI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'krishnagoti10042008@gmail.com'}
+Skipped missing fields
+Row 233: {'sap_id ': '57604260033', 'name ': 'ADITYA WAGHADKAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'waghadkaraditya@gmail.com'}
+Skipped missing fields
+Row 234: {'sap_id ': '57604260069', 'name ': 'BHARAT KUCHAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'bharatkuchan47@gmail.com'}
+Skipped missing fields
+Row 235: {'sap_id ': '57604260032', 'name ': 'AMOGH DHARANE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'amoghdharane5@gmail.com'}
+Skipped missing fields
+Row 236: {'sap_id ': '57604260030', 'name ': 'ZIAN VARTAK', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'vartakzian08@gmail.com'}
+Skipped missing fields
+Row 237: {'sap_id ': '57604260029', 'name ': 'DRUHI KACHA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'piyusha.kacha81@gmail.com'}
+Skipped missing fields
+Row 238: {'sap_id ': '57604260042', 'name ': 'SHRAVANI GORULE', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'shravanigorule123@gmail.com'}
+Skipped missing fields
+Row 239: {'sap_id ': '57604260043', 'name ': 'BHARGAV PUJARA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '5426888bhargav@gmail.com'}
+Skipped missing fields
+Row 240: {'sap_id ': '57604260070', 'name ': 'MOKSH PARIKH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'parikhmoksh8@gmail.com'}
+Skipped missing fields
+Row 241: {'sap_id ': '57604260028', 'name ': 'DHRUVI MAKWANA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'dhruviind555@gmail.com'}
+Skipped missing fields
+Row 242: {'sap_id ': '57604260026', 'name ': 'MAHIMNA DAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'MAHIMNADAVE45@GMAIL.COM'}
+Skipped missing fields
+Row 243: {'sap_id ': '57604260025', 'name ': 'AYUSHI VARAIYA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'ayushivaraiya@gmail.com'}
+Skipped missing fields
+Row 244: {'sap_id ': '57604260023', 'name ': 'ADITI SOLANKI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'acsolanki2008@gmail.com'}
+Skipped missing fields
+Row 245: {'sap_id ': '57604260059', 'name ': 'REHAN CHAUDHARY', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rehannchaudhary008@gmail.com'}
+Skipped missing fields
+Row 246: {'sap_id ': '57604260022', 'name ': 'NISHANT RAWAL', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '5165864nishantrawal@gmail.com'}
+Skipped missing fields
+Row 247: {'sap_id ': '57604260021', 'name ': 'KRUTIKA PANCHAL', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'KRUTIKAPPANCHAL08@GMAIL.COM'}
+Skipped missing fields
+Row 248: {'sap_id ': '57604260044', 'name ': 'NISARG SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'nisargshah0408@gmail.com'}
+Skipped missing fields
+Row 249: {'sap_id ': '57604260020', 'name ': 'RUTVIK GAONKAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rutvikgaonkar1108@gmail.com'}
+Skipped missing fields
+Row 250: {'sap_id ': '57604260075', 'name ': 'KAIVANN MEHTA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'KAIVANNM@ICLOUD.COM'}
+Skipped missing fields
+Row 251: {'sap_id ': '57604260018', 'name ': 'RAHIL KHAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rahildon34@gmail.com'}
+Skipped missing fields
+Row 252: {'sap_id ': '', 'name ': ' ', 'branch ': '', 'gender ': '', 'email ': ''}
+Skipped missing fields
+Finished parsing. Created: 0, duplicates: 0, errors: 251
+Raw file length: 15286
+Row 2: {'sap_id ': '57601260061', 'name ': 'SIDDHIKA POOJARY', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'siddhikapoojary062@gmail.com'}
+Skipped missing fields
+Row 3: {'sap_id ': '57601260028', 'name ': 'HET JANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pjani001@yahoo.co.in'}
+Skipped missing fields
+Row 4: {'sap_id ': '57601260027', 'name ': 'HIYAAN VAKHARIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'hiyaanv7@gmail.com'}
+Skipped missing fields
+Row 5: {'sap_id ': '57601260025', 'name ': 'JASH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shahjash885@gmail.com'}
+Skipped missing fields
+Row 6: {'sap_id ': '57601260063', 'name ': 'MEET MODI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'meetmodi1608@gmail.com'}
+Skipped missing fields
+Row 7: {'sap_id ': '57601260024', 'name ': 'HARSHADA BALI', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'harshadabali073@gmail.com'}
+Skipped missing fields
+Row 8: {'sap_id ': '57601260023', 'name ': 'AUM MOKANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'aummokani@gmail.com'}
+Skipped missing fields
+Row 9: {'sap_id ': '57601260021', 'name ': 'JIA SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'jiashah9909@gmail.com'}
+Skipped missing fields
+Row 10: {'sap_id ': '57601260020', 'name ': 'DHARMIK PANDAV', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pandavdharmik03@gmail.com'}
+Skipped missing fields
+Row 11: {'sap_id ': '57601260019', 'name ': 'JIMIT MEHTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jimitmehta123456@gmail.com'}
+Skipped missing fields
+Row 12: {'sap_id ': '57601260065', 'name ': 'ZOYA SHAIKH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'zshaikh18463420@gmail.com'}
+Skipped missing fields
+Row 13: {'sap_id ': '57601260018', 'name ': 'PARSHVA SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parshvashah2402@gmail.com'}
+Skipped missing fields
+Row 14: {'sap_id ': '57601260066', 'name ': 'JEET MAKWANA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jeetmakwana5772@gmail.com'}
+Skipped missing fields
+Row 15: {'sap_id ': '57601260016', 'name ': 'DHANVI KAVA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'dhanvikava12@gmail.com'}
+Skipped missing fields
+Row 16: {'sap_id ': '57601260067', 'name ': 'JAY PRAJAPATI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jay.prajapati1705@gmail.com'}
+Skipped missing fields
+Row 17: {'sap_id ': '57601260015', 'name ': 'NAMIT BORA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'namithbora07@gmail.com'}
+Skipped missing fields
+Row 18: {'sap_id ': '57601260014', 'name ': 'SHREYAS DAUD', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shreyasdaud7@gmail.com'}
+Skipped missing fields
+Row 19: {'sap_id ': '57601260012', 'name ': 'TANBIR SINGH KHURANA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'tanbirsingh04032009@gmail.com'}
+Skipped missing fields
+Row 20: {'sap_id ': '57601260068', 'name ': 'ARIHA JAIN', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'arihajain26@gmail.com'}
+Skipped missing fields
+Row 21: {'sap_id ': '57601260069', 'name ': 'MAYANK GUPTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'mayank170445@gmail.com'}
+Skipped missing fields
+Row 22: {'sap_id ': '57601260011', 'name ': 'AKHILESH SURYAVANSHI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jsuryavanshi2122@gmail.com'}
+Skipped missing fields
+Row 23: {'sap_id ': '57601260070', 'name ': 'HETANSH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'hetanshshah115@gmail.com'}
+Skipped missing fields
+Row 24: {'sap_id ': '57601260048', 'name ': 'KASHISH GUPTA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'KASHISHGUPTAA07@GMAIL.COM'}
+Skipped missing fields
+Row 25: {'sap_id ': '57601260049', 'name ': 'NITYA KAWA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'nityakawa36@gmail.com'}
+Skipped missing fields
+Row 26: {'sap_id ': '57601260050', 'name ': 'DHRUMIL GANDHI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dhrumil1908@gmail.com'}
+Skipped missing fields
+Row 27: {'sap_id ': '57601260051', 'name ': 'DHARMI GOR', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'gordharmi05@gmail.com'}
+Skipped missing fields
+Row 28: {'sap_id ': '57601260054', 'name ': 'KHUSHI SARDA', 'branch ': 'CE', 'gender ': 'Female', 'email ': '4khushisarda@gmail.com'}
+Skipped missing fields
+Row 29: {'sap_id ': '57601260055', 'name ': 'JAINAM PATEL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pjainam035@gmail.com'}
+Skipped missing fields
+Row 30: {'sap_id ': '57601260046', 'name ': 'PARTH BHANUSHALI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parthdineshnanda@gmail.com'}
+Skipped missing fields
+Row 31: {'sap_id ': '57601260057', 'name ': 'CHOLINA SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'cholina729@gmail.com'}
+Skipped missing fields
+Row 32: {'sap_id ': '57601260058', 'name ': 'AZAD GUPTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'azadgupta8009890@gmail.com'}
+Skipped missing fields
+Row 33: {'sap_id ': '57601260044', 'name ': 'SAMARTH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shahsamarth0101@gmail.com'}
+Skipped missing fields
+Row 34: {'sap_id ': '57601260041', 'name ': 'HONEY SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'honeyshahh123@gmail.com'}
+Skipped missing fields
+Row 35: {'sap_id ': '57601260059', 'name ': 'SHUBH PATEL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kiritpatel4864@gmail.com'}
+Skipped missing fields
+Row 36: {'sap_id ': '57601260040', 'name ': 'PALASH MAROLIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'palashaug5@gmail.com'}
+Skipped missing fields
+Row 37: {'sap_id ': '57601260060', 'name ': 'DAKSH PARIHAR', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dakshpl070@gmail.com'}
+Skipped missing fields
+Row 38: {'sap_id ': '57601260039', 'name ': 'VISHESH DODIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'vishesh.dodia030608@gmail.com'}
+Skipped missing fields
+Row 39: {'sap_id ': '57601260038', 'name ': 'JANAK KHOT', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'janakkhot627@gmail.com'}
+Skipped missing fields
+Row 40: {'sap_id ': '57601260037', 'name ': 'RUTVI SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'tarikashah09@gmail.com'}
+Skipped missing fields
+Row 41: {'sap_id ': '57601260035', 'name ': 'AMOGH KEVADIYA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'amoghkevadiya@gmail.com'}
+Skipped missing fields
+Row 42: {'sap_id ': '57601260034', 'name ': 'PRATHAM VAJA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'prathamvaja16@gmail.com'}
+Skipped missing fields
+Row 43: {'sap_id ': '57601260033', 'name ': 'TEJAS PATIL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'tejas.patil9010@gmail.com'}
+Skipped missing fields
+Row 44: {'sap_id ': '57601260031', 'name ': 'SWET CHAUHAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'DYNAMICSWET@GMAIL.COM'}
+Skipped missing fields
+Row 45: {'sap_id ': '57601260029', 'name ': 'JENEEL BHUTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhutajeneel@gmail.com'}
+Skipped missing fields
+Row 46: {'sap_id ': '57601260064', 'name ': 'JASH VITHLANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'vithlanijash5@gmail.com'}
+Skipped missing fields
+Row 47: {'sap_id ': '57601260074', 'name ': 'DEEP BHANUSHALI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhanushalideep2404@gmail.com'}
+Skipped missing fields
+Row 48: {'sap_id ': '57601260009', 'name ': 'PRANET SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'SPRANET2@GMAIL.COM'}
+Skipped missing fields
+Row 49: {'sap_id ': '57601260075', 'name ': 'JASH DHENIYA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dheniyajash@gmail.com'}
+Skipped missing fields
+Row 50: {'sap_id ': '57601260001', 'name ': 'KUSH TRIVEDI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kushdts@gmail.com'}
+Skipped missing fields
+Row 51: {'sap_id ': '57601260079', 'name ': 'ATHARVA PARAB', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'apparab31@gmail.com'}
+Skipped missing fields
+Row 52: {'sap_id ': '57601260080', 'name ': 'DHRUMIL BHOJAK', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhojakdhrumil@gmail.com'}
+Skipped missing fields
+Row 53: {'sap_id ': '57601260006', 'name ': 'MANTHAN KAWATHIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kawathiamanthan@gmail.com'}
+Skipped missing fields
+Row 54: {'sap_id ': '57601260078', 'name ': 'HARSHVARDHAN DARAK', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'Harshvardhandarakk19@gmail.com'}
+Skipped missing fields
+Row 55: {'sap_id ': '57601260072', 'name ': 'VEER DESAI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'desaiveer1602@gmail.com'}
+Skipped missing fields
+Row 56: {'sap_id ': '57601260081', 'name ': 'VRISHANK PAREKH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parekhvrishank@gmail.com'}
+Skipped missing fields
+Row 57: {'sap_id ': '57601260010', 'name ': 'SHRIKANT CHAWAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shrikantchawan1210@gmail.com'}
+Skipped missing fields
+Row 58: {'sap_id ': '57601260071', 'name ': 'DHRUVI VORA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'voradhruvi47@gmail.com'}
+Skipped missing fields
+Row 59: {'sap_id ': '57601260082', 'name ': 'DEVANSH BALLAL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'devanshnjb@gmail.com'}
+Skipped missing fields
+Row 60: {'sap_id ': '57601260083', 'name ': 'HAZEL KANABAR', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'HAZEL.KANABAR.HK@ICLOUD.COM'}
+Skipped missing fields
+Row 61: {'sap_id ': '57601260077', 'name ': 'ADITI TETGURE', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'adititetgure@10gmail.com'}
+Skipped missing fields
+Row 62: {'sap_id ': '57601260005', 'name ': 'YUVRAJ CHAUHAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'yc181612@gmail.com'}
+Skipped missing fields
+Row 63: {'sap_id ': '57601260076', 'name ': 'YUG MISTRY', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'yugmistry8@gmail.com'}
+Skipped missing fields
+Row 64: {'sap_id ': '57603260071', 'name ': 'PUSHKAR RABARI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'pushkarrabari7021@gmail.com'}
+Skipped missing fields
+Row 65: {'sap_id ': '57603260055', 'name ': 'KHUSHI SHAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'meenashah26780@gmail.com'}
+Skipped missing fields
+Row 66: {'sap_id ': '57603260054', 'name ': 'HET SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hetamitshah1105@gmail.com'}
+Skipped missing fields
+Row 67: {'sap_id ': '57603260069', 'name ': 'CHAITANYA CHALKE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'chalkechaitanya7@gmail.com'}
+Skipped missing fields
+Row 68: {'sap_id ': '57603260077', 'name ': 'AASHI KHATRI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'aashikhatri08@gmail.com'}
+Skipped missing fields
+Row 69: {'sap_id ': '57603260056', 'name ': 'DEV FOTARIYA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'dfotariya@gmail.com'}
+Skipped missing fields
+Row 70: {'sap_id ': '57603260068', 'name ': 'SHIV BHANUSHALI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'shivbhanushali@zohomail.in'}
+Skipped missing fields
+Row 71: {'sap_id ': '57603260067', 'name ': 'JAY VAIDYA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'jayvaidya6348@gmail.com'}
+Skipped missing fields
+Row 72: {'sap_id ': '57603260076', 'name ': 'HARSHIL SOLANKI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'harshilsolanki116@gmail.com'}
+Skipped missing fields
+Row 73: {'sap_id ': '57603260075', 'name ': 'ADITI RAVLE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'aditiravle83@gmail.com'}
+Skipped missing fields
+Row 74: {'sap_id ': '57603260073', 'name ': 'ISHAN PATIL', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ishanpatil126@gmail.com'}
+Skipped missing fields
+Row 75: {'sap_id ': '57603260057', 'name ': 'HITH SOMANI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hithsomani@gmail.com'}
+Skipped missing fields
+Row 76: {'sap_id ': '57603260066', 'name ': 'AKSHAY SHARMA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'asharma321456@gmail.com'}
+Skipped missing fields
+Row 77: {'sap_id ': '57603260074', 'name ': 'HENAL PANCHAL', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'henalpan2@gmail.com'}
+Skipped missing fields
+Row 78: {'sap_id ': '57603260065', 'name ': 'SONIYA WANKHEDE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'soniya.wankhede2008@gmail.com'}
+Skipped missing fields
+Row 79: {'sap_id ': '57603260058', 'name ': 'REHAN KHAN', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'khanrehan8a@gmail.com'}
+Skipped missing fields
+Row 80: {'sap_id ': '57603260064', 'name ': 'SNEH SUDRA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'sudrasneh80@gmail.com'}
+Skipped missing fields
+Row 81: {'sap_id ': '57603260063', 'name ': 'RRIDDHI PARMAR', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'rriddhi.parmar2008@gmail.com'}
+Skipped missing fields
+Row 82: {'sap_id ': '57603260061', 'name ': 'TANISH THORAT', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'tanish4912@gmail.com'}
+Skipped missing fields
+Row 83: {'sap_id ': '57603260060', 'name ': 'DHRUVI WAGHELA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'dhruviwaghela30@gmail.com'}
+Skipped missing fields
+Row 84: {'sap_id ': '57603260059', 'name ': 'BHAVYA KIKANI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'bhavyakikani7@gmail.com'}
+Skipped missing fields
+Row 85: {'sap_id ': '57603260036', 'name ': 'HARSH MEHTA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'harshh.mehta23@gmail.com'}
+Skipped missing fields
+Row 86: {'sap_id ': '57603260035', 'name ': 'SAMARTH BHUJBAL', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'samarthbhujbal07@email.com'}
+Skipped missing fields
+Row 87: {'sap_id ': '57603260033', 'name ': 'TIRTH SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'tirthtshah2008@gmail.com'}
+Skipped missing fields
+Row 88: {'sap_id ': '57603260032', 'name ': 'DAKSHAYANI PAWAR', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'donna414d@gmail.com'}
+Skipped missing fields
+Row 89: {'sap_id ': '57603260031', 'name ': 'NIRALI BHALANI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'niralibhalani31@gmail.com'}
+Skipped missing fields
+Row 90: {'sap_id ': '57603260030', 'name ': 'PRANSHU DARJI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'pbdarji2710@gmail.com'}
+Skipped missing fields
+Row 91: {'sap_id ': '57603260029', 'name ': 'AYUSHYA ASODIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ayushyaasodia24@gmail.com'}
+Skipped missing fields
+Row 92: {'sap_id ': '57603260028', 'name ': 'RATISH RAUT', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ratish.raut.08@gmail.com'}
+Skipped missing fields
+Row 93: {'sap_id ': '57603260027', 'name ': 'KHANTIL MODI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'khantilmodi7@gmail.com'}
+Skipped missing fields
+Row 94: {'sap_id ': '57603260026', 'name ': 'DHRITI GANDHI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'Dhritigandhi2712@gmail.com'}
+Skipped missing fields
+Row 95: {'sap_id ': '57603260025', 'name ': 'KIRANDEEPKAUR BOMRAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'bumrahkirandeepkaur2025@gmail.com'}
+Skipped missing fields
+Row 96: {'sap_id ': '57603260024', 'name ': 'ZAIBA KHAN', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'khanzaiba525@gmail.com'}
+Skipped missing fields
+Row 97: {'sap_id ': '57603260023', 'name ': 'SUNIDHI AWAGALE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'latapatil1911@gmail.com'}
+Skipped missing fields
+Row 98: {'sap_id ': '57603260021', 'name ': 'SADIQ UR REHMAN QURESHI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'qureshisadiq1230@gmail.com'}
+Skipped missing fields
+Row 99: {'sap_id ': '57603260020', 'name ': 'PRIYANSHU GORE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'priyanshuagore@gmail.com'}
+Skipped missing fields
+Row 100: {'sap_id ': '57603260019', 'name ': 'PIYUSH ZOPE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'mjpiyush2@gmail.com'}
+Skipped missing fields
+Row 101: {'sap_id ': '57603260015', 'name ': 'ATHARVA ANJARA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'atharva.banku@gmail.com'}
+Skipped missing fields
+Row 102: {'sap_id ': '57603260014', 'name ': 'JIYYAA RATHOD', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'jiyyaarathod29@gmail.com'}
+Skipped missing fields
+Row 103: {'sap_id ': '57603260013', 'name ': 'DEV KAPURIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'devkapuria6@gmail.com'}
+Skipped missing fields
+Row 104: {'sap_id ': '57603260012', 'name ': 'PIYUSH TATHE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'piyushtathe2008@outlook.com'}
+Skipped missing fields
+Row 105: {'sap_id ': '57603260011', 'name ': 'YAKSH DAVE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ydave3052@gmail.com'}
+Skipped missing fields
+Row 106: {'sap_id ': '57603260010', 'name ': 'KRISHA MODI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'modikrisha0606@gmail.com'}
+Skipped missing fields
+Row 107: {'sap_id ': '57603260009', 'name ': 'SWARAJ CHANDURKAR', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'swarajchandurkar2@gmail.com'}
+Skipped missing fields
+Row 108: {'sap_id ': '57603260008', 'name ': 'RIVA JAIN', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'rivajain26@gmail.com'}
+Skipped missing fields
+Row 109: {'sap_id ': '57603260007', 'name ': 'MITI MESTRY', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'miti.km08@gmail.com'}
+Skipped missing fields
+Row 110: {'sap_id ': '57603260004', 'name ': 'HEET DAVE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'heetmanojdave19@gmail.com'}
+Skipped missing fields
+Row 111: {'sap_id ': '57603260003', 'name ': 'MOHAMMED CHAROLIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'charoliamohammed09@gmail.com'}
+Skipped missing fields
+Row 112: {'sap_id ': '57603260002', 'name ': 'PRIYA KATARIA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'priyakataria2007@gmail.com'}
+Skipped missing fields
+Row 113: {'sap_id ': '57603260001', 'name ': 'MOHAMMED ALI SHAIKH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'mohammedalihanifshaikh786@gmail.com'}
+Skipped missing fields
+Row 114: {'sap_id ': '57603260043', 'name ': 'PRIYANSHI JALUTHARIA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'priiyanshi0907@gmail.com'}
+Skipped missing fields
+Row 115: {'sap_id ': '57603260050', 'name ': 'LAKSH SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'jaswin.shah@gmail.com'}
+Skipped missing fields
+Row 116: {'sap_id ': '57603260049', 'name ': 'SHOURYA SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'shouryashah2008@gmail.com'}
+Skipped missing fields
+Row 117: {'sap_id ': '57603260052', 'name ': 'KANAK SANGHAVI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'kanaksanghavi1702@gmail.com'}
+Skipped missing fields
+Row 118: {'sap_id ': '57603260037', 'name ': 'HARDIK CHAUDHARY', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hardikkchaudhary2008@gmail.com'}
+Skipped missing fields
+Row 119: {'sap_id ': '57603260038', 'name ': 'VANSHI BHAGAT', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'VANSHIBHAGAT2120@GMAIL.COM'}
+Skipped missing fields
+Row 120: {'sap_id ': '57603260041', 'name ': 'VISHAKA MARATHE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'marathevishaka7@gmail.com'}
+Skipped missing fields
+Row 121: {'sap_id ': '57603260044', 'name ': 'ATHARVA BHAMARE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ATHARVABHAMAREE@GMAIL.COM'}
+Skipped missing fields
+Row 122: {'sap_id ': '57603260053', 'name ': 'VIDEHI SHAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'videhishah19@gmail.com'}
+Skipped missing fields
+Row 123: {'sap_id ': '57603260051', 'name ': 'KESHAVI NIRMAL', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'keshavinirmal@gmail.com'}
+Skipped missing fields
+Row 124: {'sap_id ': '57603260048', 'name ': 'BHAVYA CHAWDA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'bhavyachawda74@gmail.com'}
+Skipped missing fields
+Row 125: {'sap_id ': '57603260046', 'name ': 'DEVIKA PILLAI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'devikapillai2007@gmail.com'}
+Skipped missing fields
+Row 126: {'sap_id ': '57603260045', 'name ': 'PRINCE MAKWANA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'princemakwana1804@gmail.com'}
+Skipped missing fields
+Row 127: {'sap_id ': '57602260084', 'name ': 'EASHAN SHAH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'itseashan@gmail.com'}
+Skipped missing fields
+Row 128: {'sap_id ': '57602260031', 'name ': 'MEHA SHAH', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'shahmeha825@gmail.com'}
+Skipped missing fields
+Row 129: {'sap_id ': '57602260032', 'name ': 'KASHYAP MISTRY', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kashyapmistry1611@gmail.com'}
+Skipped missing fields
+Row 130: {'sap_id ': '57602260055', 'name ': 'ADITI SHINDE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'aditishinde37688@gmail.com'}
+Skipped missing fields
+Row 131: {'sap_id ': '57602260083', 'name ': 'SHRUTI MANIAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'skm9876@gmail.com'}
+Skipped missing fields
+Row 132: {'sap_id ': '57602260085', 'name ': 'MANAV VISHRIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'manavvishriya@gmail.com'}
+Skipped missing fields
+Row 133: {'sap_id ': '57602260034', 'name ': 'AMAN DEVADIGA', 'branch ': 'IT', 'gender ': 'Male', 'email ': '2008aman.r.d@gmail.com'}
+Skipped missing fields
+Row 134: {'sap_id ': '57602260057', 'name ': 'PARI AHIR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'ahirpari27@gmail.com'}
+Skipped missing fields
+Row 135: {'sap_id ': '57602260030', 'name ': 'HIMANSHI WADERA', 'branch ': 'IT', 'gender ': 'Female', 'email ': '61waderahiamshi7c@gmail.com'}
+Skipped missing fields
+Row 136: {'sap_id ': '57602260086', 'name ': 'SANJEET PRASAD', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'prasadsanjeet007@gmail.com'}
+Skipped missing fields
+Row 137: {'sap_id ': '57602260087', 'name ': 'JIYA PAWAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'jiyadpawar@gmail.com'}
+Skipped missing fields
+Row 138: {'sap_id ': '57602260088', 'name ': 'ARFAA AIBANI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'arfaaaibani15@gmail.com'}
+Skipped missing fields
+Row 139: {'sap_id ': '57602260029', 'name ': 'NIYOMI GOLAKIYA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'niyomigolakiya@gmail.com'}
+Skipped missing fields
+Row 140: {'sap_id ': '57602260089', 'name ': 'SHREYA VAJA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'shreyavaja280@gmail.com'}
+Skipped missing fields
+Row 141: {'sap_id ': '57602260035', 'name ': 'JIL DAVE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'payaljite81@gmail.com'}
+Skipped missing fields
+Row 142: {'sap_id ': '57602260054', 'name ': 'NEEV DADHANIA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'neevdadhania88@gmail.com'}
+Skipped missing fields
+Row 143: {'sap_id ': '57602260037', 'name ': 'JAINAM PARMAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jainamparmar008@gmail.com'}
+Skipped missing fields
+Row 144: {'sap_id ': '57602260053', 'name ': 'KEYUR JETHWA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'keyurjethwa97@gmail.com'}
+Skipped missing fields
+Row 145: {'sap_id ': '57602260051', 'name ': 'YASHRAJ PASHANKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yashrajaccess@gmail.com'}
+Skipped missing fields
+Row 146: {'sap_id ': '57602260038', 'name ': 'ACHAL AMBILDHUKE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'achalambildhuke@gmail.com'}
+Skipped missing fields
+Row 147: {'sap_id ': '57602260091', 'name ': 'YASHIKA MEHTA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'yashik.mehta08@gmail.com'}
+Skipped missing fields
+Row 148: {'sap_id ': '57602260050', 'name ': 'JEEL PARKHIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jeelparkhiya041@gmail.com'}
+Skipped missing fields
+Row 149: {'sap_id ': '57602260040', 'name ': 'SWAYAM MEHTA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'swayammehta686@gmail.com'}
+Skipped missing fields
+Row 150: {'sap_id ': '57602260041', 'name ': 'TRISHA SHETTY', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'RENUKATRISHA15@GMAIL.COM'}
+Skipped missing fields
+Row 151: {'sap_id ': '57602260042', 'name ': 'AASHVI SHAH', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'aashvi.vs@gmail.com'}
+Skipped missing fields
+Row 152: {'sap_id ': '57602260043', 'name ': 'OM DESHMUKH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'omdeshmukh0122@gmail.com'}
+Skipped missing fields
+Row 153: {'sap_id ': '57602260044', 'name ': 'APURVA GUDHKA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'apurvagudhka@gmail.com'}
+Skipped missing fields
+Row 154: {'sap_id ': '57602260092', 'name ': 'AALOK PATEL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aalokpatel0601@gmail.com'}
+Skipped missing fields
+Row 155: {'sap_id ': '57602260048', 'name ': 'AADITYA BHANUSHALI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aadityabhanushali33@gmail.com'}
+Skipped missing fields
+Row 156: {'sap_id ': '57602260093', 'name ': 'KRISH PANCHAL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'krishpanchal0707@gmail.com'}
+Skipped missing fields
+Row 157: {'sap_id ': '57602260045', 'name ': 'PIYUSH RATHOD', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'piyushrathoddd30@gmail.com'}
+Skipped missing fields
+Row 158: {'sap_id ': '57602260094', 'name ': 'HIMESH AGALE', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'goldyagale@gmail.com'}
+Skipped missing fields
+Row 159: {'sap_id ': '57602260047', 'name ': 'AKSHAY SALAGRE', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'akshusalagre07@gmail.com'}
+Skipped missing fields
+Row 160: {'sap_id ': '57602260068', 'name ': 'PARTH TANNA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'parthtanna044@gmail.com'}
+Skipped missing fields
+Row 161: {'sap_id ': '57602260007', 'name ': 'SHAILESH SINGH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'singhshailesh250708@gmail.com'}
+Skipped missing fields
+Row 162: {'sap_id ': '57602260016', 'name ': 'KAUSHAL TALEKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kaushallll.pt@gmail.com'}
+Skipped missing fields
+Row 163: {'sap_id ': '57602260077', 'name ': 'UTSAVI MODY', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'utsavimody@gmail.com'}
+Skipped missing fields
+Row 164: {'sap_id ': '57602260017', 'name ': 'JENIL GOHEL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'gojenil16@gmail.com'}
+Skipped missing fields
+Row 165: {'sap_id ': '57602260018', 'name ': 'AKSHAY KUMAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'akshay130408@gmail.com'}
+Skipped missing fields
+Row 166: {'sap_id ': '57602260069', 'name ': 'RUSHIL MATHAKIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mathakiyaxdrushil@gmail.com'}
+Skipped missing fields
+Row 167: {'sap_id ': '57602260015', 'name ': 'SHIVAM YADAV', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yadavshivam2816@gmail.com'}
+Skipped missing fields
+Row 168: {'sap_id ': '57602260070', 'name ': 'YASH MEENA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yashmeenapersonal@gmail.com'}
+Skipped missing fields
+Row 169: {'sap_id ': '57602260019', 'name ': 'JUILEE PAWAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'juileepawar20@gmail.com'}
+Skipped missing fields
+Row 170: {'sap_id ': '57602260005', 'name ': 'OM MAKWANA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'ommakwana3211@gmail.com'}
+Skipped missing fields
+Row 171: {'sap_id ': '57602260008', 'name ': 'ABHISHEK JAISWAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jaiswarabhishek972@gmail.com'}
+Skipped missing fields
+Row 172: {'sap_id ': '57602260014', 'name ': 'NISHANT SHAH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'nishantbshah1@gmail.com'}
+Skipped missing fields
+Row 173: {'sap_id ': '57602260004', 'name ': 'VINIT TRIVEDI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'Trivedivinit412@gmail.com'}
+Skipped missing fields
+Row 174: {'sap_id ': '57602260022', 'name ': 'BHAVYA PRAJAPATI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'bhavyaprajapati526@gmail.com'}
+Skipped missing fields
+Row 175: {'sap_id ': '57602260073', 'name ': 'YASHIKA RAJPUROHIT', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'rajpurohityashika74@gmail.com'}
+Skipped missing fields
+Row 176: {'sap_id ': '57602260064', 'name ': 'ARCHI MODI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'archi.modi1203@gmail.com'}
+Skipped missing fields
+Row 177: {'sap_id ': '57602260011', 'name ': 'MRUNAL PAWAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mrunalpawar681@gmail.com'}
+Skipped missing fields
+Row 178: {'sap_id ': '57602260003', 'name ': 'DEVANG JADHAV', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'W3836914@GMAIL.COM'}
+Skipped missing fields
+Row 179: {'sap_id ': '57602260010', 'name ': 'NIYATI DESAI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'niyatidesai228@gmail.com'}
+Skipped missing fields
+Row 180: {'sap_id ': '57602260012', 'name ': 'KINJAL TAVADIA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'kinjaltavadia8thd@gmail.com'}
+Skipped missing fields
+Row 181: {'sap_id ': '57602260081', 'name ': 'DHYEEY MISTRY', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'dhyeeymistry@gmail.com'}
+Skipped missing fields
+Row 182: {'sap_id ': '57602260009', 'name ': 'ADARSH JHA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'adarsh.jha291429@gmail.com'}
+Skipped missing fields
+Row 183: {'sap_id ': '57602260025', 'name ': 'HARSHIT BANKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'harshitbankar0718@gmail.com'}
+Skipped missing fields
+Row 184: {'sap_id ': '57602260076', 'name ': 'AADI GALA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aadi10dec2008@gmail.com'}
+Skipped missing fields
+Row 185: {'sap_id ': '57602260027', 'name ': 'HETVI PANCHAL', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'hetviipanchal2318@gmail.com'}
+Skipped missing fields
+Row 186: {'sap_id ': '57602260074', 'name ': 'JASH DOSHI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jash2368@gmail.com'}
+Skipped missing fields
+Row 187: {'sap_id ': '57602260058', 'name ': 'KAUSTUBH PATWA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kaustubhpatwa357@gmail.com'}
+Skipped missing fields
+Row 188: {'sap_id ': '57602260028', 'name ': 'DHAIRYA MEHTA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mehtadhairya710@gmail.com'}
+Skipped missing fields
+Row 189: {'sap_id ': '57602260002', 'name ': 'PARAM TRIVEDI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'paramtrivedi013@gmail.com'}
+Skipped missing fields
+Row 190: {'sap_id ': '57604260013', 'name ': 'MANDHAR NAIK', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'baliram32naik@gmail.com'}
+Skipped missing fields
+Row 191: {'sap_id ': '57604260078', 'name ': 'NEVIL MARU', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'marunevil7@gmail.com'}
+Skipped missing fields
+Row 192: {'sap_id ': '57604260014', 'name ': 'HARSHRAJ LENDAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'harshrajlendave@gmail.com'}
+Skipped missing fields
+Row 193: {'sap_id ': '57604260015', 'name ': 'SNEH SANGHAVI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sanghavisneh158@gmail.com'}
+Skipped missing fields
+Row 194: {'sap_id ': '57604260053', 'name ': 'SHREEVARDHAN DASHMUKHE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'shreevardhandashmukhe51@gmail.com'}
+Skipped missing fields
+Row 195: {'sap_id ': '57604260016', 'name ': 'VEDANT PAWAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '12vedantpawar@gmail.com'}
+Skipped missing fields
+Row 196: {'sap_id ': '57604260054', 'name ': 'BRINDA DOSHI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'brindadoshi174@gmail.com'}
+Skipped missing fields
+Row 197: {'sap_id ': '57604260017', 'name ': 'SARTHAK JAIN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sarathakjain7@gmail.com'}
+Skipped missing fields
+Row 198: {'sap_id ': '57604260056', 'name ': 'KSHITIJ SANGHAVI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'kshitij.sangahvi08@gmail.com'}
+Skipped missing fields
+Row 199: {'sap_id ': '57604260057', 'name ': 'MAHI SHINDE', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'mahishaurya@gmail.com'}
+Skipped missing fields
+Row 200: {'sap_id ': '57604260052', 'name ': 'ZAHRA NOORANI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'nooranizahra1987@gmail.com'}
+Skipped missing fields
+Row 201: {'sap_id ': '57604260079', 'name ': 'TEJ SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'tejshah022@gmail.com'}
+Skipped missing fields
+Row 202: {'sap_id ': '57604260012', 'name ': 'HAMZA ATHANIA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'athaniahamza7@gmail.com'}
+Skipped missing fields
+Row 203: {'sap_id ': '57604260009', 'name ': 'PRANAMYA SHETTY', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'shettypranamya994@gmail.com'}
+Skipped missing fields
+Row 204: {'sap_id ': '57604260080', 'name ': 'MOHAMMAD NOOH ANSARI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'noohansari479@gmail.com'}
+Skipped missing fields
+Row 205: {'sap_id ': '57604260081', 'name ': 'VIVAAN GANDHI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'gandhivivaan01072008@gmail.com'}
+Skipped missing fields
+Row 206: {'sap_id ': '57604260008', 'name ': 'DHIMANT SONARA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'dhimantsonara71@gmail.com'}
+Skipped missing fields
+Row 207: {'sap_id ': '57604260048', 'name ': 'DHRUVA SHETA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'dhruvasheta@gmail.com'}
+Skipped missing fields
+Row 208: {'sap_id ': '57604260082', 'name ': 'TANUSHREE PANCHAL', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'tanushreepanchal6@gmail.com'}
+Skipped missing fields
+Row 209: {'sap_id ': '57604260007', 'name ': 'PRACHI KAKKAD', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'kakkadprachi412@gmail.com'}
+Skipped missing fields
+Row 210: {'sap_id ': '57604260006', 'name ': 'MUSTAFA AGWAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'naproducts@yahoo.com'}
+Skipped missing fields
+Row 211: {'sap_id ': '57604260049', 'name ': 'JIVAKSHI JAIN', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'jivakshij@gmail.com'}
+Skipped missing fields
+Row 212: {'sap_id ': '57604260083', 'name ': 'JAY RAWAL', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'jayrawal8795@gmail.com'}
+Skipped missing fields
+Row 213: {'sap_id ': '57604260005', 'name ': 'ALIFEYAH KANCHWALA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'kanchwalamustaali@gmail.com'}
+Skipped missing fields
+Row 214: {'sap_id ': '57604260004', 'name ': 'KRISHEET KARELIA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'krisheetkarelia@gmail.com'}
+Skipped missing fields
+Row 215: {'sap_id ': '57604260050', 'name ': 'DHRUVI JETHWA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'DHRUVIJETHWA07@GMAIL.COM'}
+Skipped missing fields
+Row 216: {'sap_id ': '57604260003', 'name ': 'VANSH DAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'davevansh08@gmail.com'}
+Skipped missing fields
+Row 217: {'sap_id ': '57604260002', 'name ': 'RUCHI MEHTA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'ruchimehta654@gmail.com'}
+Skipped missing fields
+Row 218: {'sap_id ': '57604260001', 'name ': 'RISHI PARMAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rishiparmar312@gmail.com'}
+Skipped missing fields
+Row 219: {'sap_id ': '57604260077', 'name ': 'SOHAM SAWANT', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sohamsawant1808@gmail.com'}
+Skipped missing fields
+Row 220: {'sap_id ': '57604260064', 'name ': 'JIHANN CHOUDHARI JAIN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'jihannchoudhari09@gmail.com'}
+Skipped missing fields
+Row 221: {'sap_id ': '57604260065', 'name ': 'MANASVI MARSHA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'marshamanasvi@gmail.com'}
+Skipped missing fields
+Row 222: {'sap_id ': '57604260063', 'name ': 'HETVI PAREKH', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'hetviparekh08@gmail.com'}
+Skipped missing fields
+Row 223: {'sap_id ': '57604260040', 'name ': 'MURTAZA SADRIWALA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'murtaza7d59@gmail.com'}
+Skipped missing fields
+Row 224: {'sap_id ': '57604260062', 'name ': 'SMIT ZALA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'Smit.81206@gmail.com'}
+Skipped missing fields
+Row 225: {'sap_id ': '57604260037', 'name ': 'CHIRAG VADHER', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'vadherchirag08@gmail.com'}
+Skipped missing fields
+Row 226: {'sap_id ': '57604260066', 'name ': 'RAHIL SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'srahil2901@gmail.com'}
+Skipped missing fields
+Row 227: {'sap_id ': '57604260036', 'name ': 'AJIJEET SHAIKH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'AJIJEETSK26@GMAIL.COM'}
+Skipped missing fields
+Row 228: {'sap_id ': '57604260067', 'name ': 'AYAAN SHARIFF', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'ayaan.i.shariff@gmail.com'}
+Skipped missing fields
+Row 229: {'sap_id ': '57604260068', 'name ': 'KALP SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'KALPVRISHTI@GMAIL.COM'}
+Skipped missing fields
+Row 230: {'sap_id ': '57604260035', 'name ': 'TANMAY BIRANJE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'tanmaybiranje@gmail.com'}
+Skipped missing fields
+Row 231: {'sap_id ': '57604260061', 'name ': 'POOJA RAGHVANI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'poojaraghvani25@gmail.com'}
+Skipped missing fields
+Row 232: {'sap_id ': '57604260034', 'name ': 'KRISHNA GOTI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'krishnagoti10042008@gmail.com'}
+Skipped missing fields
+Row 233: {'sap_id ': '57604260033', 'name ': 'ADITYA WAGHADKAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'waghadkaraditya@gmail.com'}
+Skipped missing fields
+Row 234: {'sap_id ': '57604260069', 'name ': 'BHARAT KUCHAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'bharatkuchan47@gmail.com'}
+Skipped missing fields
+Row 235: {'sap_id ': '57604260032', 'name ': 'AMOGH DHARANE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'amoghdharane5@gmail.com'}
+Skipped missing fields
+Row 236: {'sap_id ': '57604260030', 'name ': 'ZIAN VARTAK', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'vartakzian08@gmail.com'}
+Skipped missing fields
+Row 237: {'sap_id ': '57604260029', 'name ': 'DRUHI KACHA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'piyusha.kacha81@gmail.com'}
+Skipped missing fields
+Row 238: {'sap_id ': '57604260042', 'name ': 'SHRAVANI GORULE', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'shravanigorule123@gmail.com'}
+Skipped missing fields
+Row 239: {'sap_id ': '57604260043', 'name ': 'BHARGAV PUJARA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '5426888bhargav@gmail.com'}
+Skipped missing fields
+Row 240: {'sap_id ': '57604260070', 'name ': 'MOKSH PARIKH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'parikhmoksh8@gmail.com'}
+Skipped missing fields
+Row 241: {'sap_id ': '57604260028', 'name ': 'DHRUVI MAKWANA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'dhruviind555@gmail.com'}
+Skipped missing fields
+Row 242: {'sap_id ': '57604260026', 'name ': 'MAHIMNA DAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'MAHIMNADAVE45@GMAIL.COM'}
+Skipped missing fields
+Row 243: {'sap_id ': '57604260025', 'name ': 'AYUSHI VARAIYA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'ayushivaraiya@gmail.com'}
+Skipped missing fields
+Row 244: {'sap_id ': '57604260023', 'name ': 'ADITI SOLANKI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'acsolanki2008@gmail.com'}
+Skipped missing fields
+Row 245: {'sap_id ': '57604260059', 'name ': 'REHAN CHAUDHARY', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rehannchaudhary008@gmail.com'}
+Skipped missing fields
+Row 246: {'sap_id ': '57604260022', 'name ': 'NISHANT RAWAL', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '5165864nishantrawal@gmail.com'}
+Skipped missing fields
+Row 247: {'sap_id ': '57604260021', 'name ': 'KRUTIKA PANCHAL', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'KRUTIKAPPANCHAL08@GMAIL.COM'}
+Skipped missing fields
+Row 248: {'sap_id ': '57604260044', 'name ': 'NISARG SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'nisargshah0408@gmail.com'}
+Skipped missing fields
+Row 249: {'sap_id ': '57604260020', 'name ': 'RUTVIK GAONKAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rutvikgaonkar1108@gmail.com'}
+Skipped missing fields
+Row 250: {'sap_id ': '57604260075', 'name ': 'KAIVANN MEHTA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'KAIVANNM@ICLOUD.COM'}
+Skipped missing fields
+Row 251: {'sap_id ': '57604260018', 'name ': 'RAHIL KHAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rahildon34@gmail.com'}
+Skipped missing fields
+Row 252: {'sap_id ': '', 'name ': ' ', 'branch ': '', 'gender ': '', 'email ': ''}
+Skipped missing fields
+Finished parsing. Created: 0, duplicates: 0, errors: 251
+Raw file length: 15286
+Row 2: {'sap_id ': '57601260061', 'name ': 'SIDDHIKA POOJARY', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'siddhikapoojary062@gmail.com'}
+Skipped missing fields
+Row 3: {'sap_id ': '57601260028', 'name ': 'HET JANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pjani001@yahoo.co.in'}
+Skipped missing fields
+Row 4: {'sap_id ': '57601260027', 'name ': 'HIYAAN VAKHARIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'hiyaanv7@gmail.com'}
+Skipped missing fields
+Row 5: {'sap_id ': '57601260025', 'name ': 'JASH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shahjash885@gmail.com'}
+Skipped missing fields
+Row 6: {'sap_id ': '57601260063', 'name ': 'MEET MODI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'meetmodi1608@gmail.com'}
+Skipped missing fields
+Row 7: {'sap_id ': '57601260024', 'name ': 'HARSHADA BALI', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'harshadabali073@gmail.com'}
+Skipped missing fields
+Row 8: {'sap_id ': '57601260023', 'name ': 'AUM MOKANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'aummokani@gmail.com'}
+Skipped missing fields
+Row 9: {'sap_id ': '57601260021', 'name ': 'JIA SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'jiashah9909@gmail.com'}
+Skipped missing fields
+Row 10: {'sap_id ': '57601260020', 'name ': 'DHARMIK PANDAV', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pandavdharmik03@gmail.com'}
+Skipped missing fields
+Row 11: {'sap_id ': '57601260019', 'name ': 'JIMIT MEHTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jimitmehta123456@gmail.com'}
+Skipped missing fields
+Row 12: {'sap_id ': '57601260065', 'name ': 'ZOYA SHAIKH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'zshaikh18463420@gmail.com'}
+Skipped missing fields
+Row 13: {'sap_id ': '57601260018', 'name ': 'PARSHVA SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parshvashah2402@gmail.com'}
+Skipped missing fields
+Row 14: {'sap_id ': '57601260066', 'name ': 'JEET MAKWANA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jeetmakwana5772@gmail.com'}
+Skipped missing fields
+Row 15: {'sap_id ': '57601260016', 'name ': 'DHANVI KAVA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'dhanvikava12@gmail.com'}
+Skipped missing fields
+Row 16: {'sap_id ': '57601260067', 'name ': 'JAY PRAJAPATI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jay.prajapati1705@gmail.com'}
+Skipped missing fields
+Row 17: {'sap_id ': '57601260015', 'name ': 'NAMIT BORA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'namithbora07@gmail.com'}
+Skipped missing fields
+Row 18: {'sap_id ': '57601260014', 'name ': 'SHREYAS DAUD', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shreyasdaud7@gmail.com'}
+Skipped missing fields
+Row 19: {'sap_id ': '57601260012', 'name ': 'TANBIR SINGH KHURANA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'tanbirsingh04032009@gmail.com'}
+Skipped missing fields
+Row 20: {'sap_id ': '57601260068', 'name ': 'ARIHA JAIN', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'arihajain26@gmail.com'}
+Skipped missing fields
+Row 21: {'sap_id ': '57601260069', 'name ': 'MAYANK GUPTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'mayank170445@gmail.com'}
+Skipped missing fields
+Row 22: {'sap_id ': '57601260011', 'name ': 'AKHILESH SURYAVANSHI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'jsuryavanshi2122@gmail.com'}
+Skipped missing fields
+Row 23: {'sap_id ': '57601260070', 'name ': 'HETANSH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'hetanshshah115@gmail.com'}
+Skipped missing fields
+Row 24: {'sap_id ': '57601260048', 'name ': 'KASHISH GUPTA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'KASHISHGUPTAA07@GMAIL.COM'}
+Skipped missing fields
+Row 25: {'sap_id ': '57601260049', 'name ': 'NITYA KAWA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'nityakawa36@gmail.com'}
+Skipped missing fields
+Row 26: {'sap_id ': '57601260050', 'name ': 'DHRUMIL GANDHI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dhrumil1908@gmail.com'}
+Skipped missing fields
+Row 27: {'sap_id ': '57601260051', 'name ': 'DHARMI GOR', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'gordharmi05@gmail.com'}
+Skipped missing fields
+Row 28: {'sap_id ': '57601260054', 'name ': 'KHUSHI SARDA', 'branch ': 'CE', 'gender ': 'Female', 'email ': '4khushisarda@gmail.com'}
+Skipped missing fields
+Row 29: {'sap_id ': '57601260055', 'name ': 'JAINAM PATEL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'pjainam035@gmail.com'}
+Skipped missing fields
+Row 30: {'sap_id ': '57601260046', 'name ': 'PARTH BHANUSHALI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parthdineshnanda@gmail.com'}
+Skipped missing fields
+Row 31: {'sap_id ': '57601260057', 'name ': 'CHOLINA SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'cholina729@gmail.com'}
+Skipped missing fields
+Row 32: {'sap_id ': '57601260058', 'name ': 'AZAD GUPTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'azadgupta8009890@gmail.com'}
+Skipped missing fields
+Row 33: {'sap_id ': '57601260044', 'name ': 'SAMARTH SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shahsamarth0101@gmail.com'}
+Skipped missing fields
+Row 34: {'sap_id ': '57601260041', 'name ': 'HONEY SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'honeyshahh123@gmail.com'}
+Skipped missing fields
+Row 35: {'sap_id ': '57601260059', 'name ': 'SHUBH PATEL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kiritpatel4864@gmail.com'}
+Skipped missing fields
+Row 36: {'sap_id ': '57601260040', 'name ': 'PALASH MAROLIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'palashaug5@gmail.com'}
+Skipped missing fields
+Row 37: {'sap_id ': '57601260060', 'name ': 'DAKSH PARIHAR', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dakshpl070@gmail.com'}
+Skipped missing fields
+Row 38: {'sap_id ': '57601260039', 'name ': 'VISHESH DODIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'vishesh.dodia030608@gmail.com'}
+Skipped missing fields
+Row 39: {'sap_id ': '57601260038', 'name ': 'JANAK KHOT', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'janakkhot627@gmail.com'}
+Skipped missing fields
+Row 40: {'sap_id ': '57601260037', 'name ': 'RUTVI SHAH', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'tarikashah09@gmail.com'}
+Skipped missing fields
+Row 41: {'sap_id ': '57601260035', 'name ': 'AMOGH KEVADIYA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'amoghkevadiya@gmail.com'}
+Skipped missing fields
+Row 42: {'sap_id ': '57601260034', 'name ': 'PRATHAM VAJA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'prathamvaja16@gmail.com'}
+Skipped missing fields
+Row 43: {'sap_id ': '57601260033', 'name ': 'TEJAS PATIL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'tejas.patil9010@gmail.com'}
+Skipped missing fields
+Row 44: {'sap_id ': '57601260031', 'name ': 'SWET CHAUHAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'DYNAMICSWET@GMAIL.COM'}
+Skipped missing fields
+Row 45: {'sap_id ': '57601260029', 'name ': 'JENEEL BHUTA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhutajeneel@gmail.com'}
+Skipped missing fields
+Row 46: {'sap_id ': '57601260064', 'name ': 'JASH VITHLANI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'vithlanijash5@gmail.com'}
+Skipped missing fields
+Row 47: {'sap_id ': '57601260074', 'name ': 'DEEP BHANUSHALI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhanushalideep2404@gmail.com'}
+Skipped missing fields
+Row 48: {'sap_id ': '57601260009', 'name ': 'PRANET SHAH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'SPRANET2@GMAIL.COM'}
+Skipped missing fields
+Row 49: {'sap_id ': '57601260075', 'name ': 'JASH DHENIYA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'dheniyajash@gmail.com'}
+Skipped missing fields
+Row 50: {'sap_id ': '57601260001', 'name ': 'KUSH TRIVEDI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kushdts@gmail.com'}
+Skipped missing fields
+Row 51: {'sap_id ': '57601260079', 'name ': 'ATHARVA PARAB', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'apparab31@gmail.com'}
+Skipped missing fields
+Row 52: {'sap_id ': '57601260080', 'name ': 'DHRUMIL BHOJAK', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'bhojakdhrumil@gmail.com'}
+Skipped missing fields
+Row 53: {'sap_id ': '57601260006', 'name ': 'MANTHAN KAWATHIA', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'kawathiamanthan@gmail.com'}
+Skipped missing fields
+Row 54: {'sap_id ': '57601260078', 'name ': 'HARSHVARDHAN DARAK', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'Harshvardhandarakk19@gmail.com'}
+Skipped missing fields
+Row 55: {'sap_id ': '57601260072', 'name ': 'VEER DESAI', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'desaiveer1602@gmail.com'}
+Skipped missing fields
+Row 56: {'sap_id ': '57601260081', 'name ': 'VRISHANK PAREKH', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'parekhvrishank@gmail.com'}
+Skipped missing fields
+Row 57: {'sap_id ': '57601260010', 'name ': 'SHRIKANT CHAWAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'shrikantchawan1210@gmail.com'}
+Skipped missing fields
+Row 58: {'sap_id ': '57601260071', 'name ': 'DHRUVI VORA', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'voradhruvi47@gmail.com'}
+Skipped missing fields
+Row 59: {'sap_id ': '57601260082', 'name ': 'DEVANSH BALLAL', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'devanshnjb@gmail.com'}
+Skipped missing fields
+Row 60: {'sap_id ': '57601260083', 'name ': 'HAZEL KANABAR', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'HAZEL.KANABAR.HK@ICLOUD.COM'}
+Skipped missing fields
+Row 61: {'sap_id ': '57601260077', 'name ': 'ADITI TETGURE', 'branch ': 'CE', 'gender ': 'Female', 'email ': 'adititetgure@10gmail.com'}
+Skipped missing fields
+Row 62: {'sap_id ': '57601260005', 'name ': 'YUVRAJ CHAUHAN', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'yc181612@gmail.com'}
+Skipped missing fields
+Row 63: {'sap_id ': '57601260076', 'name ': 'YUG MISTRY', 'branch ': 'CE', 'gender ': 'Male', 'email ': 'yugmistry8@gmail.com'}
+Skipped missing fields
+Row 64: {'sap_id ': '57603260071', 'name ': 'PUSHKAR RABARI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'pushkarrabari7021@gmail.com'}
+Skipped missing fields
+Row 65: {'sap_id ': '57603260055', 'name ': 'KHUSHI SHAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'meenashah26780@gmail.com'}
+Skipped missing fields
+Row 66: {'sap_id ': '57603260054', 'name ': 'HET SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hetamitshah1105@gmail.com'}
+Skipped missing fields
+Row 67: {'sap_id ': '57603260069', 'name ': 'CHAITANYA CHALKE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'chalkechaitanya7@gmail.com'}
+Skipped missing fields
+Row 68: {'sap_id ': '57603260077', 'name ': 'AASHI KHATRI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'aashikhatri08@gmail.com'}
+Skipped missing fields
+Row 69: {'sap_id ': '57603260056', 'name ': 'DEV FOTARIYA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'dfotariya@gmail.com'}
+Skipped missing fields
+Row 70: {'sap_id ': '57603260068', 'name ': 'SHIV BHANUSHALI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'shivbhanushali@zohomail.in'}
+Skipped missing fields
+Row 71: {'sap_id ': '57603260067', 'name ': 'JAY VAIDYA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'jayvaidya6348@gmail.com'}
+Skipped missing fields
+Row 72: {'sap_id ': '57603260076', 'name ': 'HARSHIL SOLANKI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'harshilsolanki116@gmail.com'}
+Skipped missing fields
+Row 73: {'sap_id ': '57603260075', 'name ': 'ADITI RAVLE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'aditiravle83@gmail.com'}
+Skipped missing fields
+Row 74: {'sap_id ': '57603260073', 'name ': 'ISHAN PATIL', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ishanpatil126@gmail.com'}
+Skipped missing fields
+Row 75: {'sap_id ': '57603260057', 'name ': 'HITH SOMANI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hithsomani@gmail.com'}
+Skipped missing fields
+Row 76: {'sap_id ': '57603260066', 'name ': 'AKSHAY SHARMA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'asharma321456@gmail.com'}
+Skipped missing fields
+Row 77: {'sap_id ': '57603260074', 'name ': 'HENAL PANCHAL', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'henalpan2@gmail.com'}
+Skipped missing fields
+Row 78: {'sap_id ': '57603260065', 'name ': 'SONIYA WANKHEDE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'soniya.wankhede2008@gmail.com'}
+Skipped missing fields
+Row 79: {'sap_id ': '57603260058', 'name ': 'REHAN KHAN', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'khanrehan8a@gmail.com'}
+Skipped missing fields
+Row 80: {'sap_id ': '57603260064', 'name ': 'SNEH SUDRA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'sudrasneh80@gmail.com'}
+Skipped missing fields
+Row 81: {'sap_id ': '57603260063', 'name ': 'RRIDDHI PARMAR', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'rriddhi.parmar2008@gmail.com'}
+Skipped missing fields
+Row 82: {'sap_id ': '57603260061', 'name ': 'TANISH THORAT', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'tanish4912@gmail.com'}
+Skipped missing fields
+Row 83: {'sap_id ': '57603260060', 'name ': 'DHRUVI WAGHELA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'dhruviwaghela30@gmail.com'}
+Skipped missing fields
+Row 84: {'sap_id ': '57603260059', 'name ': 'BHAVYA KIKANI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'bhavyakikani7@gmail.com'}
+Skipped missing fields
+Row 85: {'sap_id ': '57603260036', 'name ': 'HARSH MEHTA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'harshh.mehta23@gmail.com'}
+Skipped missing fields
+Row 86: {'sap_id ': '57603260035', 'name ': 'SAMARTH BHUJBAL', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'samarthbhujbal07@email.com'}
+Skipped missing fields
+Row 87: {'sap_id ': '57603260033', 'name ': 'TIRTH SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'tirthtshah2008@gmail.com'}
+Skipped missing fields
+Row 88: {'sap_id ': '57603260032', 'name ': 'DAKSHAYANI PAWAR', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'donna414d@gmail.com'}
+Skipped missing fields
+Row 89: {'sap_id ': '57603260031', 'name ': 'NIRALI BHALANI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'niralibhalani31@gmail.com'}
+Skipped missing fields
+Row 90: {'sap_id ': '57603260030', 'name ': 'PRANSHU DARJI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'pbdarji2710@gmail.com'}
+Skipped missing fields
+Row 91: {'sap_id ': '57603260029', 'name ': 'AYUSHYA ASODIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ayushyaasodia24@gmail.com'}
+Skipped missing fields
+Row 92: {'sap_id ': '57603260028', 'name ': 'RATISH RAUT', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ratish.raut.08@gmail.com'}
+Skipped missing fields
+Row 93: {'sap_id ': '57603260027', 'name ': 'KHANTIL MODI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'khantilmodi7@gmail.com'}
+Skipped missing fields
+Row 94: {'sap_id ': '57603260026', 'name ': 'DHRITI GANDHI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'Dhritigandhi2712@gmail.com'}
+Skipped missing fields
+Row 95: {'sap_id ': '57603260025', 'name ': 'KIRANDEEPKAUR BOMRAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'bumrahkirandeepkaur2025@gmail.com'}
+Skipped missing fields
+Row 96: {'sap_id ': '57603260024', 'name ': 'ZAIBA KHAN', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'khanzaiba525@gmail.com'}
+Skipped missing fields
+Row 97: {'sap_id ': '57603260023', 'name ': 'SUNIDHI AWAGALE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'latapatil1911@gmail.com'}
+Skipped missing fields
+Row 98: {'sap_id ': '57603260021', 'name ': 'SADIQ UR REHMAN QURESHI', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'qureshisadiq1230@gmail.com'}
+Skipped missing fields
+Row 99: {'sap_id ': '57603260020', 'name ': 'PRIYANSHU GORE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'priyanshuagore@gmail.com'}
+Skipped missing fields
+Row 100: {'sap_id ': '57603260019', 'name ': 'PIYUSH ZOPE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'mjpiyush2@gmail.com'}
+Skipped missing fields
+Row 101: {'sap_id ': '57603260015', 'name ': 'ATHARVA ANJARA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'atharva.banku@gmail.com'}
+Skipped missing fields
+Row 102: {'sap_id ': '57603260014', 'name ': 'JIYYAA RATHOD', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'jiyyaarathod29@gmail.com'}
+Skipped missing fields
+Row 103: {'sap_id ': '57603260013', 'name ': 'DEV KAPURIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'devkapuria6@gmail.com'}
+Skipped missing fields
+Row 104: {'sap_id ': '57603260012', 'name ': 'PIYUSH TATHE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'piyushtathe2008@outlook.com'}
+Skipped missing fields
+Row 105: {'sap_id ': '57603260011', 'name ': 'YAKSH DAVE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ydave3052@gmail.com'}
+Skipped missing fields
+Row 106: {'sap_id ': '57603260010', 'name ': 'KRISHA MODI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'modikrisha0606@gmail.com'}
+Skipped missing fields
+Row 107: {'sap_id ': '57603260009', 'name ': 'SWARAJ CHANDURKAR', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'swarajchandurkar2@gmail.com'}
+Skipped missing fields
+Row 108: {'sap_id ': '57603260008', 'name ': 'RIVA JAIN', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'rivajain26@gmail.com'}
+Skipped missing fields
+Row 109: {'sap_id ': '57603260007', 'name ': 'MITI MESTRY', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'miti.km08@gmail.com'}
+Skipped missing fields
+Row 110: {'sap_id ': '57603260004', 'name ': 'HEET DAVE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'heetmanojdave19@gmail.com'}
+Skipped missing fields
+Row 111: {'sap_id ': '57603260003', 'name ': 'MOHAMMED CHAROLIA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'charoliamohammed09@gmail.com'}
+Skipped missing fields
+Row 112: {'sap_id ': '57603260002', 'name ': 'PRIYA KATARIA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'priyakataria2007@gmail.com'}
+Skipped missing fields
+Row 113: {'sap_id ': '57603260001', 'name ': 'MOHAMMED ALI SHAIKH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'mohammedalihanifshaikh786@gmail.com'}
+Skipped missing fields
+Row 114: {'sap_id ': '57603260043', 'name ': 'PRIYANSHI JALUTHARIA', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'priiyanshi0907@gmail.com'}
+Skipped missing fields
+Row 115: {'sap_id ': '57603260050', 'name ': 'LAKSH SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'jaswin.shah@gmail.com'}
+Skipped missing fields
+Row 116: {'sap_id ': '57603260049', 'name ': 'SHOURYA SHAH', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'shouryashah2008@gmail.com'}
+Skipped missing fields
+Row 117: {'sap_id ': '57603260052', 'name ': 'KANAK SANGHAVI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'kanaksanghavi1702@gmail.com'}
+Skipped missing fields
+Row 118: {'sap_id ': '57603260037', 'name ': 'HARDIK CHAUDHARY', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'hardikkchaudhary2008@gmail.com'}
+Skipped missing fields
+Row 119: {'sap_id ': '57603260038', 'name ': 'VANSHI BHAGAT', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'VANSHIBHAGAT2120@GMAIL.COM'}
+Skipped missing fields
+Row 120: {'sap_id ': '57603260041', 'name ': 'VISHAKA MARATHE', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'marathevishaka7@gmail.com'}
+Skipped missing fields
+Row 121: {'sap_id ': '57603260044', 'name ': 'ATHARVA BHAMARE', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'ATHARVABHAMAREE@GMAIL.COM'}
+Skipped missing fields
+Row 122: {'sap_id ': '57603260053', 'name ': 'VIDEHI SHAH', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'videhishah19@gmail.com'}
+Skipped missing fields
+Row 123: {'sap_id ': '57603260051', 'name ': 'KESHAVI NIRMAL', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'keshavinirmal@gmail.com'}
+Skipped missing fields
+Row 124: {'sap_id ': '57603260048', 'name ': 'BHAVYA CHAWDA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'bhavyachawda74@gmail.com'}
+Skipped missing fields
+Row 125: {'sap_id ': '57603260046', 'name ': 'DEVIKA PILLAI', 'branch ': 'CSE', 'gender ': 'Female', 'email ': 'devikapillai2007@gmail.com'}
+Skipped missing fields
+Row 126: {'sap_id ': '57603260045', 'name ': 'PRINCE MAKWANA', 'branch ': 'CSE', 'gender ': 'Male', 'email ': 'princemakwana1804@gmail.com'}
+Skipped missing fields
+Row 127: {'sap_id ': '57602260084', 'name ': 'EASHAN SHAH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'itseashan@gmail.com'}
+Skipped missing fields
+Row 128: {'sap_id ': '57602260031', 'name ': 'MEHA SHAH', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'shahmeha825@gmail.com'}
+Skipped missing fields
+Row 129: {'sap_id ': '57602260032', 'name ': 'KASHYAP MISTRY', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kashyapmistry1611@gmail.com'}
+Skipped missing fields
+Row 130: {'sap_id ': '57602260055', 'name ': 'ADITI SHINDE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'aditishinde37688@gmail.com'}
+Skipped missing fields
+Row 131: {'sap_id ': '57602260083', 'name ': 'SHRUTI MANIAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'skm9876@gmail.com'}
+Skipped missing fields
+Row 132: {'sap_id ': '57602260085', 'name ': 'MANAV VISHRIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'manavvishriya@gmail.com'}
+Skipped missing fields
+Row 133: {'sap_id ': '57602260034', 'name ': 'AMAN DEVADIGA', 'branch ': 'IT', 'gender ': 'Male', 'email ': '2008aman.r.d@gmail.com'}
+Skipped missing fields
+Row 134: {'sap_id ': '57602260057', 'name ': 'PARI AHIR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'ahirpari27@gmail.com'}
+Skipped missing fields
+Row 135: {'sap_id ': '57602260030', 'name ': 'HIMANSHI WADERA', 'branch ': 'IT', 'gender ': 'Female', 'email ': '61waderahiamshi7c@gmail.com'}
+Skipped missing fields
+Row 136: {'sap_id ': '57602260086', 'name ': 'SANJEET PRASAD', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'prasadsanjeet007@gmail.com'}
+Skipped missing fields
+Row 137: {'sap_id ': '57602260087', 'name ': 'JIYA PAWAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'jiyadpawar@gmail.com'}
+Skipped missing fields
+Row 138: {'sap_id ': '57602260088', 'name ': 'ARFAA AIBANI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'arfaaaibani15@gmail.com'}
+Skipped missing fields
+Row 139: {'sap_id ': '57602260029', 'name ': 'NIYOMI GOLAKIYA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'niyomigolakiya@gmail.com'}
+Skipped missing fields
+Row 140: {'sap_id ': '57602260089', 'name ': 'SHREYA VAJA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'shreyavaja280@gmail.com'}
+Skipped missing fields
+Row 141: {'sap_id ': '57602260035', 'name ': 'JIL DAVE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'payaljite81@gmail.com'}
+Skipped missing fields
+Row 142: {'sap_id ': '57602260054', 'name ': 'NEEV DADHANIA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'neevdadhania88@gmail.com'}
+Skipped missing fields
+Row 143: {'sap_id ': '57602260037', 'name ': 'JAINAM PARMAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jainamparmar008@gmail.com'}
+Skipped missing fields
+Row 144: {'sap_id ': '57602260053', 'name ': 'KEYUR JETHWA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'keyurjethwa97@gmail.com'}
+Skipped missing fields
+Row 145: {'sap_id ': '57602260051', 'name ': 'YASHRAJ PASHANKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yashrajaccess@gmail.com'}
+Skipped missing fields
+Row 146: {'sap_id ': '57602260038', 'name ': 'ACHAL AMBILDHUKE', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'achalambildhuke@gmail.com'}
+Skipped missing fields
+Row 147: {'sap_id ': '57602260091', 'name ': 'YASHIKA MEHTA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'yashik.mehta08@gmail.com'}
+Skipped missing fields
+Row 148: {'sap_id ': '57602260050', 'name ': 'JEEL PARKHIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jeelparkhiya041@gmail.com'}
+Skipped missing fields
+Row 149: {'sap_id ': '57602260040', 'name ': 'SWAYAM MEHTA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'swayammehta686@gmail.com'}
+Skipped missing fields
+Row 150: {'sap_id ': '57602260041', 'name ': 'TRISHA SHETTY', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'RENUKATRISHA15@GMAIL.COM'}
+Skipped missing fields
+Row 151: {'sap_id ': '57602260042', 'name ': 'AASHVI SHAH', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'aashvi.vs@gmail.com'}
+Skipped missing fields
+Row 152: {'sap_id ': '57602260043', 'name ': 'OM DESHMUKH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'omdeshmukh0122@gmail.com'}
+Skipped missing fields
+Row 153: {'sap_id ': '57602260044', 'name ': 'APURVA GUDHKA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'apurvagudhka@gmail.com'}
+Skipped missing fields
+Row 154: {'sap_id ': '57602260092', 'name ': 'AALOK PATEL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aalokpatel0601@gmail.com'}
+Skipped missing fields
+Row 155: {'sap_id ': '57602260048', 'name ': 'AADITYA BHANUSHALI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aadityabhanushali33@gmail.com'}
+Skipped missing fields
+Row 156: {'sap_id ': '57602260093', 'name ': 'KRISH PANCHAL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'krishpanchal0707@gmail.com'}
+Skipped missing fields
+Row 157: {'sap_id ': '57602260045', 'name ': 'PIYUSH RATHOD', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'piyushrathoddd30@gmail.com'}
+Skipped missing fields
+Row 158: {'sap_id ': '57602260094', 'name ': 'HIMESH AGALE', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'goldyagale@gmail.com'}
+Skipped missing fields
+Row 159: {'sap_id ': '57602260047', 'name ': 'AKSHAY SALAGRE', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'akshusalagre07@gmail.com'}
+Skipped missing fields
+Row 160: {'sap_id ': '57602260068', 'name ': 'PARTH TANNA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'parthtanna044@gmail.com'}
+Skipped missing fields
+Row 161: {'sap_id ': '57602260007', 'name ': 'SHAILESH SINGH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'singhshailesh250708@gmail.com'}
+Skipped missing fields
+Row 162: {'sap_id ': '57602260016', 'name ': 'KAUSHAL TALEKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kaushallll.pt@gmail.com'}
+Skipped missing fields
+Row 163: {'sap_id ': '57602260077', 'name ': 'UTSAVI MODY', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'utsavimody@gmail.com'}
+Skipped missing fields
+Row 164: {'sap_id ': '57602260017', 'name ': 'JENIL GOHEL', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'gojenil16@gmail.com'}
+Skipped missing fields
+Row 165: {'sap_id ': '57602260018', 'name ': 'AKSHAY KUMAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'akshay130408@gmail.com'}
+Skipped missing fields
+Row 166: {'sap_id ': '57602260069', 'name ': 'RUSHIL MATHAKIYA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mathakiyaxdrushil@gmail.com'}
+Skipped missing fields
+Row 167: {'sap_id ': '57602260015', 'name ': 'SHIVAM YADAV', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yadavshivam2816@gmail.com'}
+Skipped missing fields
+Row 168: {'sap_id ': '57602260070', 'name ': 'YASH MEENA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'yashmeenapersonal@gmail.com'}
+Skipped missing fields
+Row 169: {'sap_id ': '57602260019', 'name ': 'JUILEE PAWAR', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'juileepawar20@gmail.com'}
+Skipped missing fields
+Row 170: {'sap_id ': '57602260005', 'name ': 'OM MAKWANA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'ommakwana3211@gmail.com'}
+Skipped missing fields
+Row 171: {'sap_id ': '57602260008', 'name ': 'ABHISHEK JAISWAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jaiswarabhishek972@gmail.com'}
+Skipped missing fields
+Row 172: {'sap_id ': '57602260014', 'name ': 'NISHANT SHAH', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'nishantbshah1@gmail.com'}
+Skipped missing fields
+Row 173: {'sap_id ': '57602260004', 'name ': 'VINIT TRIVEDI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'Trivedivinit412@gmail.com'}
+Skipped missing fields
+Row 174: {'sap_id ': '57602260022', 'name ': 'BHAVYA PRAJAPATI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'bhavyaprajapati526@gmail.com'}
+Skipped missing fields
+Row 175: {'sap_id ': '57602260073', 'name ': 'YASHIKA RAJPUROHIT', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'rajpurohityashika74@gmail.com'}
+Skipped missing fields
+Row 176: {'sap_id ': '57602260064', 'name ': 'ARCHI MODI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'archi.modi1203@gmail.com'}
+Skipped missing fields
+Row 177: {'sap_id ': '57602260011', 'name ': 'MRUNAL PAWAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mrunalpawar681@gmail.com'}
+Skipped missing fields
+Row 178: {'sap_id ': '57602260003', 'name ': 'DEVANG JADHAV', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'W3836914@GMAIL.COM'}
+Skipped missing fields
+Row 179: {'sap_id ': '57602260010', 'name ': 'NIYATI DESAI', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'niyatidesai228@gmail.com'}
+Skipped missing fields
+Row 180: {'sap_id ': '57602260012', 'name ': 'KINJAL TAVADIA', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'kinjaltavadia8thd@gmail.com'}
+Skipped missing fields
+Row 181: {'sap_id ': '57602260081', 'name ': 'DHYEEY MISTRY', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'dhyeeymistry@gmail.com'}
+Skipped missing fields
+Row 182: {'sap_id ': '57602260009', 'name ': 'ADARSH JHA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'adarsh.jha291429@gmail.com'}
+Skipped missing fields
+Row 183: {'sap_id ': '57602260025', 'name ': 'HARSHIT BANKAR', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'harshitbankar0718@gmail.com'}
+Skipped missing fields
+Row 184: {'sap_id ': '57602260076', 'name ': 'AADI GALA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'aadi10dec2008@gmail.com'}
+Skipped missing fields
+Row 185: {'sap_id ': '57602260027', 'name ': 'HETVI PANCHAL', 'branch ': 'IT', 'gender ': 'Female', 'email ': 'hetviipanchal2318@gmail.com'}
+Skipped missing fields
+Row 186: {'sap_id ': '57602260074', 'name ': 'JASH DOSHI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'jash2368@gmail.com'}
+Skipped missing fields
+Row 187: {'sap_id ': '57602260058', 'name ': 'KAUSTUBH PATWA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'kaustubhpatwa357@gmail.com'}
+Skipped missing fields
+Row 188: {'sap_id ': '57602260028', 'name ': 'DHAIRYA MEHTA', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'mehtadhairya710@gmail.com'}
+Skipped missing fields
+Row 189: {'sap_id ': '57602260002', 'name ': 'PARAM TRIVEDI', 'branch ': 'IT', 'gender ': 'Male', 'email ': 'paramtrivedi013@gmail.com'}
+Skipped missing fields
+Row 190: {'sap_id ': '57604260013', 'name ': 'MANDHAR NAIK', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'baliram32naik@gmail.com'}
+Skipped missing fields
+Row 191: {'sap_id ': '57604260078', 'name ': 'NEVIL MARU', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'marunevil7@gmail.com'}
+Skipped missing fields
+Row 192: {'sap_id ': '57604260014', 'name ': 'HARSHRAJ LENDAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'harshrajlendave@gmail.com'}
+Skipped missing fields
+Row 193: {'sap_id ': '57604260015', 'name ': 'SNEH SANGHAVI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sanghavisneh158@gmail.com'}
+Skipped missing fields
+Row 194: {'sap_id ': '57604260053', 'name ': 'SHREEVARDHAN DASHMUKHE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'shreevardhandashmukhe51@gmail.com'}
+Skipped missing fields
+Row 195: {'sap_id ': '57604260016', 'name ': 'VEDANT PAWAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '12vedantpawar@gmail.com'}
+Skipped missing fields
+Row 196: {'sap_id ': '57604260054', 'name ': 'BRINDA DOSHI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'brindadoshi174@gmail.com'}
+Skipped missing fields
+Row 197: {'sap_id ': '57604260017', 'name ': 'SARTHAK JAIN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sarathakjain7@gmail.com'}
+Skipped missing fields
+Row 198: {'sap_id ': '57604260056', 'name ': 'KSHITIJ SANGHAVI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'kshitij.sangahvi08@gmail.com'}
+Skipped missing fields
+Row 199: {'sap_id ': '57604260057', 'name ': 'MAHI SHINDE', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'mahishaurya@gmail.com'}
+Skipped missing fields
+Row 200: {'sap_id ': '57604260052', 'name ': 'ZAHRA NOORANI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'nooranizahra1987@gmail.com'}
+Skipped missing fields
+Row 201: {'sap_id ': '57604260079', 'name ': 'TEJ SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'tejshah022@gmail.com'}
+Skipped missing fields
+Row 202: {'sap_id ': '57604260012', 'name ': 'HAMZA ATHANIA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'athaniahamza7@gmail.com'}
+Skipped missing fields
+Row 203: {'sap_id ': '57604260009', 'name ': 'PRANAMYA SHETTY', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'shettypranamya994@gmail.com'}
+Skipped missing fields
+Row 204: {'sap_id ': '57604260080', 'name ': 'MOHAMMAD NOOH ANSARI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'noohansari479@gmail.com'}
+Skipped missing fields
+Row 205: {'sap_id ': '57604260081', 'name ': 'VIVAAN GANDHI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'gandhivivaan01072008@gmail.com'}
+Skipped missing fields
+Row 206: {'sap_id ': '57604260008', 'name ': 'DHIMANT SONARA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'dhimantsonara71@gmail.com'}
+Skipped missing fields
+Row 207: {'sap_id ': '57604260048', 'name ': 'DHRUVA SHETA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'dhruvasheta@gmail.com'}
+Skipped missing fields
+Row 208: {'sap_id ': '57604260082', 'name ': 'TANUSHREE PANCHAL', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'tanushreepanchal6@gmail.com'}
+Skipped missing fields
+Row 209: {'sap_id ': '57604260007', 'name ': 'PRACHI KAKKAD', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'kakkadprachi412@gmail.com'}
+Skipped missing fields
+Row 210: {'sap_id ': '57604260006', 'name ': 'MUSTAFA AGWAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'naproducts@yahoo.com'}
+Skipped missing fields
+Row 211: {'sap_id ': '57604260049', 'name ': 'JIVAKSHI JAIN', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'jivakshij@gmail.com'}
+Skipped missing fields
+Row 212: {'sap_id ': '57604260083', 'name ': 'JAY RAWAL', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'jayrawal8795@gmail.com'}
+Skipped missing fields
+Row 213: {'sap_id ': '57604260005', 'name ': 'ALIFEYAH KANCHWALA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'kanchwalamustaali@gmail.com'}
+Skipped missing fields
+Row 214: {'sap_id ': '57604260004', 'name ': 'KRISHEET KARELIA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'krisheetkarelia@gmail.com'}
+Skipped missing fields
+Row 215: {'sap_id ': '57604260050', 'name ': 'DHRUVI JETHWA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'DHRUVIJETHWA07@GMAIL.COM'}
+Skipped missing fields
+Row 216: {'sap_id ': '57604260003', 'name ': 'VANSH DAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'davevansh08@gmail.com'}
+Skipped missing fields
+Row 217: {'sap_id ': '57604260002', 'name ': 'RUCHI MEHTA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'ruchimehta654@gmail.com'}
+Skipped missing fields
+Row 218: {'sap_id ': '57604260001', 'name ': 'RISHI PARMAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rishiparmar312@gmail.com'}
+Skipped missing fields
+Row 219: {'sap_id ': '57604260077', 'name ': 'SOHAM SAWANT', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'sohamsawant1808@gmail.com'}
+Skipped missing fields
+Row 220: {'sap_id ': '57604260064', 'name ': 'JIHANN CHOUDHARI JAIN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'jihannchoudhari09@gmail.com'}
+Skipped missing fields
+Row 221: {'sap_id ': '57604260065', 'name ': 'MANASVI MARSHA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'marshamanasvi@gmail.com'}
+Skipped missing fields
+Row 222: {'sap_id ': '57604260063', 'name ': 'HETVI PAREKH', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'hetviparekh08@gmail.com'}
+Skipped missing fields
+Row 223: {'sap_id ': '57604260040', 'name ': 'MURTAZA SADRIWALA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'murtaza7d59@gmail.com'}
+Skipped missing fields
+Row 224: {'sap_id ': '57604260062', 'name ': 'SMIT ZALA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'Smit.81206@gmail.com'}
+Skipped missing fields
+Row 225: {'sap_id ': '57604260037', 'name ': 'CHIRAG VADHER', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'vadherchirag08@gmail.com'}
+Skipped missing fields
+Row 226: {'sap_id ': '57604260066', 'name ': 'RAHIL SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'srahil2901@gmail.com'}
+Skipped missing fields
+Row 227: {'sap_id ': '57604260036', 'name ': 'AJIJEET SHAIKH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'AJIJEETSK26@GMAIL.COM'}
+Skipped missing fields
+Row 228: {'sap_id ': '57604260067', 'name ': 'AYAAN SHARIFF', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'ayaan.i.shariff@gmail.com'}
+Skipped missing fields
+Row 229: {'sap_id ': '57604260068', 'name ': 'KALP SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'KALPVRISHTI@GMAIL.COM'}
+Skipped missing fields
+Row 230: {'sap_id ': '57604260035', 'name ': 'TANMAY BIRANJE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'tanmaybiranje@gmail.com'}
+Skipped missing fields
+Row 231: {'sap_id ': '57604260061', 'name ': 'POOJA RAGHVANI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'poojaraghvani25@gmail.com'}
+Skipped missing fields
+Row 232: {'sap_id ': '57604260034', 'name ': 'KRISHNA GOTI', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'krishnagoti10042008@gmail.com'}
+Skipped missing fields
+Row 233: {'sap_id ': '57604260033', 'name ': 'ADITYA WAGHADKAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'waghadkaraditya@gmail.com'}
+Skipped missing fields
+Row 234: {'sap_id ': '57604260069', 'name ': 'BHARAT KUCHAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'bharatkuchan47@gmail.com'}
+Skipped missing fields
+Row 235: {'sap_id ': '57604260032', 'name ': 'AMOGH DHARANE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'amoghdharane5@gmail.com'}
+Skipped missing fields
+Row 236: {'sap_id ': '57604260030', 'name ': 'ZIAN VARTAK', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'vartakzian08@gmail.com'}
+Skipped missing fields
+Row 237: {'sap_id ': '57604260029', 'name ': 'DRUHI KACHA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'piyusha.kacha81@gmail.com'}
+Skipped missing fields
+Row 238: {'sap_id ': '57604260042', 'name ': 'SHRAVANI GORULE', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'shravanigorule123@gmail.com'}
+Skipped missing fields
+Row 239: {'sap_id ': '57604260043', 'name ': 'BHARGAV PUJARA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '5426888bhargav@gmail.com'}
+Skipped missing fields
+Row 240: {'sap_id ': '57604260070', 'name ': 'MOKSH PARIKH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'parikhmoksh8@gmail.com'}
+Skipped missing fields
+Row 241: {'sap_id ': '57604260028', 'name ': 'DHRUVI MAKWANA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'dhruviind555@gmail.com'}
+Skipped missing fields
+Row 242: {'sap_id ': '57604260026', 'name ': 'MAHIMNA DAVE', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'MAHIMNADAVE45@GMAIL.COM'}
+Skipped missing fields
+Row 243: {'sap_id ': '57604260025', 'name ': 'AYUSHI VARAIYA', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'ayushivaraiya@gmail.com'}
+Skipped missing fields
+Row 244: {'sap_id ': '57604260023', 'name ': 'ADITI SOLANKI', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'acsolanki2008@gmail.com'}
+Skipped missing fields
+Row 245: {'sap_id ': '57604260059', 'name ': 'REHAN CHAUDHARY', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rehannchaudhary008@gmail.com'}
+Skipped missing fields
+Row 246: {'sap_id ': '57604260022', 'name ': 'NISHANT RAWAL', 'branch ': 'AIML', 'gender ': 'Male', 'email ': '5165864nishantrawal@gmail.com'}
+Skipped missing fields
+Row 247: {'sap_id ': '57604260021', 'name ': 'KRUTIKA PANCHAL', 'branch ': 'AIML', 'gender ': 'Female', 'email ': 'KRUTIKAPPANCHAL08@GMAIL.COM'}
+Skipped missing fields
+Row 248: {'sap_id ': '57604260044', 'name ': 'NISARG SHAH', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'nisargshah0408@gmail.com'}
+Skipped missing fields
+Row 249: {'sap_id ': '57604260020', 'name ': 'RUTVIK GAONKAR', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rutvikgaonkar1108@gmail.com'}
+Skipped missing fields
+Row 250: {'sap_id ': '57604260075', 'name ': 'KAIVANN MEHTA', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'KAIVANNM@ICLOUD.COM'}
+Skipped missing fields
+Row 251: {'sap_id ': '57604260018', 'name ': 'RAHIL KHAN', 'branch ': 'AIML', 'gender ': 'Male', 'email ': 'rahildon34@gmail.com'}
+Skipped missing fields
+Row 252: {'sap_id ': '', 'name ': ' ', 'branch ': '', 'gender ': '', 'email ': ''}
+Skipped missing fields
+Finished parsing. Created: 0, duplicates: 0, errors: 251

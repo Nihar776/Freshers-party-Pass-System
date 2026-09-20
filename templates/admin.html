@@ -819,7 +819,12 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    showToast(`Success: ${data.message}`);
+                    let msg = `Created ${data.created} students.`;
+                    if (data.skipped_duplicates && data.skipped_duplicates.length > 0) {
+                        msg += ` Skipped ${data.skipped_duplicates.length} duplicates.`;
+                    }
+                    showToast(`Success: ${msg}`);
+                    loadRoster(); // reload table automatically
                 } else {
                     showToast(data.detail || 'Upload failed', 'error');
                 }

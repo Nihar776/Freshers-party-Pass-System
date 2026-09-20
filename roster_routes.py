@@ -54,8 +54,10 @@ def import_roster(
 
     raw = file.file.read().decode("utf-8-sig")  # utf-8-sig strips a stray BOM from Excel exports
     reader = csv.DictReader(io.StringIO(raw))
+    if reader.fieldnames:
+        reader.fieldnames = [c.strip() for c in reader.fieldnames]
 
-    if not reader.fieldnames or not REQUIRED_COLUMNS.issubset({c.strip() for c in reader.fieldnames}):
+    if not reader.fieldnames or not REQUIRED_COLUMNS.issubset(set(reader.fieldnames)):
         raise HTTPException(
             status_code=400,
             detail=f"CSV must have columns: {sorted(REQUIRED_COLUMNS)}. Found: {reader.fieldnames}",
