@@ -18,7 +18,11 @@ from sqlalchemy.orm import Session
 from PIL import Image
 
 from database import get_db
-from schema_v2 import Student, User, UserRole, PaymentStatus, PaymentMode, PassType, CashHandover
+from schema_v2 import (
+    Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
+    CashHandover, DiscountCode, DiscountType, CashHandoverRequest,
+    HandoverRequestStatus
+)
 from session_auth import require_role
 from audit import write_audit_log
 from auth import generate_pass_token, generate_qr_image
@@ -97,10 +101,12 @@ def search_students(
     query: str = Query(..., min_length=2, description="Partial name or SAP ID"),
     branch: Optional[str] = None,
     db: Session = Depends(get_db),
-    user: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+    user: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
-    like = f"%{query}%"
-    q = db.query(Student).filter((Student.name.ilike(like)) | (Student.sap_id.ilike(like)))
+    like = f"%{query.lower()}%"
+    q = db.query(Student).filter(
+        (func.lower(Student.name).like(like)) | (func.lower(Student.sap_id).like(like))
+    )
     if branch:
         q = q.filter(Student.branch == branch)
     return q.order_by(Student.name).limit(20).all()
@@ -117,8 +123,9 @@ def sell_pass(
     utr_number: Optional[str] = Form(None),
     email: Optional[str] = Form(None),  # only needed if the roster row lacks one
     screenshot: Optional[UploadFile] = File(None),
+    discount_code: Optional[str] = Form(None),
     db: Session = Depends(get_db),
-    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
     student = db.query(Student).filter(Student.sap_id == sap_id).first()
     if not student:
@@ -139,6 +146,27 @@ def sell_pass(
     resolved_email = email or student.email
     if not resolved_email:
         raise HTTPException(status_code=400, detail="No email on file - please provide one to send the pass")
+
+    # Resolve discount code
+    dc = None
+    if discount_code:
+        code_upper = discount_code.upper().strip()
+        dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
+        if not dc:
+            raise HTTPException(status_code=404, detail="Invalid discount code")
+        if not dc.is_active:
+            raise HTTPException(status_code=400, detail="Discount code is inactive")
+        if dc.max_uses is not None and dc.times_used >= dc.max_uses:
+            raise HTTPException(status_code=400, detail="Discount code usage limit reached")
+
+    # Final price calculation
+    amount = PASS_PRICE
+    if dc:
+        if dc.discount_type == DiscountType.PERCENTAGE:
+            amount = amount * (1.0 - (dc.discount_value / 100.0))
+        elif dc.discount_type == DiscountType.FLAT:
+            amount = max(0.0, amount - dc.discount_value)
+        dc.times_used += 1
 
     old_snapshot = {"payment_status": student.payment_status.value}
 
@@ -166,7 +194,7 @@ def sell_pass(
         .values(
             pass_type=pass_type,
             payment_mode=payment_mode,
-            amount=PASS_PRICE,
+            amount=amount,
             email=resolved_email,
             distributor_id=distributor.id,
             utr_number=utr_number,
@@ -181,6 +209,7 @@ def sell_pass(
             verified_by_id=distributor.id if payment_mode == PaymentMode.CASH else None,
             verified_at=func.now() if payment_mode == PaymentMode.CASH else None,
             rejection_reason=None,
+            discount_code_id=dc.id if dc else None,
         )
     )
     if result.rowcount == 0:
@@ -199,7 +228,7 @@ def sell_pass(
         new_value={
             "payment_status": student.payment_status.value,
             "payment_mode": payment_mode.value,
-            "amount": PASS_PRICE,
+            "amount": amount,
             "duplicate_screenshot_warning": duplicate_warning,
         },
     )
@@ -260,6 +289,29 @@ def calculate_discount(group_size: int, date: Optional[datetime] = None) -> floa
     return 0.0
 
 
+@router.get("/validate-discount-code")
+def validate_discount_code(
+    code: str,
+    db: Session = Depends(get_db),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN))
+):
+    code_upper = code.upper().strip()
+    dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
+    if not dc:
+        raise HTTPException(status_code=404, detail="Invalid discount code")
+    if not dc.is_active:
+        raise HTTPException(status_code=400, detail="Discount code is inactive")
+    if dc.max_uses is not None and dc.times_used >= dc.max_uses:
+        raise HTTPException(status_code=400, detail="Discount code usage limit reached")
+        
+    return {
+        "valid": True,
+        "code": dc.code,
+        "type": dc.discount_type.value,
+        "value": dc.discount_value
+    }
+
+
 @router.post("/sell-group", response_model=GroupSellResult)
 def sell_group(
     sap_ids: List[str] = Form(...),
@@ -267,8 +319,9 @@ def sell_group(
     payment_mode: PaymentMode = Form(...),
     utr_number: Optional[str] = Form(None),
     screenshot: Optional[UploadFile] = File(None),
+    discount_code: Optional[str] = Form(None),
     db: Session = Depends(get_db),
-    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
     if not sap_ids:
         raise HTTPException(status_code=400, detail="Group must have at least one student")
@@ -295,10 +348,39 @@ def sell_group(
             raise HTTPException(status_code=400, detail=f"No email on file for {student.sap_id} - cannot process group sale")
 
     group_size = len(sap_ids)
-    discount = calculate_discount(group_size)
+    group_discount_pct = calculate_discount(group_size)
     total_base_amount = PASS_PRICE * group_size
-    final_total_amount = total_base_amount * (1.0 - discount)
+    
+    # Resolve discount code
+    dc = None
+    if discount_code:
+        code_upper = discount_code.upper().strip()
+        dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
+        if not dc:
+            raise HTTPException(status_code=404, detail="Invalid discount code")
+        if not dc.is_active:
+            raise HTTPException(status_code=400, detail="Discount code is inactive")
+        if dc.max_uses is not None and dc.times_used >= dc.max_uses:
+            raise HTTPException(status_code=400, detail="Discount code usage limit reached")
+
+    # Calculate final price using whichever gives the better deal
+    if dc:
+        if dc.discount_type == DiscountType.PERCENTAGE:
+            code_discount_pct = dc.discount_value / 100.0
+            best_discount_pct = max(group_discount_pct, code_discount_pct)
+            final_total_amount = total_base_amount * (1.0 - best_discount_pct)
+        elif dc.discount_type == DiscountType.FLAT:
+            # Group percentage vs Flat amount off total
+            pct_discount_amount = total_base_amount * group_discount_pct
+            best_discount_amount = max(pct_discount_amount, dc.discount_value)
+            final_total_amount = max(0.0, total_base_amount - best_discount_amount)
+    else:
+        final_total_amount = total_base_amount * (1.0 - group_discount_pct)
+
     amount_per_student = final_total_amount / group_size
+
+    if dc:
+        dc.times_used += 1
 
     duplicate_warning = False
     screenshot_b64 = None
@@ -338,6 +420,7 @@ def sell_group(
             verified_by_id=distributor.id if payment_mode == PaymentMode.CASH else None,
             verified_at=func.now() if payment_mode == PaymentMode.CASH else None,
             rejection_reason=None,
+            discount_code_id=dc.id if dc else None,
         )
     )
     if result.rowcount != len(students):
@@ -417,7 +500,7 @@ def sell_group(
 @router.get("/my-sales", response_model=list[MySaleSummary])
 def my_sales(
     db: Session = Depends(get_db),
-    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
     rows = (
         db.query(Student)
@@ -438,7 +521,7 @@ def my_sales(
 @router.get("/my-cash-balance", response_model=CashBalanceResponse)
 def my_cash_balance(
     db: Session = Depends(get_db),
-    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
     total_cash = db.query(func.coalesce(func.sum(Student.amount), 0.0)).filter(
         Student.distributor_id == distributor.id,
@@ -457,11 +540,80 @@ def my_cash_balance(
     )
 
 
+class HandoverRequestPayload(BaseModel):
+    amount: float
+
+
+@router.get("/handover-status")
+def get_handover_status(
+    db: Session = Depends(get_db),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
+):
+    # Calculate outstanding
+    total_cash = db.query(func.coalesce(func.sum(Student.amount), 0.0)).filter(
+        Student.distributor_id == distributor.id,
+        Student.payment_mode == PaymentMode.CASH,
+        Student.payment_status == PaymentStatus.VERIFIED
+    ).scalar()
+
+    total_handed_over = db.query(func.coalesce(func.sum(CashHandover.amount), 0.0)).filter(
+        CashHandover.distributor_id == distributor.id
+    ).scalar()
+    
+    outstanding = total_cash - total_handed_over
+
+    # Fetch latest pending/rejected request
+    latest_req = db.query(CashHandoverRequest).filter(
+        CashHandoverRequest.distributor_id == distributor.id,
+        CashHandoverRequest.status.in_([HandoverRequestStatus.PENDING, HandoverRequestStatus.REJECTED])
+    ).order_by(CashHandoverRequest.created_at.desc()).first()
+
+    return {
+        "outstanding_cash": outstanding,
+        "latest_request": {
+            "id": latest_req.id,
+            "amount": latest_req.amount,
+            "status": latest_req.status.value,
+            "created_at": latest_req.created_at.isoformat()
+        } if latest_req else None
+    }
+
+
+@router.post("/handover-request")
+def create_handover_request(
+    payload: HandoverRequestPayload,
+    db: Session = Depends(get_db),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
+):
+    if payload.amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be greater than zero")
+
+    # Check if there is already a pending request
+    existing_pending = db.query(CashHandoverRequest).filter(
+        CashHandoverRequest.distributor_id == distributor.id,
+        CashHandoverRequest.status == HandoverRequestStatus.PENDING
+    ).first()
+
+    if existing_pending:
+        raise HTTPException(status_code=400, detail="You already have a pending cash handover request")
+
+    req = CashHandoverRequest(
+        distributor_id=distributor.id,
+        amount=payload.amount,
+        status=HandoverRequestStatus.PENDING
+    )
+    db.add(req)
+    db.commit()
+    db.refresh(req)
+    
+    return {"message": "Handover request submitted to treasurer", "id": req.id}
+
+
 @router.post("/resend-email/{sap_id}")
 def resend_email(
     sap_id: str,
     db: Session = Depends(get_db),
-    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR)),
+    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
     student = db.query(Student).filter(Student.sap_id == sap_id).first()
     if not student:

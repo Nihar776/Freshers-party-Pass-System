@@ -77,6 +77,13 @@
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        
+        .result-item .name { font-weight: 700; }
+        .result-item .meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .badge.not_purchased { background: #1e2130; color: var(--text-muted); }
+        .badge.verified { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .badge.pending_verification { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .badge.rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; }
     </style>
 </head>
 <body>
@@ -106,6 +113,19 @@
             <div class="stat-card" style="border-color: var(--warning);">
                 <div class="stat-label" style="color: var(--warning);">Outstanding Cash</div>
                 <div class="stat-value" id="stat-outstanding">₹0</div>
+            </div>
+        </div>
+        
+        <div class="panel mb-8" id="handover-panel" style="background: var(--bg-dark); border: 1px dashed var(--accent);">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="mb-1 text-accent">Cash Handover Request</h3>
+                    <div class="text-sm text-muted" id="handover-status-text">Submit physical cash to the Treasurer to clear your outstanding balance.</div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" id="handover-amount" class="form-control" placeholder="Amount (₹)" style="width: 120px;" min="1">
+                    <button class="btn btn-primary" id="btn-handover" onclick="submitHandoverRequest()">Request Handover</button>
+                </div>
             </div>
         </div>
 
@@ -146,11 +166,21 @@
                                     <span class="text-muted">Group Discount</span>
                                     <span class="font-bold text-success" id="discount-pct">0%</span>
                                 </div>
+                                <div id="promo-discount-row" class="flex justify-between items-center mb-2 hidden">
+                                    <span class="text-muted">Promo Code</span>
+                                    <span class="font-bold text-success" id="promo-pct">0</span>
+                                </div>
                                 <div class="flex justify-between items-center mt-4 pt-4" style="border-top: 1px solid var(--border);">
                                     <span class="font-bold">Total Amount</span>
                                     <span class="stat-value" id="total-amount" style="font-size: 24px;">₹0</span>
                                 </div>
                             </div>
+                            
+                            <div class="form-group flex gap-2">
+                                <input type="text" id="discount-code" class="form-control" placeholder="Discount Code (Optional)" style="text-transform: uppercase;">
+                                <button type="button" class="btn btn-secondary" id="apply-code-btn">Apply</button>
+                            </div>
+                            <div id="discount-message" class="text-sm mb-4"></div>
 
                             <div class="form-group">
                                 <label class="form-label">Payment Mode</label>
@@ -206,6 +236,7 @@
 
     <script>
         let cart = [];
+        let appliedPromo = null;
         const BASE_PRICE = 499.0;
 
         // --- Core Auth & Toast ---
@@ -235,17 +266,82 @@
 
         // --- Stats & History ---
         async function loadStats() {
-            const res = await fetch('/distributor/my-cash-balance');
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('stat-collected').textContent = `₹${data.total_cash_collected.toFixed(2)}`;
-                document.getElementById('stat-outstanding').textContent = `₹${data.outstanding_with_you.toFixed(2)}`;
+            try {
+                // Original stats fetching
+                const resCash = await fetch('/distributor/my-cash-balance');
+                if (resCash.ok) {
+                    const data = await resCash.json();
+                    document.getElementById('stat-collected').textContent = `₹${data.total_cash_collected.toFixed(2)}`;
+                }
+                
+                const resSales = await fetch('/distributor/my-sales');
+                if (resSales.ok) {
+                    const sales = await resSales.json();
+                    document.getElementById('stat-sold').textContent = sales.length;
+                }
+
+                // Handover status
+                const resStatus = await fetch('/distributor/handover-status');
+                if (!resStatus.ok) return;
+                const data = await resStatus.json();
+                
+                document.getElementById('stat-outstanding').textContent = `₹${data.outstanding_cash}`;
+                
+                // Handle Handover Request UI
+                const panel = document.getElementById('handover-panel');
+                const btn = document.getElementById('btn-handover');
+                const input = document.getElementById('handover-amount');
+                const text = document.getElementById('handover-status-text');
+
+                if (data.latest_request && data.latest_request.status === 'pending') {
+                    panel.style.borderColor = 'var(--dim)';
+                    btn.disabled = true;
+                    btn.textContent = 'Pending Approval';
+                    input.disabled = true;
+                    input.value = data.latest_request.amount;
+                    text.innerHTML = `<span class="text-warning">Request for ₹${data.latest_request.amount} is waiting for Treasurer approval.</span>`;
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Request Handover';
+                    input.disabled = false;
+                    input.value = data.outstanding_cash > 0 ? data.outstanding_cash : '';
+                    if (data.latest_request && data.latest_request.status === 'rejected') {
+                        panel.style.borderColor = 'var(--stop)';
+                        text.innerHTML = `<span class="text-danger">Your last request was rejected. Please try again.</span>`;
+                    } else {
+                        panel.style.borderColor = 'var(--accent)';
+                        text.innerHTML = 'Submit physical cash to the Treasurer to clear your outstanding balance.';
+                    }
+                }
+
+            } catch (err) {
+                console.error(err);
             }
-            
-            const res2 = await fetch('/distributor/my-sales');
-            if (res2.ok) {
-                const sales = await res2.json();
-                document.getElementById('stat-sold').textContent = sales.length;
+        }
+
+        async function submitHandoverRequest() {
+            const amount = parseFloat(document.getElementById('handover-amount').value);
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/distributor/handover-request', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ amount })
+                });
+
+                if (res.ok) {
+                    showToast('Handover request submitted successfully');
+                    loadStats();
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Failed to submit request', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
             }
         }
 
@@ -290,34 +386,51 @@
         });
 
         async function runSearch(q) {
-            const res = await fetch(`/distributor/search?query=${encodeURIComponent(q)}`);
-            if (!res.ok) return;
-            const students = await res.json();
-            const resultsEl = document.getElementById('results');
-            
-            if (students.length === 0) {
-                resultsEl.innerHTML = '<div class="text-muted text-center py-4">No results found.</div>';
-                return;
+            try {
+                const res = await fetch(`/distributor/search?query=${encodeURIComponent(q)}`);
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    console.error('Search failed:', res.status, errData);
+                    document.getElementById('results').innerHTML = 
+                        `<div class="text-muted text-center py-4">Search error (${res.status}): ${errData.detail || 'Unknown error'}</div>`;
+                    return;
+                }
+                const students = await res.json();
+                const resultsEl = document.getElementById('results');
+                resultsEl.innerHTML = "";
+
+                if (students.length === 0) {
+                    resultsEl.innerHTML = '<div class="text-muted text-center py-4">No students found.</div>';
+                    return;
+                }
+
+                students.forEach(s => {
+                    // Hide if already in cart
+                    if (cart.find(c => c.sap_id === s.sap_id)) return;
+
+                    const div = document.createElement("div");
+                    div.className = "result-item";
+                    div.innerHTML = `<div class="name">${s.name} <span class="badge ${s.payment_status}">${s.payment_status.replace('_',' ')}</span></div>
+                                      <div class="meta">${s.sap_id} · ${s.branch}${s.gender ? ' · ' + s.gender : ''}</div>`;
+
+                    if (s.payment_status === "not_purchased" || s.payment_status === "rejected") {
+                        div.addEventListener("click", () => addToCart(s));
+                    } else {
+                        div.style.opacity = "0.5";
+                        div.style.cursor = "not-allowed";
+                    }
+                    resultsEl.appendChild(div);
+                });
+
+                // If all results were in cart, show message
+                if (resultsEl.children.length === 0) {
+                    resultsEl.innerHTML = '<div class="text-muted text-center py-4">No more students matching this query.</div>';
+                }
+            } catch (err) {
+                console.error('Search network error:', err);
+                document.getElementById('results').innerHTML = 
+                    '<div class="text-muted text-center py-4">Network error — check connection</div>';
             }
-            
-            resultsEl.innerHTML = students.map(s => {
-                const inCart = cart.find(c => c.sap_id === s.sap_id);
-                const canBuy = s.payment_status === 'not_purchased' || s.payment_status === 'rejected';
-                const disabled = inCart || !canBuy;
-                
-                let statusBadge = '';
-                if (s.payment_status === 'verified') statusBadge = '<span class="badge badge-success">Verified</span>';
-                else if (s.payment_status === 'pending_verification') statusBadge = '<span class="badge badge-warning">Pending</span>';
-                
-                return `
-                <div class="result-item ${disabled ? 'disabled' : ''}" onclick="!${disabled} && addToCart(${JSON.stringify(s).replace(/"/g, '&quot;')})">
-                    <div>
-                        <div class="font-semibold">${s.name} ${inCart ? '<span class="badge badge-neutral">In Cart</span>' : ''}</div>
-                        <div class="text-muted text-sm">${s.sap_id} · ${s.branch}</div>
-                    </div>
-                    <div>${statusBadge}</div>
-                </div>`;
-            }).join('');
         }
 
         function addToCart(student) {
@@ -375,24 +488,79 @@
             
             // Calculate pricing
             const groupSize = cart.length;
-            let discount = 0;
+            let groupDiscount = 0;
             const today = new Date();
             if (today.getMonth() === 8) { // September
-                if (today.getDate() === 21) {
-                    if (groupSize >= 8) discount = 0.12;
-                    else if (groupSize >= 6) discount = 0.10;
-                } else if (today.getDate() === 22) {
-                    if (groupSize >= 10) discount = 0.12;
-                    else if (groupSize >= 8) discount = 0.10;
+                if (today.getDate() === 21) { // Monday
+                    if (groupSize >= 8) groupDiscount = 0.12;
+                    else if (groupSize >= 6) groupDiscount = 0.10;
+                } else if (today.getDate() === 22) { // Tuesday
+                    if (groupSize >= 10) groupDiscount = 0.12;
+                    else if (groupSize >= 8) groupDiscount = 0.10;
                 }
             }
             
             const totalBase = BASE_PRICE * groupSize;
-            const finalTotal = totalBase * (1 - discount);
+            let finalTotal = 0;
             
-            document.getElementById('discount-pct').textContent = `${discount * 100}%`;
+            document.getElementById('discount-pct').textContent = `${(groupDiscount * 100).toFixed(0)}%`;
+            
+            const promoRow = document.getElementById('promo-discount-row');
+            
+            if (appliedPromo) {
+                promoRow.classList.remove('hidden');
+                if (appliedPromo.type === 'percentage') {
+                    const promoPct = appliedPromo.value / 100.0;
+                    const bestPct = Math.max(groupDiscount, promoPct);
+                    finalTotal = totalBase * (1.0 - bestPct);
+                    document.getElementById('promo-pct').textContent = `${appliedPromo.value}%`;
+                } else if (appliedPromo.type === 'flat') {
+                    const groupDiscountAmount = totalBase * groupDiscount;
+                    const bestAmount = Math.max(groupDiscountAmount, appliedPromo.value);
+                    finalTotal = Math.max(0, totalBase - bestAmount);
+                    document.getElementById('promo-pct').textContent = `₹${appliedPromo.value}`;
+                }
+            } else {
+                promoRow.classList.add('hidden');
+                finalTotal = totalBase * (1.0 - groupDiscount);
+            }
+            
             document.getElementById('total-amount').textContent = `₹${finalTotal.toFixed(2)}`;
         }
+
+        // --- Discount Code Logic ---
+        document.getElementById('apply-code-btn').addEventListener('click', async () => {
+            const codeInput = document.getElementById('discount-code').value.trim();
+            const msgEl = document.getElementById('discount-message');
+            
+            if (!codeInput) {
+                appliedPromo = null;
+                msgEl.textContent = '';
+                document.getElementById('discount-code').value = '';
+                updateCartUI();
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/distributor/validate-discount-code?code=${encodeURIComponent(codeInput)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    appliedPromo = data;
+                    msgEl.textContent = 'Discount code applied successfully!';
+                    msgEl.className = 'text-sm mb-4 text-success';
+                    updateCartUI();
+                } else {
+                    const err = await res.json();
+                    appliedPromo = null;
+                    msgEl.textContent = err.detail || 'Invalid code';
+                    msgEl.className = 'text-sm mb-4 text-danger';
+                    updateCartUI();
+                }
+            } catch (err) {
+                msgEl.textContent = 'Network error checking code';
+                msgEl.className = 'text-sm mb-4 text-danger';
+            }
+        });
 
         // --- Checkout ---
         document.getElementById('payment-mode').addEventListener('change', (e) => {
@@ -426,6 +594,10 @@
                 const file = document.getElementById('screenshot').files[0];
                 if (file) formData.append('screenshot', file);
             }
+            
+            if (appliedPromo) {
+                formData.append('discount_code', appliedPromo.code);
+            }
 
             const endpoint = cart.length === 1 ? '/distributor/sell' : '/distributor/sell-group';
 
@@ -438,9 +610,12 @@
                     if (data.duplicate_screenshot_warning) msg += " (Warning: Screenshot matches another record)";
                     showToast(msg);
                     cart = [];
+                    appliedPromo = null;
                     updateCartUI();
                     document.getElementById('utr').value = '';
                     document.getElementById('screenshot').value = '';
+                    document.getElementById('discount-code').value = '';
+                    document.getElementById('discount-message').textContent = '';
                     loadStats();
                 } else {
                     showToast(data.detail || 'Sale failed', 'error');

@@ -89,6 +89,7 @@
             <button class="tab-btn" onclick="switchTab('students')">Students</button>
             <button class="tab-btn" onclick="switchTab('users')">User Management</button>
             <button class="tab-btn" onclick="switchTab('roster')">Roster Upload</button>
+            <button class="tab-btn" onclick="switchTab('discounts')">Discount Codes</button>
             <button class="tab-btn" onclick="switchTab('audit')">Audit Log</button>
         </div>
 
@@ -291,6 +292,58 @@
                     </table>
                 </div>
             </div>
+            </div>
+        </div>
+
+        <!-- Discount Codes Tab -->
+        <div id="discounts-tab" class="tab-content">
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Create Code Form -->
+                <div class="panel">
+                    <h3 class="mb-4">Create Discount Code</h3>
+                    <div class="form-group">
+                        <label class="form-label">Code (e.g., WELCOME50)</label>
+                        <input type="text" id="dc-code" class="form-control" placeholder="Enter code">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Discount Type</label>
+                        <select id="dc-type" class="form-control">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="flat">Flat Amount (₹)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Discount Value</label>
+                        <input type="number" id="dc-value" class="form-control" placeholder="e.g., 10 for 10% or 100 for ₹100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max Uses (Optional)</label>
+                        <input type="number" id="dc-max" class="form-control" placeholder="Leave empty for unlimited">
+                    </div>
+                    <button class="btn btn-primary w-full" onclick="createDiscountCode()">Create Code</button>
+                </div>
+
+                <!-- Existing Codes -->
+                <div class="panel">
+                    <h3 class="mb-4">Active & Past Codes</h3>
+                    <div class="table-responsive">
+                        <table class="table w-full" id="discounts-table">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Value</th>
+                                    <th>Uses</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -318,6 +371,19 @@
                 <button class="btn btn-secondary" style="flex: 1;" onclick="closeEditModal()">Cancel</button>
                 <button class="btn btn-primary" style="flex: 1;" onclick="saveStudentEdit()">Save Changes</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="password-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div class="panel" style="width: 400px; position: relative;">
+            <h3 class="mb-4">Change User Password</h3>
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" id="new-password-input" class="form-control" placeholder="Enter new password (min 4 chars)">
+            </div>
+            <button class="btn btn-primary w-full mb-2" onclick="submitPasswordChange()">Change Password</button>
+            <button class="btn btn-secondary w-full" onclick="closePasswordModal()">Cancel</button>
         </div>
     </div>
 
@@ -360,6 +426,7 @@
             if (tab === 'students') loadStudents();
             if (tab === 'users') loadUsers();
             if (tab === 'audit') loadAuditLog();
+            if (tab === 'discounts') loadDiscountCodes();
         }
 
         // --- Dashboard ---
@@ -475,6 +542,7 @@
                             ? `<button class="btn btn-danger py-1 px-3 text-sm" onclick="toggleUser(${u.id}, false)">Disable</button>`
                             : `<button class="btn btn-success py-1 px-3 text-sm" onclick="toggleUser(${u.id}, true)">Enable</button>`
                         }
+                        <button class="btn btn-secondary py-1 px-3 text-sm ml-2" onclick="openPasswordModal(${u.id})">Change Password</button>
                     </td>
                 </tr>
             `).join('');
@@ -514,6 +582,45 @@
             }
         });
 
+        let currentPasswordUserId = null;
+
+        function openPasswordModal(id) {
+            currentPasswordUserId = id;
+            document.getElementById('new-password-input').value = '';
+            document.getElementById('password-modal').classList.remove('hidden');
+        }
+
+        function closePasswordModal() {
+            currentPasswordUserId = null;
+            document.getElementById('password-modal').classList.add('hidden');
+        }
+
+        async function submitPasswordChange() {
+            if (!currentPasswordUserId) return;
+            const newPassword = document.getElementById('new-password-input').value;
+            if (newPassword.length < 4) {
+                showToast('Password must be at least 4 characters', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/admin/users/${currentPasswordUserId}/password`, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({new_password: newPassword})
+                });
+                
+                if (res.ok) {
+                    showToast('Password updated successfully');
+                    closePasswordModal();
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Failed to update password', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            }
+        }
         // --- Roster ---
         async function uploadRoster(e) {
             const file = e.target.files[0];
@@ -524,7 +631,7 @@
             
             showToast('Uploading roster...', 'warning');
             try {
-                const res = await fetch('/admin/roster/upload', {
+                const res = await fetch('/admin/roster/import', {
                     method: 'POST',
                     body: formData
                 });
@@ -571,6 +678,78 @@
                 showToast(`✅ Integrity verified. ${data.total_entries} records intact.`);
             } else {
                 showToast(`❌ Tampering detected at record ID ${data.first_broken_entry_id}`, 'error');
+            }
+        }
+
+        // --- Discount Codes ---
+        async function loadDiscountCodes() {
+            try {
+                const res = await fetch('/admin/discount-codes');
+                if (!res.ok) throw new Error('Failed to load discount codes');
+                const codes = await res.json();
+                
+                document.querySelector('#discounts-table tbody').innerHTML = codes.map(c => `
+                    <tr>
+                        <td class="font-semibold">${c.code}</td>
+                        <td>${c.discount_type === 'percentage' ? c.discount_value + '%' : '₹' + c.discount_value}</td>
+                        <td>${c.times_used} / ${c.max_uses || '∞'}</td>
+                        <td><span class="badge ${c.is_active ? 'badge-success' : 'badge-danger'}">${c.is_active ? 'Active' : 'Inactive'}</span></td>
+                        <td>
+                            <button class="btn btn-sm ${c.is_active ? 'btn-danger' : 'btn-primary'}" onclick="toggleDiscountCode(${c.id})">
+                                ${c.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function createDiscountCode() {
+            const code = document.getElementById('dc-code').value.trim();
+            const type = document.getElementById('dc-type').value;
+            const value = parseFloat(document.getElementById('dc-value').value);
+            const maxInput = document.getElementById('dc-max').value.trim();
+            const maxUses = maxInput ? parseInt(maxInput, 10) : null;
+
+            if (!code || isNaN(value)) {
+                showToast('Please enter a code and valid discount value', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/admin/discount-codes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, discount_type: type, discount_value: value, max_uses: maxUses })
+                });
+                
+                if (res.ok) {
+                    showToast('Discount code created successfully');
+                    document.getElementById('dc-code').value = '';
+                    document.getElementById('dc-value').value = '';
+                    document.getElementById('dc-max').value = '';
+                    loadDiscountCodes();
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Failed to create discount code', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function toggleDiscountCode(id) {
+            try {
+                const res = await fetch(`/admin/discount-codes/${id}/toggle`, { method: 'PATCH' });
+                if (res.ok) {
+                    loadDiscountCodes();
+                } else {
+                    showToast('Failed to toggle code', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
             }
         }
 

@@ -18,7 +18,8 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode,
-    CashHandover, Expense, BudgetAllocation, FundType
+    CashHandover, Expense, BudgetAllocation, FundType,
+    CashHandoverRequest, HandoverRequestStatus
 )
 from session_auth import require_role
 from audit import write_audit_log
@@ -64,7 +65,7 @@ class DistributorCashRow(BaseModel):
     outstanding: float
 
 
-class CashHandoverRequest(BaseModel):
+class CashHandoverPayload(BaseModel):
     distributor_id: int
     amount: float
     notes: Optional[str] = None
@@ -247,7 +248,7 @@ def cash_outstanding(
 
 @router.post("/cash-handover")
 def record_cash_handover(
-    payload: CashHandoverRequest,
+    payload: CashHandoverPayload,
     db: Session = Depends(get_db),
     treasurer: User = Depends(require_role(*TREASURY_ROLES)),
 ):
@@ -274,6 +275,123 @@ def record_cash_handover(
     db.commit()
 
     return {"message": f"₹{payload.amount} recorded as handed over by {distributor.full_name}"}
+
+
+@router.get("/handover-requests")
+def list_handover_requests(
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    requests = db.query(CashHandoverRequest).filter(
+        CashHandoverRequest.status == HandoverRequestStatus.PENDING
+    ).order_by(CashHandoverRequest.created_at.asc()).all()
+    
+    return [
+        {
+            "id": r.id,
+            "distributor_id": r.distributor_id,
+            "distributor_name": r.distributor.full_name,
+            "amount": r.amount,
+            "created_at": r.created_at.isoformat()
+        }
+        for r in requests
+    ]
+
+
+@router.post("/handover-requests/{req_id}/approve")
+def approve_handover_request(
+    req_id: int,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    from datetime import datetime
+    req = db.query(CashHandoverRequest).filter(CashHandoverRequest.id == req_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if req.status != HandoverRequestStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Request is not pending")
+        
+    req.status = HandoverRequestStatus.APPROVED
+    req.resolved_at = datetime.utcnow()
+    req.resolved_by_id = treasurer.id
+
+    handover = CashHandover(
+        distributor_id=req.distributor_id, treasurer_id=treasurer.id,
+        amount=req.amount, notes="Approved from distributor request"
+    )
+    db.add(handover)
+    db.flush()
+
+    write_audit_log(
+        db, user_id=treasurer.id, action="cash_handover", table_name="cash_handovers",
+        record_id=handover.id,
+        new_value={"distributor_id": req.distributor_id, "amount": req.amount, "notes": "Approved from request"},
+    )
+    db.commit()
+    return {"message": "Handover request approved"}
+
+
+@router.post("/handover-requests/{req_id}/reject")
+def reject_handover_request(
+    req_id: int,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    from datetime import datetime
+    req = db.query(CashHandoverRequest).filter(CashHandoverRequest.id == req_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if req.status != HandoverRequestStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Request is not pending")
+        
+    req.status = HandoverRequestStatus.REJECTED
+    req.resolved_at = datetime.utcnow()
+    req.resolved_by_id = treasurer.id
+    db.commit()
+    return {"message": "Handover request rejected"}
+
+
+@router.get("/history")
+def get_treasurer_history(
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    # 1. Verified UPI Payments
+    upi_students = db.query(Student).filter(
+        Student.payment_mode == PaymentMode.UPI,
+        Student.payment_status == PaymentStatus.VERIFIED
+    ).order_by(Student.verified_at.desc()).all()
+    
+    verified_upi = [
+        {
+            "id": s.id,
+            "sap_id": s.sap_id,
+            "name": s.name,
+            "amount": s.amount,
+            "verified_at": s.verified_at.isoformat() if s.verified_at else None,
+            "verified_by_name": s.verified_by.full_name if s.verified_by else "System"
+        }
+        for s in upi_students
+    ]
+
+    # 2. Approved Cash Handovers
+    handovers = db.query(CashHandover).order_by(CashHandover.handed_over_at.desc()).all()
+    approved_cash = [
+        {
+            "id": h.id,
+            "distributor_name": h.distributor.full_name if h.distributor else "Unknown",
+            "amount": h.amount,
+            "handed_over_at": h.handed_over_at.isoformat() if h.handed_over_at else None,
+            "treasurer_name": h.treasurer.full_name if h.treasurer else "System",
+            "notes": h.notes
+        }
+        for h in handovers
+    ]
+
+    return {
+        "verified_upi": verified_upi,
+        "approved_cash": approved_cash
+    }
 
 
 # ---------------------------------------------------------------------------

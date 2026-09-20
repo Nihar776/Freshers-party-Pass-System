@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
-    Expense, CashHandover, AuditLog,
+    Expense, CashHandover, AuditLog, DiscountCode, DiscountType
 )
 from session_auth import require_role
 from audit import verify_chain_integrity, write_audit_log
@@ -91,6 +91,27 @@ class AuditLogEntry(BaseModel):
     record_id: int
     old_value: Optional[dict]
     new_value: Optional[dict]
+
+    class Config:
+        from_attributes = True
+
+
+class DiscountCodeCreate(BaseModel):
+    code: str
+    discount_type: DiscountType
+    discount_value: float
+    max_uses: Optional[int] = None
+
+
+class DiscountCodeResponse(BaseModel):
+    id: int
+    code: str
+    discount_type: DiscountType
+    discount_value: float
+    max_uses: Optional[int]
+    times_used: int
+    is_active: bool
+    created_at: str
 
     class Config:
         from_attributes = True
@@ -426,3 +447,95 @@ def override_student(
     db.refresh(student)
 
     return {"message": "Student record overridden successfully"}
+
+
+# ---------------------------------------------------------------------------
+# Discount Codes
+# ---------------------------------------------------------------------------
+@router.post("/discount-codes", response_model=DiscountCodeResponse)
+def create_discount_code(
+    payload: DiscountCodeCreate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    code_upper = payload.code.upper().strip()
+    existing = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Discount code already exists")
+
+    if payload.discount_value <= 0:
+        raise HTTPException(status_code=400, detail="Discount value must be greater than 0")
+
+    if payload.discount_type == DiscountType.PERCENTAGE and payload.discount_value > 100:
+        raise HTTPException(status_code=400, detail="Percentage discount cannot exceed 100")
+
+    dc = DiscountCode(
+        code=code_upper,
+        discount_type=payload.discount_type,
+        discount_value=payload.discount_value,
+        max_uses=payload.max_uses,
+        created_by_id=admin.id
+    )
+    db.add(dc)
+    db.flush()
+
+    write_audit_log(
+        db, user_id=admin.id, action="discount_code_created", table_name="discount_codes",
+        record_id=dc.id, old_value=None, new_value={
+            "code": dc.code, "type": dc.discount_type.value, "value": dc.discount_value
+        }
+    )
+    db.commit()
+    db.refresh(dc)
+
+    return DiscountCodeResponse(
+        id=dc.id, code=dc.code, discount_type=dc.discount_type,
+        discount_value=dc.discount_value, max_uses=dc.max_uses,
+        times_used=dc.times_used, is_active=dc.is_active,
+        created_at=dc.created_at.isoformat()
+    )
+
+
+@router.get("/discount-codes", response_model=list[DiscountCodeResponse])
+def list_discount_codes(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    codes = db.query(DiscountCode).order_by(DiscountCode.created_at.desc()).all()
+    return [
+        DiscountCodeResponse(
+            id=c.id, code=c.code, discount_type=c.discount_type,
+            discount_value=c.discount_value, max_uses=c.max_uses,
+            times_used=c.times_used, is_active=c.is_active,
+            created_at=c.created_at.isoformat()
+        ) for c in codes
+    ]
+
+
+@router.patch("/discount-codes/{code_id}/toggle", response_model=DiscountCodeResponse)
+def toggle_discount_code(
+    code_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    dc = db.query(DiscountCode).filter(DiscountCode.id == code_id).first()
+    if not dc:
+        raise HTTPException(status_code=404, detail="Discount code not found")
+
+    old_active = dc.is_active
+    dc.is_active = not dc.is_active
+
+    db.flush()
+    write_audit_log(
+        db, user_id=admin.id, action="discount_code_toggled", table_name="discount_codes",
+        record_id=dc.id, old_value={"is_active": old_active}, new_value={"is_active": dc.is_active}
+    )
+    db.commit()
+    db.refresh(dc)
+
+    return DiscountCodeResponse(
+        id=dc.id, code=dc.code, discount_type=dc.discount_type,
+        discount_value=dc.discount_value, max_uses=dc.max_uses,
+        times_used=dc.times_used, is_active=dc.is_active,
+        created_at=dc.created_at.isoformat()
+    )

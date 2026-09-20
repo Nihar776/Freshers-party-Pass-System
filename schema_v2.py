@@ -24,6 +24,12 @@ def _uuid() -> str:
     return uuid.uuid4().hex
 
 
+class HandoverRequestStatus(str, enum.Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
 # ---------------------------------------------------------------------------
 # Users & roles (admins, treasurer, distributors all live in one table)
 # ---------------------------------------------------------------------------
@@ -59,6 +65,11 @@ class PaymentMode(str, enum.Enum):
 class FundType(str, enum.Enum):
     CASH = "cash"
     UPI = "upi"
+
+
+class DiscountType(str, enum.Enum):
+    PERCENTAGE = "percentage"
+    FLAT = "flat"
 
 
 class PassType(str, enum.Enum):
@@ -99,6 +110,7 @@ class Student(Base):
     # --- Group Sale data ---
     group_id = Column(String(32), nullable=True, index=True)
     is_group_payer = Column(Boolean, default=False, nullable=False)
+    discount_code_id = Column(Integer, ForeignKey("discount_codes.id"), nullable=True)
 
     # --- UPI-specific verification fields ---
     utr_number = Column(String(32), nullable=True)          # student/distributor-entered UTR
@@ -118,6 +130,26 @@ class Student(Base):
     distributor = relationship("User", foreign_keys=[distributor_id])
     verified_by = relationship("User", foreign_keys=[verified_by_id])
     scanned_by = relationship("User", foreign_keys=[scanned_by_id])
+    discount_code = relationship("DiscountCode", foreign_keys=[discount_code_id])
+
+
+# ---------------------------------------------------------------------------
+# Discount Codes
+# ---------------------------------------------------------------------------
+class DiscountCode(Base):
+    __tablename__ = "discount_codes"
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(32), unique=True, index=True, nullable=False)
+    discount_type = Column(Enum(DiscountType), nullable=False)
+    discount_value = Column(Float, nullable=False)
+    max_uses = Column(Integer, nullable=True)
+    times_used = Column(Integer, default=0, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    created_by = relationship("User")
 
 
 # ---------------------------------------------------------------------------
@@ -142,6 +174,20 @@ class CashHandover(Base):
 #   sum(Student.amount where distributor_id=X, payment_mode=CASH, payment_status=VERIFIED)
 #   minus sum(CashHandover.amount where distributor_id=X)
 # Computing it live avoids the value ever drifting out of sync with reality.
+
+class CashHandoverRequest(Base):
+    __tablename__ = "cash_handover_requests"
+
+    id = Column(Integer, primary_key=True)
+    distributor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    amount = Column(Float, nullable=False)
+    status = Column(Enum(HandoverRequestStatus), default=HandoverRequestStatus.PENDING, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    resolved_at = Column(DateTime, nullable=True)
+    resolved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    distributor = relationship("User", foreign_keys=[distributor_id])
+    resolved_by = relationship("User", foreign_keys=[resolved_by_id])
 
 
 # ---------------------------------------------------------------------------

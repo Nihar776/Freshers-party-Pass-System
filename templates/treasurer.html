@@ -79,6 +79,8 @@
             <button class="tab-btn active" onclick="switchTab('verify')">Verification Queue</button>
             <button class="tab-btn" onclick="switchTab('expenses')">Expenses</button>
             <button class="tab-btn" onclick="switchTab('budget')">Budgeting</button>
+            <button class="tab-btn" onclick="switchTab('handover')">Cash Deposits</button>
+            <button class="tab-btn" onclick="switchTab('history')">History</button>
         </div>
 
         <!-- Verification Queue -->
@@ -125,29 +127,140 @@
                     <div id="budget-summary" class="text-muted">Loading...</div>
                 </div>
             </div>
+            <div class="panel mt-6">
+                <h3 class="mb-4">Recent Expenses</h3>
+                <div class="table-responsive">
+                    <table class="table w-full" id="expenses-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Fund Type</th>
+                                <th>Amount</th>
+                                <th>Paid By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <!-- Budget -->
         <div id="budget-tab" class="tab-content">
-            <div class="panel" style="max-width: 500px;">
-                <h3 class="mb-4">Allocate Budget</h3>
-                <p class="text-muted text-sm mb-4">Set limits for specific categories. This helps track over/under spending.</p>
-                <div class="form-group">
-                    <label class="form-label">Category</label>
-                    <input type="text" id="bud-cat" class="form-control" placeholder="e.g. DJ">
+            <div class="grid grid-cols-2 gap-6">
+                <div class="panel">
+                    <h3 class="mb-4">Allocate Budget</h3>
+                    <p class="text-muted text-sm mb-4">Set limits for specific categories. This helps track over/under spending.</p>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <input type="text" id="bud-cat" class="form-control" placeholder="e.g. DJ">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fund Type</label>
+                        <select id="bud-fund" class="form-control">
+                            <option value="cash">Cash</option>
+                            <option value="upi">UPI</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Allocated Amount (₹)</label>
+                        <input type="number" id="bud-amt" class="form-control">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="submitBudget()">Set Budget Limit</button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Fund Type</label>
-                    <select id="bud-fund" class="form-control">
-                        <option value="cash">Cash</option>
-                        <option value="upi">UPI</option>
-                    </select>
+                
+                <div class="panel">
+                    <h3 class="mb-4">Budget Status</h3>
+                    <div class="table-responsive">
+                        <table class="table w-full" id="budget-status-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Fund Type</th>
+                                    <th>Allocated</th>
+                                    <th>Spent</th>
+                                    <th>Remaining</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Allocated Amount (₹)</label>
-                    <input type="number" id="bud-amt" class="form-control">
+            </div>
+        </div>
+        </div>
+
+        <!-- Handover -->
+        <div id="handover-tab" class="tab-content">
+            <div class="panel">
+                <div class="flex justify-between items-center mb-4">
+                    <h3>Pending Cash Deposit Requests</h3>
+                    <button class="btn btn-secondary" onclick="loadHandoverRequests()">Refresh</button>
                 </div>
-                <button class="btn btn-primary" style="width: 100%;" onclick="submitBudget()">Set Budget Limit</button>
+                <div class="table-responsive">
+                    <table class="table w-full" id="handover-requests-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Distributor</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div id="history-tab" class="tab-content">
+            <div class="grid grid-cols-2 gap-6">
+                <!-- UPI History -->
+                <div class="panel">
+                    <h3 class="mb-4">Verified UPI Payments</h3>
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table w-full" id="history-upi-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Student</th>
+                                    <th>Amount</th>
+                                    <th>Verified By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Cash History -->
+                <div class="panel">
+                    <h3 class="mb-4">Approved Cash Deposits</h3>
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table w-full" id="history-cash-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Distributor</th>
+                                    <th>Amount</th>
+                                    <th>Approved By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -190,8 +303,15 @@
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(`${tab}-tab`).classList.add('active');
+            
             if (tab === 'verify') loadQueue();
-            if (tab === 'expenses') loadBudgetSummary(); // Implement later if backend supports it
+            if (tab === 'expenses') {
+                loadBudgetSummary();
+                loadExpenses();
+            }
+            if (tab === 'budget') loadBudgetStatus();
+            if (tab === 'handover') loadHandoverRequests();
+            if (tab === 'history') loadHistory();
         }
 
         // --- Queue ---
@@ -308,7 +428,9 @@
             const res = await fetch("/treasurer/expenses", { method: "POST", body: formData });
             if (res.ok) {
                 showToast("Expense recorded successfully");
-                document.getElementById("exp-desc").value = "";
+                loadBudgetSummary();
+                loadExpenses();
+                document.getElementById('exp-desc').value = '';
                 document.getElementById("exp-cat").value = "";
                 document.getElementById("exp-amt").value = "";
             } else {
@@ -332,16 +454,148 @@
             
             if (res.ok) {
                 showToast("Budget allocated successfully");
-                document.getElementById("bud-cat").value = "";
-                document.getElementById("bud-amt").value = "";
+                document.getElementById('bud-cat').value = '';
+                document.getElementById('bud-amt').value = '';
+                loadBudgetStatus();
             } else {
                 const data = await res.json();
                 showToast(data.detail || "Failed to allocate budget", "error");
             }
         }
 
-        function loadBudgetSummary() {
-            document.getElementById('budget-summary').innerHTML = '<p>Check admin overview for net collection and total expenses.</p>';
+        async function loadBudgetSummary() {
+            const res = await fetch("/treasurer/finance-summary");
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('budget-summary').innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div class="flex justify-between"><span>Net Verified Collection:</span> <span class="font-bold">₹${data.net_verified_collection}</span></div>
+                        <div class="flex justify-between"><span>Total Expenses:</span> <span class="font-bold text-danger">₹${data.total_expenses}</span></div>
+                        <div class="flex justify-between" style="border-top: 1px solid var(--border); padding-top: 8px;">
+                            <span>Net Funds Remaining:</span> <span class="font-bold text-success">₹${data.net_funds_remaining}</span>
+                        </div>
+                        <div class="text-sm mt-2">
+                            <div>Cash Remaining: ₹${data.total_cash_remaining}</div>
+                            <div>UPI Remaining: ₹${data.total_upi_remaining}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('budget-summary').innerHTML = '<p class="text-danger">Failed to load summary.</p>';
+            }
+        }
+
+        async function loadExpenses() {
+            const res = await fetch("/treasurer/expenses");
+            if (res.ok) {
+                const data = await res.json();
+                document.querySelector('#expenses-table tbody').innerHTML = data.map(e => `
+                    <tr>
+                        <td>${new Date(e.spent_at).toLocaleString()}</td>
+                        <td>${e.description}</td>
+                        <td>${e.category}</td>
+                        <td><span class="badge ${e.fund_type === 'cash' ? 'badge-primary' : 'badge-secondary'}">${e.fund_type}</span></td>
+                        <td class="font-bold text-danger">₹${e.amount}</td>
+                        <td>${e.recorded_by}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        async function loadBudgetStatus() {
+            const res = await fetch("/treasurer/budget-status");
+            if (res.ok) {
+                const data = await res.json();
+                document.querySelector('#budget-status-table tbody').innerHTML = data.map(b => `
+                    <tr>
+                        <td class="font-semibold">${b.category}</td>
+                        <td><span class="badge ${b.fund_type === 'cash' ? 'badge-primary' : 'badge-secondary'}">${b.fund_type}</span></td>
+                        <td>₹${b.allocated}</td>
+                        <td>₹${b.spent}</td>
+                        <td class="${b.remaining < 0 ? 'text-danger font-bold' : 'text-success'}">₹${b.remaining}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        async function loadHandoverRequests() {
+            const res = await fetch('/treasurer/handover-requests');
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            const tbody = document.querySelector('#handover-requests-table tbody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No pending requests</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td>${new Date(r.created_at).toLocaleString()}</td>
+                    <td class="font-semibold">${r.distributor_name}</td>
+                    <td class="font-bold text-accent">₹${r.amount}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="resolveHandover(${r.id}, 'approve')">Approve</button>
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="resolveHandover(${r.id}, 'reject')">Reject</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function resolveHandover(reqId, action) {
+            try {
+                const res = await fetch(`/treasurer/handover-requests/${reqId}/${action}`, { method: 'POST' });
+                if (res.ok) {
+                    showToast(`Request ${action}d successfully`);
+                    loadHandoverRequests();
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || `Failed to ${action} request`, 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function loadHistory() {
+            const res = await fetch('/treasurer/history');
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            // Render UPI
+            const upiTbody = document.querySelector('#history-upi-table tbody');
+            if (data.verified_upi.length === 0) {
+                upiTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No verified UPI payments</td></tr>';
+            } else {
+                upiTbody.innerHTML = data.verified_upi.map(u => `
+                    <tr>
+                        <td>${u.verified_at ? new Date(u.verified_at).toLocaleString() : 'N/A'}</td>
+                        <td>
+                            <div class="font-semibold">${u.name}</div>
+                            <div class="text-sm text-muted">${u.sap_id}</div>
+                        </td>
+                        <td class="font-bold text-success">₹${u.amount}</td>
+                        <td>${u.verified_by_name}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            // Render Cash
+            const cashTbody = document.querySelector('#history-cash-table tbody');
+            if (data.approved_cash.length === 0) {
+                cashTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No approved cash deposits</td></tr>';
+            } else {
+                cashTbody.innerHTML = data.approved_cash.map(c => `
+                    <tr>
+                        <td>${c.handed_over_at ? new Date(c.handed_over_at).toLocaleString() : 'N/A'}</td>
+                        <td class="font-semibold">${c.distributor_name}</td>
+                        <td class="font-bold text-success">₹${c.amount}</td>
+                        <td>${c.treasurer_name}</td>
+                    </tr>
+                `).join('');
+            }
         }
 
         init();

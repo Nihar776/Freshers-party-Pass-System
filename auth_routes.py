@@ -45,6 +45,13 @@ class UserSummary(BaseModel):
     role: UserRole
     is_active: bool
 
+    class Config:
+        from_attributes = True
+
+
+class PasswordChangeRequest(BaseModel):
+    new_password: str
+
 
 # ---------------------------------------------------------------------------
 # Login / logout - open to anyone with valid credentials
@@ -163,3 +170,22 @@ def enable_user(
     target.is_active = True
     db.commit()
     return {"message": f"{target.full_name} enabled"}
+
+
+@router.patch("/admin/users/{user_id}/password")
+def change_user_password(
+    user_id: int,
+    payload: PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(UserRole.ADMIN)),
+):
+    if len(payload.new_password) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
+
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    target.password_hash = get_password_hash(payload.new_password)
+    db.commit()
+    return {"message": f"Password for {target.full_name} updated successfully"}
