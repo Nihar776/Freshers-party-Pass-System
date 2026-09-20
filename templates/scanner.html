@@ -141,7 +141,8 @@
         const API_VERIFY = "/verify";
         const API_STATS = "/gate-stats";
         const API_ME = "/me";
-        const SCAN_COOLDOWN_MS = 2000;
+        const SAME_QR_COOLDOWN_MS = 4000; // 4 seconds before same QR can be scanned again
+        const ANY_QR_COOLDOWN_MS = 1500;  // 1.5 seconds between different QRs
 
         let html5QrCode;
         let cameras = [];
@@ -149,6 +150,7 @@
         let isPaused = false;
         let isBusy = false;
         let lastScanTime = 0;
+        let lastScannedToken = "";
 
         const bannerEl = document.getElementById("banner");
         const statusWordEl = document.getElementById("status-word");
@@ -249,8 +251,14 @@
         async function verifyToken(token) {
             if (isBusy) return;
             const now = Date.now();
-            if (now - lastScanTime < SCAN_COOLDOWN_MS) return;
+            
+            // Prevent scanning the exact same QR code twice rapidly
+            if (token === lastScannedToken && (now - lastScanTime < SAME_QR_COOLDOWN_MS)) return;
+            // Prevent scanning any QR code too rapidly
+            if (now - lastScanTime < ANY_QR_COOLDOWN_MS) return;
+            
             lastScanTime = now;
+            lastScannedToken = token;
             isBusy = true;
 
             setIdle("Checking...");
@@ -286,6 +294,9 @@
             currentCameraIndex = cameras.findIndex(c => /back|rear|environment/i.test(c.label));
             if (currentCameraIndex === -1) currentCameraIndex = 0;
 
+            isPaused = false;
+            lastScanTime = 0;
+            lastScannedToken = "";
             await runCamera(cameras[currentCameraIndex].id);
         }
 

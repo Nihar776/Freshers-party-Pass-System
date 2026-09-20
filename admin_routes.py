@@ -128,6 +128,7 @@ class AdminStudentSummary(BaseModel):
     name: str
     branch: str
     payment_status: PaymentStatus
+    payment_mode: Optional[PaymentMode] = None
     is_used: bool
     sold_at: Optional[str]
 
@@ -288,11 +289,33 @@ def list_students_admin(
     rows = q.order_by(Student.name).limit(limit).all()
     return [
         AdminStudentSummary(
-            id=r.id, sap_id=r.sap_id, name=r.name, branch=r.branch,
-            payment_status=r.payment_status, is_used=r.is_used,
-            sold_at=r.sold_at.isoformat() if r.sold_at else None,
-        ) for r in rows
+            id=s.id,
+            sap_id=s.sap_id,
+            name=s.name,
+            branch=s.branch,
+            payment_status=s.payment_status,
+            payment_mode=s.payment_mode,
+            is_used=s.is_used,
+            sold_at=s.sold_at.isoformat() if s.sold_at else None,
+        )
+        for s in rows
     ]
+
+
+@router.get("/students/{student_id}/screenshot")
+def get_student_screenshot(
+    student_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+        
+    if not student.payment_screenshot:
+        raise HTTPException(status_code=404, detail="No screenshot uploaded for this student")
+        
+    return {"screenshot": student.payment_screenshot}
 
 
 @router.get("/sellers-detail", response_model=list[AdminSellerDetail])
