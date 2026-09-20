@@ -10,9 +10,9 @@ cannot.
 import base64
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Form, File, UploadFile
 from pydantic import BaseModel
-from sqlalchemy import func
+from sqlalchemy import func, update
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -175,10 +175,11 @@ def get_screenshot(
 
 
 @router.post("/verify-group/{group_id}", response_model=VerifyActionResult)
-def verify_group(
+def verify_group_payment(
     group_id: str,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+    treasurer: User = Depends(require_role(UserRole.TREASURER, UserRole.ADMIN)),
 ):
     # Try finding by group_id or fallback to single ID for legacy data
     students = db.query(Student).filter(
@@ -209,9 +210,12 @@ def verify_group(
         try:
             token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
             qr_image = generate_qr_image(token)
-            send_pass_email(
-                recipient_email=student.email, student_name=student.name,
-                qr_image_bytes=qr_image, sap_id=student.sap_id,
+            background_tasks.add_task(
+                send_pass_email,
+                recipient_email=student.email, 
+                student_name=student.name, 
+                qr_image_bytes=qr_image, 
+                sap_id=student.sap_id
             )
             verified_count += 1
         except Exception as exc:
@@ -222,7 +226,7 @@ def verify_group(
     if errors:
         raise HTTPException(status_code=502, detail=f"Verified {verified_count}, but some emails failed: {', '.join(errors)}")
 
-    return VerifyActionResult(message=f"{verified_count} payments verified and passes emailed", sap_id=group_id,
+    return VerifyActionResult(message=f"{verified_count} payments verified and passes being emailed in the background", sap_id=group_id,
                                payment_status=PaymentStatus.VERIFIED)
 
 
@@ -266,10 +270,11 @@ def reject_group(
 
 
 @router.post("/verify/{student_id}", response_model=VerifyActionResult)
-def approve_payment(
+def verify_payment(
     student_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+    treasurer: User = Depends(require_role(UserRole.TREASURER, UserRole.ADMIN)),
 ):
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
@@ -291,18 +296,19 @@ def approve_payment(
     db.refresh(student)
 
     # Only NOW does the QR get generated and emailed - this is the whole
-    # point of the verification gate for UPI sales.
+    # point of holding back UPI verification.
     token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
     qr_image = generate_qr_image(token)
-    try:
-        send_pass_email(
-            recipient_email=student.email, student_name=student.name,
-            qr_image_bytes=qr_image, sap_id=student.sap_id,
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Verified but email failed to send: {exc}") from exc
 
-    return VerifyActionResult(message="Payment verified, pass emailed", sap_id=student.sap_id,
+    background_tasks.add_task(
+        send_pass_email,
+        recipient_email=student.email, 
+        student_name=student.name, 
+        qr_image_bytes=qr_image, 
+        sap_id=student.sap_id
+    )
+
+    return VerifyActionResult(message="Payment verified, pass is being emailed in the background", sap_id=student.sap_id,
                                payment_status=student.payment_status)
 
 

@@ -11,7 +11,7 @@ from typing import Optional, List
 from datetime import datetime
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy import update, func
 from sqlalchemy.orm import Session
@@ -125,6 +125,7 @@ def sell_pass(
     email: Optional[str] = Form(None),  # only needed if the roster row lacks one
     screenshot: Optional[UploadFile] = File(None),
     discount_code: Optional[str] = Form(None),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
     distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
@@ -241,20 +242,14 @@ def sell_pass(
         # Cash is trusted immediately - issue the QR now.
         token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
         qr_image = generate_qr_image(token)
-        try:
-            send_pass_email(
-                recipient_email=student.email,
-                student_name=student.name,
-                qr_image_bytes=qr_image,
-                sap_id=student.sap_id,
-            )
-        except Exception as exc:
-            # Sale is already recorded - don't lose it over an email hiccup,
-            # surface the failure so it can be resent.
-            raise HTTPException(
-                status_code=502, detail=f"Pass recorded but email failed to send: {exc}"
-            ) from exc
-        message = "Cash sale recorded - pass emailed immediately"
+        background_tasks.add_task(
+            send_pass_email,
+            recipient_email=student.email,
+            student_name=student.name,
+            qr_image_bytes=qr_image,
+            sap_id=student.sap_id,
+        )
+        message = "Cash sale recorded - pass is being emailed in the background"
     else:
         message = "UPI sale recorded - pending treasurer verification before the pass is sent"
 
@@ -323,6 +318,7 @@ def sell_group(
     utr_number: Optional[str] = Form(None),
     screenshot: Optional[UploadFile] = File(None),
     discount_code: Optional[str] = Form(None),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
     distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
@@ -476,28 +472,19 @@ def sell_group(
         )
     db.commit()
 
-    email_failures = 0
     if payment_mode == PaymentMode.CASH:
         for student in students:
             db.refresh(student)
             token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
             qr_image = generate_qr_image(token)
-            try:
-                send_pass_email(
-                    recipient_email=student.email,
-                    student_name=student.name,
-                    qr_image_bytes=qr_image,
-                    sap_id=student.sap_id,
-                )
-            except Exception as exc:
-                import logging
-                logging.error(f"Failed to send group pass email to {student.sap_id}: {exc}")
-                email_failures += 1
-        
-        if email_failures > 0:
-            message = f"Cash sale recorded. {len(students) - email_failures} emails sent, {email_failures} failed."
-        else:
-            message = f"Cash sale recorded for group - {len(students)} passes emailed immediately"
+            background_tasks.add_task(
+                send_pass_email,
+                recipient_email=student.email,
+                student_name=student.name,
+                qr_image_bytes=qr_image,
+                sap_id=student.sap_id,
+            )
+        message = f"Cash sale recorded for group - {len(students)} passes being emailed in the background"
     else:
         message = f"UPI sale recorded for group - {len(students)} passes pending treasurer verification"
 
@@ -626,6 +613,7 @@ def create_handover_request(
 @router.post("/resend-email/{sap_id}")
 def resend_email(
     sap_id: str,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
 ):
@@ -639,14 +627,12 @@ def resend_email(
 
     token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
     qr_image = generate_qr_image(token)
-    try:
-        send_pass_email(
-            recipient_email=student.email,
-            student_name=student.name,
-            qr_image_bytes=qr_image,
-            sap_id=student.sap_id,
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Failed to resend email: {exc}") from exc
+    background_tasks.add_task(
+        send_pass_email,
+        recipient_email=student.email,
+        student_name=student.name,
+        qr_image_bytes=qr_image,
+        sap_id=student.sap_id,
+    )
 
-    return {"message": "Email sent successfully"}
+    return {"message": "Email is being sent in the background"}
