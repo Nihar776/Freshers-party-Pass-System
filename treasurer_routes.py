@@ -38,6 +38,7 @@ class VerificationMemberItem(BaseModel):
     student_id: int
     sap_id: str
     name: str
+    email: Optional[str] = None
     branch: str
 
 class PendingVerificationGroupItem(BaseModel):
@@ -152,7 +153,7 @@ def pending_verifications(
             has_screenshot=bool(payer.payment_screenshot),
             members=[
                 VerificationMemberItem(
-                    student_id=m.id, sap_id=m.sap_id, name=m.name, branch=m.branch
+                    student_id=m.id, sap_id=m.sap_id, name=m.name, email=m.email, branch=m.branch
                 ) for m in members
             ],
             payer_student_id=payer.id

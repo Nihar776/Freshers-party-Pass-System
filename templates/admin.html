@@ -191,7 +191,7 @@
                             <tr>
                                 <th style="width: 40px;"><input type="checkbox" id="select-all-students" onclick="toggleAllStudents(this)"></th>
                                 <th>Name</th>
-                                <th>SAP ID</th>
+                                <th>SAP ID / Email</th>
                                 <th>Branch</th>
                                 <th>Status</th>
                                 <th>Entered</th>
@@ -549,11 +549,14 @@
                 <tr>
                     <td><input type="checkbox" class="student-checkbox" value="${s.id}"></td>
                     <td class="font-semibold">${s.name}</td>
-                    <td class="text-muted">${s.sap_id}</td>
+                    <td class="text-muted">${s.sap_id}<br><small>${s.email || 'No email'}</small></td>
                     <td>${s.branch}</td>
-                    <td><span class="badge ${badgeClass}">${s.payment_status.replace('_', ' ')}</span></td>
+                    <td><span class="badge ${badgeClass}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_', ' ')}</span></td>
                     <td>${s.is_used ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-neutral">No</span>'}</td>
-                    <td><button class="btn btn-secondary py-1 px-3 text-sm" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}', '${s.food_preference}')">Edit</button></td>
+                    <td>
+                        <button class="btn btn-secondary py-1 px-3 text-sm" style="margin-right: 4px;" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}', '${s.food_preference}')">Edit</button>
+                        ${s.payment_status === 'verified' ? `<button class="btn btn-secondary py-1 px-3 text-sm" onclick="resendEmail('${s.sap_id}')">Resend Mail</button>` : ''}
+                    </td>
                 </tr>
             `}).join('');
         }
@@ -955,6 +958,23 @@
                 }
             } catch (err) {
                 showToast('Network error', 'error');
+            }
+        }
+
+        async function resendEmail(sap_id) {
+            if (!confirm('Are you sure you want to resend the pass email to this student?')) return;
+            
+            showToast('Triggering resend in background...', 'warning');
+            try {
+                const res = await fetch(`/admin/resend-email/${sap_id}`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message);
+                } else {
+                    showToast(data.detail || 'Failed to resend email', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while resending', 'error');
             }
         }
 

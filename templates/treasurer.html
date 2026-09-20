@@ -338,7 +338,7 @@
                                 <details>
                                     <summary class="cursor-pointer font-semibold text-primary">View Members</summary>
                                     <div class="mt-2 ml-4">
-                                        ${item.members.map(m => `<div>- ${m.name} (${m.sap_id})</div>`).join('')}
+                                        ${item.members.map(m => `<div>- ${m.name} (${m.sap_id})${m.email ? ' · ' + m.email : ''}</div>`).join('')}
                                     </div>
                                 </details>
                             </div>

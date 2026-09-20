@@ -54,6 +54,7 @@ class StudentSearchResult(BaseModel):
     sap_id: str
     name: str
     branch: str
+    email: Optional[str] = None
     gender: Optional[str]
     payment_status: PaymentStatus
 
@@ -610,29 +611,4 @@ def create_handover_request(
     return {"message": "Handover request submitted to treasurer", "id": req.id}
 
 
-@router.post("/resend-email/{sap_id}")
-def resend_email(
-    sap_id: str,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),
-):
-    student = db.query(Student).filter(Student.sap_id == sap_id).first()
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    if student.payment_status != PaymentStatus.VERIFIED:
-        raise HTTPException(status_code=400, detail="Cannot resend email - pass is not verified")
-    if not student.email:
-        raise HTTPException(status_code=400, detail="No email address on file for this student")
 
-    token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
-    qr_image = generate_qr_image(token)
-    background_tasks.add_task(
-        send_pass_email,
-        recipient_email=student.email,
-        student_name=student.name,
-        qr_image_bytes=qr_image,
-        sap_id=student.sap_id,
-    )
-
-    return {"message": "Email is being sent in the background"}

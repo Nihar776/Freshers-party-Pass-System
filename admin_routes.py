@@ -8,12 +8,13 @@ from typing import Optional
 import csv
 import io
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from datetime import datetime, date, timedelta
 from database import get_db
 from schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
@@ -21,6 +22,8 @@ from schema_v2 import (
 )
 from session_auth import require_role
 from audit import verify_chain_integrity, write_audit_log
+from auth import generate_pass_token, generate_qr_image
+from mailer import send_pass_email
 
 router = APIRouter(prefix="/admin", tags=["admin-dashboard"])
 
@@ -133,6 +136,7 @@ class AdminStudentSummary(BaseModel):
     id: int
     sap_id: str
     name: str
+    email: Optional[str] = None
     branch: str
     payment_status: PaymentStatus
     payment_mode: Optional[PaymentMode] = None
@@ -300,6 +304,7 @@ def list_students_admin(
             id=s.id,
             sap_id=s.sap_id,
             name=s.name,
+            email=s.email,
             branch=s.branch,
             payment_status=s.payment_status,
             payment_mode=s.payment_mode,
@@ -383,7 +388,7 @@ def view_audit_log(
     rows = q.order_by(AuditLog.id.desc()).limit(limit).all()
     return [
         AuditLogEntry(
-            id=r.id, timestamp=r.timestamp.isoformat(),
+            id=r.id, timestamp=(r.timestamp + timedelta(hours=5, minutes=30)).isoformat(),
             user_name=r.user.full_name if r.user else None,
             action=r.action, table_name=r.table_name, record_id=r.record_id,
             old_value=r.old_value, new_value=r.new_value,
@@ -572,10 +577,9 @@ def create_discount_code(
     db.flush()
 
     write_audit_log(
-        db, user_id=admin.id, action="discount_code_created", table_name="discount_codes",
-        record_id=dc.id, old_value=None, new_value={
-            "code": dc.code, "type": dc.discount_type.value, "value": dc.discount_value
-        }
+        db, user_id=admin.id, action="discount_code_created",
+        table_name="discount_codes", record_id=dc.id,
+        new_value={"code": dc.code, "type": dc.discount_type.value, "value": dc.discount_value, "max": dc.max_uses}
     )
     db.commit()
     db.refresh(dc)
@@ -586,6 +590,34 @@ def create_discount_code(
         times_used=dc.times_used, is_active=dc.is_active,
         created_at=dc.created_at.isoformat()
     )
+
+
+@router.post("/resend-email/{sap_id}")
+def resend_email(
+    sap_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    student = db.query(Student).filter(Student.sap_id == sap_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    if student.payment_status != PaymentStatus.VERIFIED:
+        raise HTTPException(status_code=400, detail="Cannot resend email - pass is not verified")
+    if not student.email:
+        raise HTTPException(status_code=400, detail="No email address on file for this student")
+
+    token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+    qr_image = generate_qr_image(token)
+    background_tasks.add_task(
+        send_pass_email,
+        recipient_email=student.email,
+        student_name=student.name,
+        qr_image_bytes=qr_image,
+        sap_id=student.sap_id,
+    )
+
+    return {"message": "Email is being sent in the background"}
 
 
 @router.get("/discount-codes", response_model=list[DiscountCodeResponse])

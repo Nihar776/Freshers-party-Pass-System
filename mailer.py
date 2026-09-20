@@ -138,15 +138,19 @@ def send_pass_email(
                 with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
                     server.starttls()
                     server.login(SMTP_USER, SMTP_PASS)
-                    server.sendmail(SMTP_USER, [recipient_email], msg.as_string())
+                    server.send_message(msg)
+                return
             else:
                 with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as server:
                     server.login(SMTP_USER, SMTP_PASS)
-                    server.sendmail(SMTP_USER, [recipient_email], msg.as_string())
-            break
-        except Exception as e:
+                    server.send_message(msg)
+                return
+        except Exception as exc:
+            import traceback
+            with open('email_error.log', 'a') as f:
+                f.write(f"Attempt {attempt+1} failed: {exc}\n{traceback.format_exc()}\n")
             if attempt < max_retries - 1:
                 import time
                 time.sleep(2)
             else:
-                raise e
+                raise exc
