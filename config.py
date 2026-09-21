@@ -57,6 +57,7 @@ SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER: str = os.getenv("SMTP_USER", "")
 SMTP_PASS: str = os.getenv("SMTP_PASS", "")
 SMTP_FROM_NAME: str = os.getenv("SMTP_FROM_NAME", "College Fest Team")
+SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 # If true, uses STARTTLS (587). If false, uses implicit SSL (465).
 SMTP_USE_STARTTLS: bool = os.getenv("SMTP_USE_STARTTLS", "true").lower() == "true"
 

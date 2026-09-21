@@ -16,6 +16,7 @@ from config import (
     SMTP_USER,
     SMTP_PASS,
     SMTP_FROM_NAME,
+    SMTP_FROM_EMAIL,
     SMTP_USE_STARTTLS,
     EVENT_NAME,
     EVENT_VENUE,
@@ -114,7 +115,7 @@ def send_pass_email(
 
     msg = MIMEMultipart("related")
     msg["Subject"] = f"Your entry pass - {EVENT_NAME}"
-    msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_USER}>"
+    msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_FROM_EMAIL}>"
     msg["To"] = recipient_email
 
     alt = MIMEMultipart("alternative")

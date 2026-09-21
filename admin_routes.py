@@ -493,6 +493,7 @@ def override_student(
 @router.post("/students/bulk-update")
 def bulk_update_students(
     payload: StudentBulkUpdateRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(*ADMIN_ONLY)),
 ):
@@ -533,6 +534,20 @@ def bulk_update_students(
                     new_snapshot["food_preference"] = new_food.value
             except ValueError:
                 continue
+        elif payload.action == "resend_emails":
+            if student.payment_status != PaymentStatus.VERIFIED or not student.email:
+                continue
+            token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+            qr_image = generate_qr_image(token)
+            background_tasks.add_task(
+                send_pass_email,
+                recipient_email=student.email,
+                student_name=student.name,
+                qr_image_bytes=qr_image,
+                sap_id=student.sap_id,
+            )
+            updated_count += 1
+            continue
 
         if new_snapshot:
             db.flush()
