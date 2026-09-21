@@ -49,9 +49,21 @@ def _build_html(student_name: str, sap_id: str) -> str:
                   You're confirmed for {EVENT_NAME}. Show the QR code below at the
                   entry gate - a volunteer will scan it and hand you your wristband.
                   Each code works once, so don't share a screenshot with anyone else.
+
                 </p>
               </td>
             </tr>
+
+
+<tr>
+<td style="padding:24px 28px 8px;color:#e6e6ea;">
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#b7b7c2;font-weight: bold;">
+       Show the QR code below for collecting your wristbands at 12pm - 1pm on 26th September 2026
+                </p>
+              </td>
+</tr>
+
+
             <tr>
               <td align="center" style="padding:8px 28px 24px;">
                 <img src="cid:{CID}" width="220" height="220"
