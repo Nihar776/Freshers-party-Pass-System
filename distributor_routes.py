@@ -78,6 +78,7 @@ class GroupSellResult(BaseModel):
 class MySaleSummary(BaseModel):
     sap_id: str
     name: str
+    email: Optional[str] = None
     pass_type: PassType
     payment_mode: Optional[PaymentMode]
     amount: Optional[float]
@@ -512,7 +513,7 @@ def my_sales(
     )
     return [
         MySaleSummary(
-            sap_id=r.sap_id, name=r.name, pass_type=r.pass_type, payment_mode=r.payment_mode,
+            sap_id=r.sap_id, name=r.name, email=r.email, pass_type=r.pass_type, payment_mode=r.payment_mode,
             amount=r.amount, payment_status=r.payment_status,
             sold_at=r.sold_at.isoformat() if r.sold_at else None,
         )
@@ -589,6 +590,20 @@ def create_handover_request(
 ):
     if payload.amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be greater than zero")
+
+    total_cash = db.query(func.coalesce(func.sum(Student.amount), 0.0)).filter(
+        Student.distributor_id == distributor.id,
+        Student.payment_mode == PaymentMode.CASH,
+        Student.payment_status == PaymentStatus.VERIFIED
+    ).scalar()
+
+    total_handed_over = db.query(func.coalesce(func.sum(CashHandover.amount), 0.0)).filter(
+        CashHandover.distributor_id == distributor.id
+    ).scalar()
+    
+    outstanding = total_cash - total_handed_over
+    if payload.amount > outstanding:
+        raise HTTPException(status_code=400, detail=f"Cannot handover more than outstanding balance (₹{outstanding})")
 
     # Check if there is already a pending request
     existing_pending = db.query(CashHandoverRequest).filter(

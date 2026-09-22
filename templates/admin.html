@@ -121,13 +121,32 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-2">
+            <div class="grid grid-cols-2 gap-6">
                 <div class="panel">
                     <h3 class="mb-4">Quick Actions</h3>
                     <div class="grid gap-4">
                         <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="window.location.href='/admin/export/sales'">⬇️ Export Sales CSV</button>
                         <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="window.location.href='/admin/export/attendees'">⬇️ Export Gate Attendees CSV</button>
                         <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="checkAuditIntegrity()">🛡️ Verify Log Integrity</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3 class="mb-4">Branch-wise Sales</h3>
+                    <div class="table-container">
+                        <table id="branch-table" class="table w-full">
+                            <thead>
+                                <tr>
+                                    <th>Branch</th>
+                                    <th>Sold</th>
+                                    <th>% of Total</th>
+                                    <th>Cash</th>
+                                    <th>UPI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -181,6 +200,7 @@
                             <option value="is_used:false">Mark Not Entered</option>
                             <option value="food_preference:veg">Set Food: Veg</option>
                             <option value="food_preference:jain">Set Food: Jain</option>
+                            <option value="resend_emails:true">Resend Emails (Purchased Only)</option>
                         </select>
                         <button class="btn btn-secondary" onclick="applyBulkAction()">Apply</button>
                     </div>
@@ -369,12 +389,27 @@
             <h3 class="mb-4">Override Student Record</h3>
             <div class="form-group">
                 <label class="form-label">Payment Status</label>
-                <select id="edit-status" class="form-control">
+                <select id="edit-status" class="form-control" onchange="toggleEditPaymentFields()">
                     <option value="not_purchased">Not Purchased</option>
                     <option value="pending_verification">Pending UPI Verification</option>
                     <option value="verified">Verified (Paid)</option>
                     <option value="rejected">Rejected</option>
                 </select>
+            </div>
+            <div class="form-group hidden" id="edit-payment-mode-group">
+                <label class="form-label">Payment Mode</label>
+                <select id="edit-payment-mode" class="form-control" onchange="toggleEditPaymentFields()">
+                    <option value="cash">Cash</option>
+                    <option value="upi">UPI</option>
+                </select>
+            </div>
+            <div class="form-group hidden" id="edit-utr-group">
+                <label class="form-label">Transaction ID / UTR (Required for UPI)</label>
+                <input type="text" id="edit-utr" class="form-control" placeholder="Enter UTR">
+            </div>
+            <div class="form-group hidden" id="edit-ss-group">
+                <label class="form-label">Payment Screenshot (Required for UPI)</label>
+                <input type="file" id="edit-screenshot" class="form-control" accept="image/*">
             </div>
             <div class="form-group">
                 <label class="form-label">Gate Check-in Status</label>
@@ -512,6 +547,31 @@
                 document.getElementById('dash-cash-bar').style.width = '0%';
                 document.getElementById('dash-upi-bar').style.width = '0%';
             }
+            
+            if (data.branch_wise) {
+                document.querySelector('#branch-table tbody').innerHTML = data.branch_wise.map(b => `
+                    <tr>
+                        <td class="font-semibold">${b.branch || 'Unknown'}</td>
+                        <td>${b.passes_sold}</td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <span style="min-width: 40px">${b.percent_of_total}%</span>
+                                <div style="flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                                    <div style="width: ${b.percent_of_total}%; height: 100%; background: var(--primary);"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-success">₹${b.cash_amount}</div>
+                            <div class="text-sm text-muted">${b.cash_percent}%</div>
+                        </td>
+                        <td>
+                            <div class="text-warning">₹${b.upi_amount}</div>
+                            <div class="text-sm text-muted">${b.upi_percent}%</div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
         }
 
         // --- Sellers ---
@@ -616,6 +676,29 @@
             }
             
             document.getElementById('edit-modal').classList.remove('hidden');
+            toggleEditPaymentFields();
+        }
+
+        function toggleEditPaymentFields() {
+            const status = document.getElementById('edit-status').value;
+            const modeGroup = document.getElementById('edit-payment-mode-group');
+            const mode = document.getElementById('edit-payment-mode').value;
+            const utrGroup = document.getElementById('edit-utr-group');
+            const ssGroup = document.getElementById('edit-ss-group');
+            
+            if (status === 'verified') {
+                modeGroup.classList.remove('hidden');
+            } else {
+                modeGroup.classList.add('hidden');
+            }
+            
+            if (status === 'pending_verification' || (status === 'verified' && mode === 'upi')) {
+                utrGroup.classList.remove('hidden');
+                ssGroup.classList.remove('hidden');
+            } else {
+                utrGroup.classList.add('hidden');
+                ssGroup.classList.add('hidden');
+            }
         }
 
         function closeEditModal() {
@@ -625,13 +708,36 @@
 
         async function saveStudentEdit() {
             const status = document.getElementById('edit-status').value;
-            const used = document.getElementById('edit-used').value === 'true';
+            const used = document.getElementById('edit-used').value;
             const foodPref = document.getElementById('edit-food-pref').value;
+            
+            const formData = new FormData();
+            formData.append('payment_status', status);
+            formData.append('is_used', used === 'true');
+            formData.append('food_preference', foodPref);
+            
+            if (status === 'verified') {
+                formData.append('payment_mode', document.getElementById('edit-payment-mode').value);
+            } else if (status === 'pending_verification') {
+                formData.append('payment_mode', 'upi');
+            }
+            
+            if (status === 'pending_verification' || (status === 'verified' && document.getElementById('edit-payment-mode').value === 'upi')) {
+                const utr = document.getElementById('edit-utr').value;
+                if (!utr) return showToast('UTR is required for UPI payments', 'warning');
+                formData.append('utr_number', utr);
+                
+                const fileInput = document.getElementById('edit-screenshot');
+                if (fileInput.files.length > 0) {
+                    formData.append('screenshot', fileInput.files[0]);
+                } else {
+                    return showToast('Screenshot is required for UPI payments', 'warning');
+                }
+            }
             
             const res = await fetch(`/admin/students/${currentEditStudentId}/override`, {
                 method: 'PATCH',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({payment_status: status, is_used: used, food_preference: foodPref})
+                body: formData
             });
             
             if (res.ok) {

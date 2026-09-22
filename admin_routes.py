@@ -7,8 +7,9 @@ and a one-click integrity check on the hash chain.
 from typing import Optional
 import csv
 import io
+import base64
 
-from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -38,9 +39,13 @@ class DistributorSales(BaseModel):
 
 
 class BranchSales(BaseModel):
-    branch: str
+    branch: Optional[str]
     passes_sold: int
     percent_of_total: float
+    cash_amount: float = 0.0
+    cash_percent: float = 0.0
+    upi_amount: float = 0.0
+    upi_percent: float = 0.0
 
 
 class PaymentModeBreakdown(BaseModel):
@@ -197,16 +202,29 @@ def dashboard(
     ]
 
     # --- Branch-wise ---
+    from sqlalchemy import case
     branch_rows = (
-        db.query(Student.branch, func.count(Student.id))
+        db.query(
+            Student.branch,
+            func.count(Student.id),
+            func.coalesce(func.sum(case((Student.payment_mode == PaymentMode.CASH, Student.amount), else_=0)), 0.0),
+            func.coalesce(func.sum(case((Student.payment_mode == PaymentMode.UPI, Student.amount), else_=0)), 0.0)
+        )
         .filter(Student.payment_status == PaymentStatus.VERIFIED)
         .group_by(Student.branch)
         .order_by(func.count(Student.id).desc())
         .all()
     )
     branch_wise = [
-        BranchSales(branch=b, passes_sold=c, percent_of_total=round(100 * c / total_verified, 1) if total_verified else 0.0)
-        for b, c in branch_rows
+        BranchSales(
+            branch=b, passes_sold=c, 
+            percent_of_total=round(100 * c / total_verified, 1) if total_verified else 0.0,
+            cash_amount=cash_amt,
+            cash_percent=round(100 * cash_amt / (cash_amt + upi_amt), 1) if (cash_amt + upi_amt) > 0 else 0.0,
+            upi_amount=upi_amt,
+            upi_percent=round(100 * upi_amt / (cash_amt + upi_amt), 1) if (cash_amt + upi_amt) > 0 else 0.0,
+        )
+        for b, c, cash_amt, upi_amt in branch_rows
     ]
 
     # --- Payment mode breakdown ---
@@ -448,9 +466,14 @@ def export_sales(
 
 
 @router.patch("/students/{student_id}/override")
-def override_student(
+async def override_student(
     student_id: int,
-    payload: StudentOverrideRequest,
+    payment_status: Optional[PaymentStatus] = Form(None),
+    is_used: Optional[bool] = Form(None),
+    food_preference: Optional[FoodPreference] = Form(None),
+    payment_mode: Optional[PaymentMode] = Form(None),
+    utr_number: Optional[str] = Form(None),
+    screenshot: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(*ADMIN_ONLY)),
 ):
@@ -461,19 +484,33 @@ def override_student(
     old_snapshot = {
         "payment_status": student.payment_status.value if student.payment_status else None,
         "is_used": student.is_used,
-        "food_preference": student.food_preference.value if student.food_preference else None
+        "food_preference": student.food_preference.value if student.food_preference else None,
+        "payment_mode": student.payment_mode.value if student.payment_mode else None,
+        "utr_number": student.utr_number
     }
     
     new_snapshot = {}
-    if payload.payment_status is not None:
-        student.payment_status = payload.payment_status
-        new_snapshot["payment_status"] = payload.payment_status.value
-    if payload.is_used is not None:
-        student.is_used = payload.is_used
-        new_snapshot["is_used"] = payload.is_used
-    if payload.food_preference is not None:
-        student.food_preference = payload.food_preference
-        new_snapshot["food_preference"] = payload.food_preference.value
+    if payment_status is not None:
+        student.payment_status = payment_status
+        new_snapshot["payment_status"] = payment_status.value
+    if is_used is not None:
+        student.is_used = is_used
+        new_snapshot["is_used"] = is_used
+    if food_preference is not None:
+        student.food_preference = food_preference
+        new_snapshot["food_preference"] = food_preference.value
+    if payment_mode is not None:
+        student.payment_mode = payment_mode
+        new_snapshot["payment_mode"] = payment_mode.value
+    if utr_number is not None:
+        student.utr_number = utr_number
+        new_snapshot["utr_number"] = utr_number
+        
+    if screenshot is not None:
+        ss_bytes = await screenshot.read()
+        if ss_bytes:
+            student.payment_screenshot = base64.b64encode(ss_bytes).decode("utf-8")
+            new_snapshot["payment_screenshot"] = "Uploaded"
 
     if not new_snapshot:
         return {"message": "No changes requested"}
@@ -493,6 +530,7 @@ def override_student(
 @router.post("/students/bulk-update")
 def bulk_update_students(
     payload: StudentBulkUpdateRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(*ADMIN_ONLY)),
 ):
@@ -533,6 +571,20 @@ def bulk_update_students(
                     new_snapshot["food_preference"] = new_food.value
             except ValueError:
                 continue
+        elif payload.action == "resend_emails":
+            if student.payment_status != PaymentStatus.VERIFIED or not student.email:
+                continue
+            token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+            qr_image = generate_qr_image(token)
+            background_tasks.add_task(
+                send_pass_email,
+                recipient_email=student.email,
+                student_name=student.name,
+                qr_image_bytes=qr_image,
+                sap_id=student.sap_id,
+            )
+            updated_count += 1
+            continue
 
         if new_snapshot:
             db.flush()
@@ -597,7 +649,7 @@ def resend_email(
     sap_id: str,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_role(*ADMIN_ONLY)),
+    user: User = Depends(require_role(UserRole.ADMIN, UserRole.DISTRIBUTOR)),
 ):
     student = db.query(Student).filter(Student.sap_id == sap_id).first()
     if not student:

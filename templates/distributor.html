@@ -223,6 +223,7 @@
                                 <th>Amount</th>
                                 <th>Status</th>
                                 <th>Date</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -358,13 +359,38 @@
                 
                 return `<tr>
                     <td class="font-semibold">${s.name}</td>
-                    <td>${s.sap_id}</td>
+                    <td>${s.sap_id}<br><small class="text-muted">${s.email || 'No email'}</small></td>
                     <td><span class="badge ${s.payment_mode === 'cash' ? 'badge-success' : 'badge-neutral'}">${s.payment_mode || '-'}</span></td>
                     <td>₹${(s.amount || 0).toFixed(2)}</td>
                     <td><span class="badge ${badgeClass}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_', ' ')}</span></td>
                     <td class="text-muted text-sm">${new Date(s.sold_at).toLocaleString()}</td>
+                    <td>
+                        ${s.payment_status === 'verified' ? `<button class="btn btn-secondary py-1 px-3 text-sm" onclick="resendEmail('${s.sap_id}')">Resend Mail</button>` : ''}
+                    </td>
                 </tr>`;
             }).join('');
+        }
+
+        async function resendEmail(sapId) {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/admin/resend-email/${sapId}`, { method: 'POST' });
+                if (res.ok) {
+                    showToast('Email queued for resend successfully');
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Failed to resend email', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         }
 
         // --- Tabs ---
