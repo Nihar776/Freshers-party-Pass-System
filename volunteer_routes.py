@@ -93,7 +93,7 @@ def verify_and_check_in(
     if result.rowcount == 0:
         db.rollback()
         db.refresh(student)
-        entered_str = student.entered_at.isoformat() if student.entered_at else "unknown time"
+        entered_str = student.entered_at.strftime("%I:%M %p") if student.entered_at else "unknown time"
         scanned_by_name = student.scanned_by.full_name if student.scanned_by else "unknown volunteer"
         raise HTTPException(
             status_code=409,
@@ -158,7 +158,7 @@ def verify_food_check_in(
     if result.rowcount == 0:
         db.rollback()
         db.refresh(student)
-        received_str = student.food_received_at.isoformat() if student.food_received_at else "unknown time"
+        received_str = student.food_received_at.strftime("%I:%M %p") if student.food_received_at else "unknown time"
         scanned_by_name = student.food_scanned_by.full_name if student.food_scanned_by else "unknown volunteer"
         raise HTTPException(
             status_code=409,

@@ -96,6 +96,10 @@ class DashboardResponse(BaseModel):
     total_entered: int
     pending_entry: int
 
+    total_meals_taken: int
+    meals_jain_taken: int
+    meals_non_jain_taken: int
+
 
 class AuditLogEntry(BaseModel):
     id: int
@@ -303,6 +307,23 @@ def dashboard(
     # --- Gate night ---
     total_entered = db.query(func.count(Student.id)).filter(Student.is_used.is_(True)).scalar() or 0
 
+    # --- Food night ---
+    meals_taken_rows = (
+        db.query(Student.food_preference, func.count(Student.id))
+        .filter(Student.food_received.is_(True))
+        .group_by(Student.food_preference)
+        .all()
+    )
+    meals_jain = 0
+    meals_veg = 0
+    for fp, count in meals_taken_rows:
+        if fp and fp.value == "jain":
+            meals_jain += count
+        elif fp and fp.value == "veg":
+            meals_veg += count
+    
+    total_meals = meals_jain + meals_veg
+
     return DashboardResponse(
         total_roster_size=total_roster,
         total_sold=total_sold,
@@ -322,6 +343,9 @@ def dashboard(
         total_cash_outstanding_with_distributors=cash_outstanding,
         total_entered=total_entered,
         pending_entry=total_verified - total_entered,
+        total_meals_taken=total_meals,
+        meals_jain_taken=meals_jain,
+        meals_non_jain_taken=meals_veg,
     )
 
 
@@ -492,15 +516,19 @@ def export_attendees(
     master_ws = wb.active
     master_ws.title = "Master Data"
     
-    headers = ["Name", "SAP ID", "Branch", "Entered At", "Scanned By"]
+    headers = ["Name", "SAP ID", "Branch", "Entered At", "Scanned By", "Food Pref", "Food Taken", "Food Taken At", "Food Scanned By"]
     master_ws.append(headers)
     
     branch_sheets = {}
     
     for s in students:
         scanned_by = s.scanned_by.full_name if s.scanned_by else "Unknown"
-        entered_at = s.entered_at.isoformat() if s.entered_at else "Unknown"
-        row = [s.name, s.sap_id, s.branch, entered_at, scanned_by]
+        entered_at = s.entered_at.strftime("%Y-%m-%d %H:%M:%S") if s.entered_at else "Unknown"
+        food_pref = "Jain" if (s.food_preference and s.food_preference.value == "jain") else "Non-Jain"
+        food_taken = "Yes" if s.food_received else "No"
+        food_taken_at = s.food_received_at.strftime("%Y-%m-%d %H:%M:%S") if s.food_received_at else ""
+        food_scanned = s.food_scanned_by.full_name if s.food_scanned_by else ""
+        row = [s.name, s.sap_id, s.branch, entered_at, scanned_by, food_pref, food_taken, food_taken_at, food_scanned]
         
         master_ws.append(row)
         
@@ -1028,7 +1056,6 @@ from settings_manager import get_settings, save_settings
 
 class SettingsPayload(BaseModel):
     scanner_mode: str
-    switch_time: Optional[str] = None
 
 @router.get("/settings")
 def get_global_settings(admin: User = Depends(require_role(*ADMIN_ONLY))):
@@ -1038,6 +1065,5 @@ def get_global_settings(admin: User = Depends(require_role(*ADMIN_ONLY))):
 def update_global_settings(payload: SettingsPayload, admin: User = Depends(require_role(*ADMIN_ONLY))):
     settings = get_settings()
     settings["scanner_mode"] = payload.scanner_mode
-    settings["switch_time"] = payload.switch_time
     save_settings(settings)
     return {"message": "Settings updated"}

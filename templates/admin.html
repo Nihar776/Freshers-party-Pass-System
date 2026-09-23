@@ -96,7 +96,7 @@
 
         <!-- Overview Tab -->
         <div id="overview-tab" class="tab-content active">
-            <div class="grid grid-cols-4 mb-6">
+            <div class="grid mb-6" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                 <div class="stat-card">
                     <div class="stat-label">Total Passes Sold</div>
                     <div class="stat-value" id="dash-total-sold">0</div>
@@ -119,6 +119,15 @@
                     <div class="stat-label">Gate Check-ins</div>
                     <div class="stat-value" id="dash-entered">0</div>
                     <div class="text-sm mt-2 text-muted"><span id="dash-pending-entry">0</span> pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Meals Served</div>
+                    <div class="stat-value" id="dash-meals-taken">0</div>
+                    <div class="text-sm mt-2 text-muted"><span id="dash-jain-taken" class="text-warning">0</span> Jain / <span id="dash-veg-taken" class="text-success">0</span> Non-Jain</div>
+                </div>
+                <div class="stat-card" id="dash-food-pref-container">
+                    <div class="stat-label">Food Preferences (Sold)</div>
+                    <div class="text-sm mt-2" id="dash-food-pref-content">Loading...</div>
                 </div>
             </div>
             
@@ -146,20 +155,7 @@
                             <p class="text-xs text-muted mt-1">All volunteers' devices will instantly lock to this mode.</p>
                         </div>
                         
-                        <div class="form-group">
-                            <div class="flex justify-between items-end mb-1">
-                                <label class="form-label mb-0">Auto-Switch Timer</label>
-                                <button class="text-xs text-muted bg-transparent border-none cursor-pointer hover:text-white" onclick="document.getElementById('admin-switch-time').value = '';">Clear Timer</button>
-                            </div>
-                            <input type="datetime-local" id="admin-switch-time" class="form-control">
-                            <p class="text-xs text-muted mt-1">Automatically switches mode to Food at this exact time.</p>
-                        </div>
-                        
                         <button class="btn btn-primary w-full mt-2" onclick="saveGlobalSettings()">Apply Configuration</button>
-                    </div>
-                    <h3 class="mb-4 mt-8">Food Preferences</h3>
-                    <div id="dash-food-pref" class="grid grid-cols-2 gap-4">
-                        <!-- Populated by JS -->
                     </div>
                 </div>
                 <div class="panel">
@@ -591,11 +587,6 @@
                 if (res.ok) {
                     const data = await res.json();
                     document.getElementById('admin-scanner-mode').value = data.scanner_mode || 'gate';
-                    if (data.switch_time) {
-                        const d = new Date(data.switch_time);
-                        const localIso = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().substring(0, 16);
-                        document.getElementById('admin-switch-time').value = localIso;
-                    }
                 }
             } catch (e) {
                 console.error("Failed to load settings", e);
@@ -604,14 +595,12 @@
 
         async function saveGlobalSettings() {
             const mode = document.getElementById('admin-scanner-mode').value;
-            const time = document.getElementById('admin-switch-time').value;
             try {
                 const res = await fetch('/admin/settings', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        scanner_mode: mode,
-                        switch_time: time ? new Date(time).toISOString() : null
+                        scanner_mode: mode
                     })
                 });
                 if (res.ok) {
@@ -692,7 +681,9 @@
             document.getElementById('dash-outstanding').textContent = `₹${data.total_cash_outstanding_with_distributors.toFixed(0)}`;
             document.getElementById('dash-entered').textContent = data.total_entered;
             document.getElementById('dash-pending-entry').textContent = data.pending_entry;
-
+            document.getElementById('dash-meals-taken').textContent = data.total_meals_taken;
+            document.getElementById('dash-jain-taken').textContent = data.meals_jain_taken;
+            document.getElementById('dash-veg-taken').textContent = data.meals_non_jain_taken;
             if (data.net_collection > 0) {
                 document.getElementById('dash-cash-bar').style.width = `${(data.net_cash_collection / data.net_collection) * 100}%`;
                 document.getElementById('dash-upi-bar').style.width = `${(data.net_upi_collection / data.net_collection) * 100}%`;
@@ -727,16 +718,11 @@
             }
             
             if (data.food_preference_breakdown) {
-                document.getElementById('dash-food-pref').innerHTML = data.food_preference_breakdown.map(f => {
+                document.getElementById('dash-food-pref-content').innerHTML = data.food_preference_breakdown.map(f => {
                     const label = f.food_preference === 'veg' ? 'Non-Jain' : (f.food_preference === 'jain' ? 'Jain' : f.food_preference);
                     const color = f.food_preference === 'jain' ? 'var(--warning)' : 'var(--success)';
-                    return `
-                    <div class="stat-card" style="padding: 16px;">
-                        <div class="stat-label">${label}</div>
-                        <div class="stat-value" style="color: ${color}; font-size: 1.5rem; margin: 8px 0;">${f.count}</div>
-                        <div class="text-sm text-muted">${f.percent}% of total</div>
-                    </div>
-                `}).join('');
+                    return `<div class="mb-1"><span style="color: ${color}; font-weight: 600;">${f.count}</span> ${label}</div>`;
+                }).join('');
             }
         }
 
