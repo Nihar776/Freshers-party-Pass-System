@@ -523,10 +523,10 @@ def export_attendees(
     
     for s in students:
         scanned_by = s.scanned_by.full_name if s.scanned_by else "Unknown"
-        entered_at = s.entered_at.strftime("%Y-%m-%d %H:%M:%S") if s.entered_at else "Unknown"
+        entered_at = (s.entered_at + timedelta(hours=5, minutes=30)).strftime("%Y-%m-%d %H:%M:%S") if s.entered_at else "Unknown"
         food_pref = "Jain" if (s.food_preference and s.food_preference.value == "jain") else "Non-Jain"
         food_taken = "Yes" if s.food_received else "No"
-        food_taken_at = s.food_received_at.strftime("%Y-%m-%d %H:%M:%S") if s.food_received_at else ""
+        food_taken_at = (s.food_received_at + timedelta(hours=5, minutes=30)).strftime("%Y-%m-%d %H:%M:%S") if s.food_received_at else ""
         food_scanned = s.food_scanned_by.full_name if s.food_scanned_by else ""
         row = [s.name, s.sap_id, s.branch, entered_at, scanned_by, food_pref, food_taken, food_taken_at, food_scanned]
         
