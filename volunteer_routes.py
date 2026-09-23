@@ -44,6 +44,12 @@ class GateStats(BaseModel):
     total_verified_passes: int
     total_entered: int
     pending_entry: int
+    
+from settings_manager import get_current_scanner_mode
+
+@router.get("/scanner-mode")
+def get_scanner_mode(volunteer: User = Depends(require_role(*GATE_ROLES))):
+    return {"mode": get_current_scanner_mode()}
 
 
 @router.post("/verify", response_model=VerifyResponse)
@@ -105,6 +111,72 @@ def verify_and_check_in(
         message="Entry approved - issue wristband",
         student_name=student.name, sap_id=student.sap_id, entered_at=student.entered_at,
         food_preference=student.food_preference.value if student.food_preference else "veg"
+    )
+
+
+@router.post("/verify-food", response_model=VerifyResponse)
+def verify_food_check_in(
+    payload: VerifyRequest,
+    db: Session = Depends(get_db),
+    volunteer: User = Depends(require_role(*GATE_ROLES)),
+):
+    try:
+        token_data = verify_pass_token(payload.token)
+    except InvalidPassToken as exc:
+        raise HTTPException(status_code=400, detail=f"Counterfeit pass: {exc}") from exc
+
+    if token_data.get("event_id") != EVENT_ID:
+        raise HTTPException(status_code=400, detail="Counterfeit pass: wrong event")
+
+    student = db.query(Student).filter(Student.pass_uuid == token_data["pass_id"]).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Pass not found in database")
+
+    if student.sap_id != token_data.get("sap_id"):
+        raise HTTPException(status_code=400, detail="Counterfeit pass: SAP ID mismatch")
+
+    if student.payment_status != PaymentStatus.VERIFIED:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Payment not verified (status: {student.payment_status.value}) - do not give food",
+        )
+        
+    if not student.is_used:
+        raise HTTPException(
+            status_code=403,
+            detail="Student has not entered the gate yet! Scan gate entry first.",
+        )
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    result = db.execute(
+        update(Student)
+        .where(Student.id == student.id, Student.food_received.is_(False))
+        .values(food_received=True, food_received_at=now, food_scanned_by_id=volunteer.id)
+    )
+
+    if result.rowcount == 0:
+        db.rollback()
+        db.refresh(student)
+        received_str = student.food_received_at.isoformat() if student.food_received_at else "unknown time"
+        scanned_by_name = student.food_scanned_by.full_name if student.food_scanned_by else "unknown volunteer"
+        raise HTTPException(
+            status_code=409,
+            detail=f"Food already received at {received_str} (scanned by {scanned_by_name})",
+        )
+
+    write_audit_log(
+        db, user_id=volunteer.id, action="food_checkin", table_name="students",
+        record_id=student.id, new_value={"food_received_at": now.isoformat(), "food_scanned_by": volunteer.full_name},
+    )
+    db.commit()
+    db.refresh(student)
+
+    food_pref_str = student.food_preference.value if student.food_preference else "veg"
+    return VerifyResponse(
+        message=f"Give {food_pref_str.upper()} Food",
+        student_name=student.name, sap_id=student.sap_id, entered_at=student.food_received_at,
+        food_preference=food_pref_str
     )
 
 

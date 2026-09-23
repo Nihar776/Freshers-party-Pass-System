@@ -130,12 +130,18 @@ class Student(Base):
     is_used = Column(Boolean, default=False, nullable=False, index=True)
     entered_at = Column(DateTime, nullable=True)
     scanned_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # which volunteer scanned them
+    
+    # --- Food check-in ---
+    food_received = Column(Boolean, default=False, nullable=False, index=True)
+    food_received_at = Column(DateTime, nullable=True)
+    food_scanned_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # roster import time
 
     distributor = relationship("User", foreign_keys=[distributor_id])
     verified_by = relationship("User", foreign_keys=[verified_by_id])
     scanned_by = relationship("User", foreign_keys=[scanned_by_id])
+    food_scanned_by = relationship("User", foreign_keys=[food_scanned_by_id])
     discount_code = relationship("DiscountCode", foreign_keys=[discount_code_id])
 
 

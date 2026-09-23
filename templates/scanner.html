@@ -71,6 +71,20 @@
         .banner.stop .status-word { color: var(--danger); }
         .banner.stop .status-sub { color: #fecaca; }
 
+        .banner.food-veg {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+        }
+        .banner.food-veg .status-word { color: var(--success); }
+        .banner.food-veg .status-sub { color: #a7f3d0; }
+
+        .banner.food-jain {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
+        }
+        .banner.food-jain .status-word { color: var(--warning); }
+        .banner.food-jain .status-sub { color: #fde68a; }
+
         .detail-row {
             display: flex;
             justify-content: space-between;
@@ -115,6 +129,12 @@
             <div id="stats" class="font-bold">- / -</div>
         </div>
 
+        <div class="form-group mb-4" style="background: var(--bg-dark); padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+            <div class="text-sm text-muted mb-1">Current Scanner Mode</div>
+            <div id="scanner-mode-label" class="font-bold text-lg" style="color: var(--primary);">Loading...</div>
+            <div class="text-xs text-muted mt-1">(Controlled by Admin)</div>
+        </div>
+
         <div class="scan-card">
             <div id="reader"></div>
             <div class="grid grid-cols-2 gap-4 mt-4">
@@ -141,7 +161,7 @@
         const API_VERIFY = "/verify";
         const API_STATS = "/gate-stats";
         const API_ME = "/me";
-        const SAME_QR_COOLDOWN_MS = 4000; // 4 seconds before same QR can be scanned again
+        const SAME_QR_COOLDOWN_MS = 6000; // 6 seconds before same QR can be scanned again
         const ANY_QR_COOLDOWN_MS = 1500;  // 1.5 seconds between different QRs
 
         let html5QrCode;
@@ -195,21 +215,29 @@
             bannerEl.appendChild(row);
         }
         
-        function setAllow(name, sapId, foodPref) {
-            bannerEl.className = "banner go";
-            statusWordEl.textContent = "ENTRY ALLOWED";
-            statusSubEl.textContent = "Issue wristband now";
+        function setAllow(name, sapId, foodPref, message) {
+            if (currentScannerMode === 'food') {
+                const isJain = foodPref === 'jain';
+                bannerEl.className = isJain ? "banner food-jain" : "banner food-veg";
+                statusWordEl.textContent = isJain ? "JAIN MEAL" : "NON-JAIN MEAL";
+                statusSubEl.textContent = message || (isJain ? "Give Jain Meal" : "Give Non-Jain Meal");
+            } else {
+                bannerEl.className = "banner go";
+                statusWordEl.textContent = "APPROVED";
+                statusSubEl.textContent = message || "Issue wristband now";
+            }
+            
             bannerEl.querySelectorAll('.detail-row').forEach(e => e.remove());
             addDetailRow("Student", name);
             addDetailRow("SAP ID", sapId);
-            addDetailRow("Food", foodPref === 'jain' ? 'Jain' : 'Veg (Normal)');
+            if (currentScannerMode === 'gate') addDetailRow("Food", foodPref === 'jain' ? 'Jain' : 'Non-Jain');
             playAllow();
             if (navigator.vibrate) navigator.vibrate(120);
         }
         
         function setDeny(reason) {
             bannerEl.className = "banner stop";
-            statusWordEl.textContent = "ENTRY DENIED";
+            statusWordEl.textContent = "DENIED";
             statusSubEl.textContent = reason;
             bannerEl.querySelectorAll('.detail-row').forEach(e => e.remove());
             playDeny();
@@ -248,6 +276,19 @@
             } catch (e) {}
         }
 
+        let currentScannerMode = 'gate';
+        
+        async function fetchScannerMode() {
+            try {
+                const res = await fetch('/scanner-mode');
+                if (res.ok) {
+                    const data = await res.json();
+                    currentScannerMode = data.mode;
+                    document.getElementById('scanner-mode-label').textContent = currentScannerMode === 'gate' ? 'Gate Entry (Wristbands)' : 'Food Distribution (Meals)';
+                }
+            } catch (e) {}
+        }
+
         // --- Verify ---
         async function verifyToken(token) {
             if (isBusy) return;
@@ -259,8 +300,10 @@
             }
 
             setIdle("Checking...");
+            const endpoint = currentScannerMode === 'food' ? "/verify-food" : API_VERIFY;
+
             try {
-                const res = await fetch(API_VERIFY, {
+                const res = await fetch(endpoint, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ token })
@@ -268,7 +311,7 @@
                 const data = await res.json();
 
                 if (res.status === 401) window.location.href = "/login-page";
-                else if (res.ok) setAllow(data.student_name, data.sap_id, data.food_preference);
+                else if (res.ok) setAllow(data.student_name, data.sap_id, data.food_preference, data.message);
                 else setDeny(data.detail || "Verification failed");
             } catch (e) {
                 setDeny("Network error");
@@ -307,7 +350,15 @@
             await html5QrCode.start(
                 cameraId,
                 { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
-                (decodedText) => verifyToken(decodedText.trim()),
+                (decodedText) => {
+                    const token = decodedText.trim();
+                    const now = Date.now();
+                    if (token === lastScannedToken && now - lastScanTime < SAME_QR_COOLDOWN_MS) return;
+                    if (now - lastScanTime < ANY_QR_COOLDOWN_MS) return;
+                    lastScannedToken = token;
+                    lastScanTime = now;
+                    verifyToken(token);
+                },
                 () => {}
             );
         }
@@ -345,6 +396,8 @@
 
         (async () => {
             if (await requireAuth()) {
+                await fetchScannerMode();
+                setInterval(fetchScannerMode, 5000);
                 startScanner();
                 refreshStats();
                 setInterval(refreshStats, 8000);

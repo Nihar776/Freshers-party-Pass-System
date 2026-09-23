@@ -236,6 +236,12 @@
     </div>
 
     <script>
+        function formatIST(dateStr) {
+            if (!dateStr) return 'N/A';
+            let str = String(dateStr);
+            if (!str.endsWith('Z') && !str.includes('+')) str += 'Z';
+            return new Date(str).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
         let cart = [];
         let appliedPromo = null;
         const BASE_PRICE = 499.0;
@@ -363,7 +369,7 @@
                     <td><span class="badge ${s.payment_mode === 'cash' ? 'badge-success' : 'badge-neutral'}">${s.payment_mode || '-'}</span></td>
                     <td>₹${(s.amount || 0).toFixed(2)}</td>
                     <td><span class="badge ${badgeClass}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_', ' ')}</span></td>
-                    <td class="text-muted text-sm">${new Date(s.sold_at).toLocaleString()}</td>
+                    <td class="text-muted text-sm">${formatIST(s.sold_at)}</td>
                     <td>
                         ${s.payment_status === 'verified' ? `<button class="btn btn-secondary py-1 px-3 text-sm" onclick="resendEmail('${s.sap_id}')">Resend Mail</button>` : ''}
                     </td>

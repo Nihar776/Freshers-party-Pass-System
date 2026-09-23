@@ -210,6 +210,8 @@ def sell_pass(
                 PaymentStatus.VERIFIED if payment_mode == PaymentMode.CASH
                 else PaymentStatus.PENDING_VERIFICATION
             ),
+            group_id=uuid.uuid4().hex,
+            is_group_payer=True,
             # cash sales are self-verified by the distributor collecting real money
             verified_by_id=distributor.id if payment_mode == PaymentMode.CASH else None,
             verified_at=func.now() if payment_mode == PaymentMode.CASH else None,

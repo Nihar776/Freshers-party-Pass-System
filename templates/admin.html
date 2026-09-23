@@ -87,6 +87,7 @@
             <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
             <button class="tab-btn" onclick="switchTab('sellers')">Seller Analytics</button>
             <button class="tab-btn" onclick="switchTab('students')">Students</button>
+            <button class="tab-btn" onclick="switchTab('participants')">Participants</button>
             <button class="tab-btn" onclick="switchTab('users')">User Management</button>
             <button class="tab-btn" onclick="switchTab('roster')">Roster Upload</button>
             <button class="tab-btn" onclick="switchTab('discounts')">Discount Codes</button>
@@ -123,11 +124,42 @@
             
             <div class="grid grid-cols-2 gap-6">
                 <div class="panel">
-                    <h3 class="mb-4">Quick Actions</h3>
-                    <div class="grid gap-4">
-                        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="window.location.href='/admin/export/sales'">⬇️ Export Sales CSV</button>
-                        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="window.location.href='/admin/export/attendees'">⬇️ Export Gate Attendees CSV</button>
+                    <h3 class="mb-4">Quick Actions & Insights</h3>
+                    <div class="grid gap-4 mb-6">
+                        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="window.location.href='/admin/export/sales'">⬇️ Export Sales Excel</button>
+                        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="window.location.href='/admin/export/attendees'">⬇️ Export Gate Attendees Excel</button>
+                        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="document.getElementById('food-csv-upload').click()">⬆️ Bulk Update Food Preferences (CSV)</button>
+                        <input type="file" id="food-csv-upload" accept=".csv" style="display: none;" onchange="uploadFoodCSV(event)">
                         <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="checkAuditIntegrity()">🛡️ Verify Log Integrity</button>
+                    </div>
+                    <h3 class="mb-4 mt-8 flex justify-between items-center">
+                        Global Scanner Control
+                        <span class="badge badge-primary" style="font-size: 0.8rem;">Live</span>
+                    </h3>
+                    <div class="grid gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Forced Scanner Mode</label>
+                            <select id="admin-scanner-mode" class="form-control">
+                                <option value="gate">🟢 Gate Entry Mode (Wristbands)</option>
+                                <option value="food">🟠 Food Distribution Mode (Meals)</option>
+                            </select>
+                            <p class="text-xs text-muted mt-1">All volunteers' devices will instantly lock to this mode.</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="flex justify-between items-end mb-1">
+                                <label class="form-label mb-0">Auto-Switch Timer</label>
+                                <button class="text-xs text-muted bg-transparent border-none cursor-pointer hover:text-white" onclick="document.getElementById('admin-switch-time').value = '';">Clear Timer</button>
+                            </div>
+                            <input type="datetime-local" id="admin-switch-time" class="form-control">
+                            <p class="text-xs text-muted mt-1">Automatically switches mode to Food at this exact time.</p>
+                        </div>
+                        
+                        <button class="btn btn-primary w-full mt-2" onclick="saveGlobalSettings()">Apply Configuration</button>
+                    </div>
+                    <h3 class="mb-4 mt-8">Food Preferences</h3>
+                    <div id="dash-food-pref" class="grid grid-cols-2 gap-4">
+                        <!-- Populated by JS -->
                     </div>
                 </div>
                 <div class="panel">
@@ -210,6 +242,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 40px;"><input type="checkbox" id="select-all-students" onclick="toggleAllStudents(this)"></th>
+                                <th>Serial</th>
                                 <th>Name</th>
                                 <th>SAP ID / Email</th>
                                 <th>Branch</th>
@@ -222,6 +255,27 @@
                             <!-- Populated by JS -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Participants Tab -->
+        <div id="participants-tab" class="tab-content">
+            <div class="panel">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="mb-0">Group Participants</h3>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="text" id="participant-search" class="form-control" placeholder="Search SAP ID or Name..." oninput="renderParticipants()">
+                        <select id="participant-status-filter" class="form-control" onchange="renderParticipants()">
+                            <option value="all">All Groups</option>
+                            <option value="verified">Fully Verified</option>
+                            <option value="pending">Pending Payment</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="loadParticipants()">Refresh</button>
+                    </div>
+                </div>
+                <div id="participants-grid" style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                    <!-- Populated by JS -->
                 </div>
             </div>
         </div>
@@ -485,7 +539,41 @@
         </div>
     </div>
 
+    <!-- Edit Group Modal -->
+    <div id="edit-group-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div class="panel" style="width: 500px; position: relative;">
+            <h3 class="mb-4" id="edit-group-title">Edit Group</h3>
+            
+            <div class="mb-4">
+                <label class="form-label">Current Members</label>
+                <div id="edit-group-members-list" style="border: 1px solid var(--border); border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Add New Member (SAP ID)</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="add-member-sap" class="form-control" placeholder="Enter SAP ID">
+                    <button class="btn btn-secondary" onclick="stageAddGroupMember()">Add</button>
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-6">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeEditGroupModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveGroupEdit()">Save Group</button>
+            </div>
+            <p class="text-sm text-warning mt-4 text-center">Note: Saving will recalculate group pricing and email newly added members automatically. Removed members must be refunded manually.</p>
+        </div>
+    </div>
+
     <script>
+        function formatIST(dateStr) {
+            if (!dateStr) return 'N/A';
+            let str = String(dateStr);
+            if (!str.endsWith('Z') && !str.includes('+')) str += 'Z';
+            return new Date(str).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
         let currentEditStudentId = null;
 
         function showToast(msg, type = 'success') {
@@ -497,6 +585,70 @@
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
+        async function fetchGlobalSettings() {
+            try {
+                const res = await fetch('/admin/settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('admin-scanner-mode').value = data.scanner_mode || 'gate';
+                    if (data.switch_time) {
+                        const d = new Date(data.switch_time);
+                        const localIso = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().substring(0, 16);
+                        document.getElementById('admin-switch-time').value = localIso;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load settings", e);
+            }
+        }
+
+        async function saveGlobalSettings() {
+            const mode = document.getElementById('admin-scanner-mode').value;
+            const time = document.getElementById('admin-switch-time').value;
+            try {
+                const res = await fetch('/admin/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        scanner_mode: mode,
+                        switch_time: time ? new Date(time).toISOString() : null
+                    })
+                });
+                if (res.ok) {
+                    showToast('Global settings updated');
+                } else {
+                    showToast('Failed to update settings', 'error');
+                }
+            } catch (e) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function uploadFoodCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            showToast('Uploading CSV... please wait.', 'success');
+            try {
+                const res = await fetch('/admin/upload-food-csv', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showToast(data.detail || 'Failed to upload CSV', 'error');
+                }
+            } catch (e) {
+                showToast('Network error', 'error');
+            }
+            event.target.value = ''; // reset
+        }
+
         async function init() {
             const res = await fetch('/me');
             if (!res.ok) return window.location.href = '/login-page';
@@ -505,6 +657,7 @@
             document.getElementById('user-name').textContent = me.full_name;
             
             loadDashboard();
+            fetchGlobalSettings();
         }
 
         document.getElementById('logout-btn').addEventListener('click', async (e) => {
@@ -572,6 +725,19 @@
                     </tr>
                 `).join('');
             }
+            
+            if (data.food_preference_breakdown) {
+                document.getElementById('dash-food-pref').innerHTML = data.food_preference_breakdown.map(f => {
+                    const label = f.food_preference === 'veg' ? 'Non-Jain' : (f.food_preference === 'jain' ? 'Jain' : f.food_preference);
+                    const color = f.food_preference === 'jain' ? 'var(--warning)' : 'var(--success)';
+                    return `
+                    <div class="stat-card" style="padding: 16px;">
+                        <div class="stat-label">${label}</div>
+                        <div class="stat-value" style="color: ${color}; font-size: 1.5rem; margin: 8px 0;">${f.count}</div>
+                        <div class="text-sm text-muted">${f.percent}% of total</div>
+                    </div>
+                `}).join('');
+            }
         }
 
         // --- Sellers ---
@@ -608,6 +774,7 @@
                 return `
                 <tr>
                     <td><input type="checkbox" class="student-checkbox" value="${s.id}"></td>
+                    <td><span class="badge badge-neutral" style="font-family: monospace;">${s.serial_number || '-'}</span></td>
                     <td class="font-semibold">${s.name}</td>
                     <td class="text-muted">${s.sap_id}<br><small>${s.email || 'No email'}</small></td>
                     <td>${s.branch}</td>
@@ -619,6 +786,189 @@
                     </td>
                 </tr>
             `}).join('');
+        }
+
+        // --- Participants ---
+        let allParticipants = [];
+        
+        async function loadParticipants() {
+            // Load all verified and pending students to construct groups
+            const res = await fetch(`/admin/students?limit=1000`);
+            if (!res.ok) return;
+            const data = await res.json();
+            allParticipants = data.filter(s => s.payment_status === 'verified' || s.payment_status === 'pending_verification');
+            renderParticipants();
+        }
+        
+        function renderParticipants() {
+            const search = document.getElementById('participant-search').value.toLowerCase();
+            const statusFilter = document.getElementById('participant-status-filter').value;
+            
+            // 1. Group by group_id
+            let groups = {};
+            allParticipants.forEach(s => {
+                if (!groups[s.group_id]) groups[s.group_id] = [];
+                groups[s.group_id].push(s);
+            });
+            
+            // 2. Filter groups
+            let filteredGroupIds = Object.keys(groups).filter(gId => {
+                const members = groups[gId];
+                // Status match (assume whole group has same status, check first member)
+                if (statusFilter === 'verified' && members[0].payment_status !== 'verified') return false;
+                if (statusFilter === 'pending' && members[0].payment_status !== 'pending_verification') return false;
+                
+                // Search match (if any member matches search)
+                if (search) {
+                    const match = members.some(m => m.name.toLowerCase().includes(search) || m.sap_id.toLowerCase().includes(search));
+                    if (!match) return false;
+                }
+                return true;
+            });
+            
+            // Sort groups: multi-member first, solo participants at the end. Then by serial number.
+            filteredGroupIds.sort((a, b) => {
+                const sizeA = groups[a].length;
+                const sizeB = groups[b].length;
+                if (sizeA > 1 && sizeB === 1) return -1;
+                if (sizeB > 1 && sizeA === 1) return 1;
+                
+                // If both are solo or both are groups, sort by serial
+                const serialA = groups[a][0].serial_number || "0.0";
+                const serialB = groups[b][0].serial_number || "0.0";
+                
+                const prefixA = parseFloat(serialA.split('.')[0]) || 0;
+                const prefixB = parseFloat(serialB.split('.')[0]) || 0;
+                return prefixA - prefixB;
+            });
+            
+            // 3. Render cards
+            const grid = document.getElementById('participants-grid');
+            if (filteredGroupIds.length === 0) {
+                grid.innerHTML = `<div class="text-muted col-span-full">No groups found matching filters.</div>`;
+                return;
+            }
+            
+            grid.innerHTML = filteredGroupIds.map(gId => {
+                const members = groups[gId];
+                // Sort by serial number if possible, or just default order
+                members.sort((a, b) => (a.serial_number || '').localeCompare(b.serial_number || ''));
+                
+                // Group Prefix (e.g. "Group 4") derived from first member's serial (e.g. "4.1")
+                const firstSerial = members[0].serial_number || "0.0";
+                const groupPrefix = firstSerial.split('.')[0];
+                const statusStr = members[0].payment_status === 'verified' ? '<span class="badge badge-success">Verified</span>' : '<span class="badge badge-warning">Pending</span>';
+                
+                return `
+                <div class="panel" style="padding: 16px; border: 1px solid var(--border);">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="mb-0">Group ${groupPrefix}</h4>
+                        ${statusStr}
+                    </div>
+                    <table class="table text-sm w-full mb-4">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>SAP ID</th>
+                                <th>Name</th>
+                                <th>Amt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${members.map(m => `
+                                <tr>
+                                    <td class="text-muted">${m.serial_number || '-'}</td>
+                                    <td class="font-semibold">${m.sap_id}</td>
+                                    <td>${m.name}</td>
+                                    <td>₹${m.amount ? m.amount.toFixed(0) : 0}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <button class="btn btn-secondary w-full" onclick='openEditGroupModal(${JSON.stringify(gId)})'>⚙️ Edit Group</button>
+                </div>
+                `;
+            }).join('');
+        }
+
+        let currentEditGroupId = null;
+        let currentEditGroupSaps = [];
+
+        function openEditGroupModal(groupId) {
+            currentEditGroupId = groupId;
+            // Find all members in this group from allParticipants
+            const members = allParticipants.filter(s => s.group_id === groupId);
+            currentEditGroupSaps = members.map(m => m.sap_id);
+            
+            const firstSerial = members[0]?.serial_number || "0.0";
+            document.getElementById('edit-group-title').innerText = `Edit Group ${firstSerial.split('.')[0]}`;
+            
+            renderEditGroupMembers();
+            document.getElementById('add-member-sap').value = '';
+            document.getElementById('edit-group-modal').classList.remove('hidden');
+        }
+
+        function closeEditGroupModal() {
+            document.getElementById('edit-group-modal').classList.add('hidden');
+            currentEditGroupId = null;
+        }
+
+        function renderEditGroupMembers() {
+            const list = document.getElementById('edit-group-members-list');
+            if (currentEditGroupSaps.length === 0) {
+                list.innerHTML = `<div class="text-muted text-sm py-2">No members. Group will be empty.</div>`;
+                return;
+            }
+            
+            list.innerHTML = currentEditGroupSaps.map(sap => `
+                <div class="flex justify-between items-center mb-2 p-2 bg-gray-50 rounded" style="background: var(--bg-hover);">
+                    <span class="font-semibold">${sap}</span>
+                    <button class="btn btn-secondary py-1 px-2 text-sm text-danger" onclick="stageRemoveGroupMember('${sap}')">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function stageRemoveGroupMember(sap) {
+            currentEditGroupSaps = currentEditGroupSaps.filter(s => s !== sap);
+            renderEditGroupMembers();
+        }
+
+        function stageAddGroupMember() {
+            const input = document.getElementById('add-member-sap');
+            const newSap = input.value.trim();
+            if (!newSap) return;
+            if (currentEditGroupSaps.includes(newSap)) {
+                return showToast("SAP ID already in group", "warning");
+            }
+            currentEditGroupSaps.push(newSap);
+            input.value = '';
+            renderEditGroupMembers();
+        }
+
+        async function saveGroupEdit() {
+            if (!currentEditGroupId) return;
+            if (currentEditGroupSaps.length === 0) {
+                return showToast("Group must have at least one member.", "warning");
+            }
+
+            try {
+                const res = await fetch(`/admin/groups/${currentEditGroupId}`, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ sap_ids: currentEditGroupSaps })
+                });
+                if (res.ok) {
+                    showToast("Group updated successfully", "success");
+                    closeEditGroupModal();
+                    loadParticipants();
+                    loadStudents(); // Refresh global students view too
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || "Failed to update group", "error");
+                }
+            } catch (e) {
+                showToast("Network error", "error");
+            }
         }
 
         function toggleAllStudents(source) {
@@ -973,7 +1323,7 @@
                 
                 return `
                 <tr>
-                    <td class="text-sm text-muted">${new Date(r.timestamp).toLocaleString()}</td>
+                    <td class="text-sm text-muted">${formatIST(r.timestamp)}</td>
                     <td class="font-semibold">${r.user_name || 'System'}</td>
                     <td><span class="badge ${badgeClass}">${r.action.replace('_', ' ')}</span></td>
                     <td class="text-muted text-sm">${r.table_name} (#${r.record_id})</td>

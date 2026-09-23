@@ -271,6 +271,12 @@
     </div>
 
     <script>
+        function formatIST(dateStr) {
+            if (!dateStr) return 'N/A';
+            let str = String(dateStr);
+            if (!str.endsWith('Z') && !str.includes('+')) str += 'Z';
+            return new Date(str).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
         function showToast(msg, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -506,7 +512,7 @@
                 const data = await res.json();
                 document.querySelector('#expenses-table tbody').innerHTML = data.map(e => `
                     <tr>
-                        <td>${new Date(e.spent_at).toLocaleString()}</td>
+                        <td>${formatIST(e.spent_at)}</td>
                         <td>${e.description}</td>
                         <td>${e.category}</td>
                         <td><span class="badge ${e.fund_type === 'cash' ? 'badge-primary' : 'badge-secondary'}">${e.fund_type}</span></td>
@@ -546,7 +552,7 @@
             
             tbody.innerHTML = data.map(r => `
                 <tr>
-                    <td>${new Date(r.created_at).toLocaleString()}</td>
+                    <td>${formatIST(r.created_at)}</td>
                     <td class="font-semibold">${r.distributor_name}</td>
                     <td class="font-bold text-accent">₹${r.amount}</td>
                     <td>
@@ -586,7 +592,7 @@
             } else {
                 upiTbody.innerHTML = data.verified_upi.map(u => `
                     <tr>
-                        <td>${u.verified_at ? new Date(u.verified_at).toLocaleString() : 'N/A'}</td>
+                        <td>${u.verified_at ? formatIST(u.verified_at) : 'N/A'}</td>
                         <td>
                             <div class="font-semibold">${u.name}</div>
                             <div class="text-sm text-muted">${u.sap_id}</div>
@@ -604,7 +610,7 @@
             } else {
                 cashTbody.innerHTML = data.approved_cash.map(c => `
                     <tr>
-                        <td>${c.handed_over_at ? new Date(c.handed_over_at).toLocaleString() : 'N/A'}</td>
+                        <td>${c.handed_over_at ? formatIST(c.handed_over_at) : 'N/A'}</td>
                         <td class="font-semibold">${c.distributor_name}</td>
                         <td class="font-bold text-success">₹${c.amount}</td>
                         <td>${c.treasurer_name}</td>
