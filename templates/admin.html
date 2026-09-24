@@ -139,6 +139,8 @@
                         <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="window.location.href='/admin/export/attendees'">⬇️ Export Gate Attendees Excel</button>
                         <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="document.getElementById('food-csv-upload').click()">⬆️ Bulk Update Food Preferences (CSV)</button>
                         <input type="file" id="food-csv-upload" accept=".csv" style="display: none;" onchange="uploadFoodCSV(event)">
+                        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="document.getElementById('emails-csv-upload').click()">⬆️ Bulk Send Passes (CSV)</button>
+                        <input type="file" id="emails-csv-upload" accept=".csv" style="display: none;" onchange="uploadEmailsCSV(event)">
                         <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="checkAuditIntegrity()">🛡️ Verify Log Integrity</button>
                     </div>
                     <h3 class="mb-4 mt-8 flex justify-between items-center">
@@ -215,7 +217,6 @@
                         <option value="not_purchased">Not Purchased</option>
                         <option value="entered">Entered Venue</option>
                     </select>
-                    <button class="btn btn-primary" onclick="loadStudents()">Search</button>
                 </div>
                 <div class="filter-row mt-4" style="justify-content: space-between; align-items: center;">
                     <div style="display: flex; gap: 10px; align-items: center;">
@@ -744,6 +745,13 @@
         }
 
         // --- Students ---
+        let studentSearchTimer = null;
+        document.getElementById('student-search').addEventListener('input', (e) => {
+            clearTimeout(studentSearchTimer);
+            studentSearchTimer = setTimeout(() => loadStudents(), 300);
+        });
+        document.getElementById('student-filter').addEventListener('change', () => loadStudents());
+
         async function loadStudents() {
             const search = document.getElementById('student-search').value;
             const status = document.getElementById('student-filter').value;
@@ -1248,6 +1256,31 @@
                 showToast('Network error', 'error');
             }
         }
+        async function uploadEmailsCSV(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            showToast('Uploading emails CSV and sending passes...', 'warning');
+            try {
+                const res = await fetch('/admin/upload-emails-csv', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`Success: ${data.message}`);
+                } else {
+                    showToast(data.detail || 'Upload failed', 'error');
+                }
+            } catch (err) {
+                showToast('Network error during upload', 'error');
+            }
+            e.target.value = ''; // Reset input
+        }
+
         // --- Roster ---
         async function uploadRoster(e) {
             const file = e.target.files[0];

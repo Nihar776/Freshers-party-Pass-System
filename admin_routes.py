@@ -165,6 +165,7 @@ class AdminStudentSummary(BaseModel):
     group_id: Optional[str] = None
     amount: Optional[float] = None
     serial_number: Optional[str] = None
+    food_received: bool
 
 
 class AdminSellerDetail(BaseModel):
@@ -405,7 +406,8 @@ def list_students_admin(
             sold_at=s.sold_at.isoformat() if s.sold_at else None,
             group_id=s.group_id,
             amount=s.amount,
-            serial_number=serial_map.get(s.id)
+            serial_number=serial_map.get(s.id),
+            food_received=s.food_received
         )
         for s in rows
     ]
@@ -725,6 +727,100 @@ async def upload_food_csv(
     if errors:
         msg += f" {len(errors)} errors occurred (check logs)."
         print("Bulk food update errors:", errors)
+        
+    return {"message": msg}
+
+
+@router.post("/upload-emails-csv")
+async def upload_emails_csv(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY))
+):
+    import uuid
+    
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Must be a CSV file")
+
+    content = await file.read()
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="File is not valid UTF-8")
+
+    reader = csv.DictReader(io.StringIO(text))
+    
+    if not reader.fieldnames:
+        raise HTTPException(status_code=400, detail="CSV is empty or has no headers")
+    headers = [h.strip().lower() for h in reader.fieldnames]
+    reader.fieldnames = headers
+
+    if "name" not in headers or "email" not in headers:
+        raise HTTPException(status_code=400, detail="CSV must contain 'name' and 'email' columns")
+
+    sent_count = 0
+    errors = []
+
+    for idx, row in enumerate(reader, start=2):
+        name = row.get("name", "").strip()
+        email = row.get("email", "").strip()
+
+        if not name or not email:
+            errors.append(f"Row {idx}: Missing name or email")
+            continue
+
+        student = db.query(Student).filter(Student.email == email).first()
+        if not student:
+            sap_id = f"EXT-{uuid.uuid4().hex[:8].upper()}"
+            student = Student(
+                sap_id=sap_id,
+                name=name,
+                email=email,
+                branch="GUEST",
+                payment_status=PaymentStatus.VERIFIED,
+                amount=0.0,
+                distributor_id=admin.id,
+                sold_at=datetime.utcnow()
+            )
+            db.add(student)
+            db.flush()
+            
+            write_audit_log(
+                db, user_id=admin.id, action="bulk_pass_issued", table_name="students",
+                record_id=student.id, old_value=None, new_value={"email": email, "sap_id": sap_id}
+            )
+        else:
+            if student.payment_status != PaymentStatus.VERIFIED:
+                old_status = student.payment_status.value if student.payment_status else None
+                student.payment_status = PaymentStatus.VERIFIED
+                student.amount = 0.0
+                student.distributor_id = admin.id
+                student.sold_at = datetime.utcnow()
+                db.flush()
+                
+                write_audit_log(
+                    db, user_id=admin.id, action="bulk_pass_verified", table_name="students",
+                    record_id=student.id, old_value={"payment_status": old_status}, new_value={"payment_status": "verified"}
+                )
+
+        token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+        qr_image = generate_qr_image(token)
+        background_tasks.add_task(
+            send_pass_email,
+            recipient_email=student.email,
+            student_name=student.name,
+            qr_image_bytes=qr_image,
+            sap_id=student.sap_id,
+        )
+        sent_count += 1
+
+    db.commit()
+    
+    msg = f"Sent passes to {sent_count} emails."
+    if errors:
+        msg += f" {len(errors)} rows had issues."
+        print("Bulk email errors:", errors)
         
     return {"message": msg}
 
