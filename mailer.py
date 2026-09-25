@@ -99,6 +99,7 @@ def send_pass_email(
     student_name: str,
     qr_image_bytes: BytesIO,
     sap_id: str = "",
+    student_id: int = None,
 ) -> None:
     """
     Sends the pass email via SMTP (Gmail or SendGrid SMTP relay both work

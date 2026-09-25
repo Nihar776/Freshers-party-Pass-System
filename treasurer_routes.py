@@ -310,7 +310,8 @@ def verify_payment(
     )
 
     return VerifyActionResult(message="Payment verified, pass is being emailed in the background", sap_id=student.sap_id,
-                               payment_status=student.payment_status)
+
+                               student_id=student.id,payment_status=student.payment_status)
 
 
 @router.post("/reject/{student_id}", response_model=VerifyActionResult)
@@ -341,7 +342,8 @@ def reject_payment(
     db.refresh(student)
 
     return VerifyActionResult(message="Payment rejected - SAP ID is unlocked for resale",
-                               sap_id=student.sap_id, payment_status=student.payment_status)
+                               sap_id=student.sap_id,
+ student_id=student.id,payment_status=student.payment_status)
 
 
 # ---------------------------------------------------------------------------

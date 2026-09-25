@@ -396,6 +396,7 @@ def list_students_admin(
         AdminStudentSummary(
             id=s.id,
             sap_id=s.sap_id,
+
             name=s.name,
             email=s.email,
             branch=s.branch,
@@ -568,7 +569,7 @@ def export_sales(
     master_ws = wb.active
     master_ws.title = "Master Data"
     
-    headers = ["Name", "SAP ID", "Branch", "Pass Type", "Amount", "Payment Mode", "Status", "Distributor"]
+    headers = ["Name", "SAP ID", "Email", "Branch", "Pass Type", "Amount", "Payment Mode", "Status", "Distributor"]
     master_ws.append(headers)
     
     branch_sheets = {}
@@ -577,7 +578,7 @@ def export_sales(
         distributor = s.distributor.full_name if s.distributor else "Unknown"
         pass_type = s.pass_type.value if s.pass_type else ""
         payment_mode = s.payment_mode.value if s.payment_mode else ""
-        row = [s.name, s.sap_id, s.branch, pass_type, s.amount or 0, payment_mode, s.payment_status.value, distributor]
+        row = [s.name, s.sap_id, s.email, s.branch, pass_type, s.amount or 0, payment_mode, s.payment_status.value, distributor]
         
         master_ws.append(row)
         
@@ -745,7 +746,7 @@ async def upload_emails_csv(
 
     content = await file.read()
     try:
-        text = content.decode("utf-8")
+        text = content.decode("utf-8-sig")
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="File is not valid UTF-8")
 
@@ -756,62 +757,39 @@ async def upload_emails_csv(
     headers = [h.strip().lower() for h in reader.fieldnames]
     reader.fieldnames = headers
 
-    if "name" not in headers or "email" not in headers:
-        raise HTTPException(status_code=400, detail="CSV must contain 'name' and 'email' columns")
+    if "email" not in headers or "name" not in headers:
+        raise HTTPException(status_code=400, detail="CSV must contain at least 'name' and 'email' columns")
 
     sent_count = 0
     errors = []
 
     for idx, row in enumerate(reader, start=2):
-        name = row.get("name", "").strip()
+        name = row.get("name", "").strip() or "Guest"
         email = row.get("email", "").strip()
+        sap_id = row.get("sap_id", "").strip() or row.get("sap id", "").strip() or "N/A"
 
-        if not name or not email:
-            errors.append(f"Row {idx}: Missing name or email")
+        if not email:
+            errors.append(f"Row {idx}: Missing email")
             continue
 
-        student = db.query(Student).filter(Student.email == email).first()
+        student = None
+        if sap_id and sap_id != "N/A":
+            student = db.query(Student).filter(Student.sap_id.ilike(sap_id)).first()
         if not student:
-            sap_id = f"EXT-{uuid.uuid4().hex[:8].upper()}"
-            student = Student(
-                sap_id=sap_id,
-                name=name,
-                email=email,
-                branch="GUEST",
-                payment_status=PaymentStatus.VERIFIED,
-                amount=0.0,
-                distributor_id=admin.id,
-                sold_at=datetime.utcnow()
-            )
-            db.add(student)
-            db.flush()
-            
-            write_audit_log(
-                db, user_id=admin.id, action="bulk_pass_issued", table_name="students",
-                record_id=student.id, old_value=None, new_value={"email": email, "sap_id": sap_id}
-            )
-        else:
-            if student.payment_status != PaymentStatus.VERIFIED:
-                old_status = student.payment_status.value if student.payment_status else None
-                student.payment_status = PaymentStatus.VERIFIED
-                student.amount = 0.0
-                student.distributor_id = admin.id
-                student.sold_at = datetime.utcnow()
-                db.flush()
-                
-                write_audit_log(
-                    db, user_id=admin.id, action="bulk_pass_verified", table_name="students",
-                    record_id=student.id, old_value={"payment_status": old_status}, new_value={"payment_status": "verified"}
-                )
+            student = db.query(Student).filter(Student.email.ilike(email)).first()
 
-        token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+        pass_uuid = student.pass_uuid if student else uuid.uuid4().hex
+        student_id_val = student.id if student else None
+
+        token = generate_pass_token(sap_id=sap_id, pass_uuid=pass_uuid)
         qr_image = generate_qr_image(token)
         background_tasks.add_task(
             send_pass_email,
-            recipient_email=student.email,
-            student_name=student.name,
+            recipient_email=email,
+            student_name=name,
             qr_image_bytes=qr_image,
-            sap_id=student.sap_id,
+            sap_id=sap_id,
+            student_id=student_id_val,
         )
         sent_count += 1
 
@@ -950,6 +928,7 @@ def edit_group(
                 student_name=m.name,
                 qr_image_bytes=qr_image,
                 sap_id=m.sap_id,
+                student_id=m.id,
             )
 
     return {"message": f"Group updated. Size is now {group_size}."}
@@ -1010,6 +989,7 @@ def bulk_update_students(
                 student_name=student.name,
                 qr_image_bytes=qr_image,
                 sap_id=student.sap_id,
+                student_id=student.id,
             )
             updated_count += 1
             continue
@@ -1095,7 +1075,8 @@ def resend_email(
         student_name=student.name,
         qr_image_bytes=qr_image,
         sap_id=student.sap_id,
-    )
+
+    student_id=student.id,)
 
     return {"message": "Email is being sent in the background"}
 

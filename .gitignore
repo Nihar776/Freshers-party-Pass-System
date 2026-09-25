@@ -8,3 +8,5 @@ code_context.txt
 security_tester.py
 seed_mock_data.py
 seed.py
+remaining_mails.csv
+sample_mass_mail.csv

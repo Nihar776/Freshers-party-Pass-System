@@ -252,7 +252,8 @@ def sell_pass(
             student_name=student.name,
             qr_image_bytes=qr_image,
             sap_id=student.sap_id,
-        )
+
+        student_id=student.id,)
         message = "Cash sale recorded - pass is being emailed in the background"
     else:
         message = "UPI sale recorded - pending treasurer verification before the pass is sent"
@@ -260,7 +261,8 @@ def sell_pass(
     return SellResult(
         message=message,
         sap_id=student.sap_id,
-        payment_status=student.payment_status,
+
+        student_id=student.id,payment_status=student.payment_status,
         duplicate_screenshot_warning=duplicate_warning,
     )
 
@@ -487,6 +489,7 @@ def sell_group(
                 student_name=student.name,
                 qr_image_bytes=qr_image,
                 sap_id=student.sap_id,
+                student_id=student.id,
             )
         message = f"Cash sale recorded for group - {len(students)} passes being emailed in the background"
     else:
@@ -515,7 +518,8 @@ def my_sales(
     )
     return [
         MySaleSummary(
-            sap_id=r.sap_id, name=r.name, email=r.email, pass_type=r.pass_type, payment_mode=r.payment_mode,
+            sap_id=r.sap_id,
+ student_id=r.id,name=r.name, email=r.email, pass_type=r.pass_type, payment_mode=r.payment_mode,
             amount=r.amount, payment_status=r.payment_status,
             sold_at=r.sold_at.isoformat() if r.sold_at else None,
         )
