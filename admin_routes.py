@@ -355,6 +355,7 @@ def list_students_admin(
     search: Optional[str] = None,
     status: Optional[str] = None,
     limit: int = 100,
+    skip: int = 0,
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(*ADMIN_ONLY)),
 ):
@@ -391,7 +392,7 @@ def list_students_admin(
             serial_map[s_id] = f"{g_info['num']}.{g_info['idx']}"
             g_info["idx"] += 1
 
-    rows = q.order_by(Student.name).limit(limit).all()
+    rows = q.order_by(Student.name).offset(skip).limit(limit).all()
     return [
         AdminStudentSummary(
             id=s.id,
@@ -1059,6 +1060,9 @@ def resend_email(
     db: Session = Depends(get_db),
     user: User = Depends(require_role(UserRole.ADMIN, UserRole.DISTRIBUTOR)),
 ):
+    with open("resend_log.txt", "a") as f:
+        f.write(f"Resend requested for SAP ID: {sap_id}\n")
+    
     student = db.query(Student).filter(Student.sap_id == sap_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")

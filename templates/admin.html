@@ -249,9 +249,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Populated by JS -->
                         </tbody>
                     </table>
+                </div>
+                <div class="mt-4" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span id="students-pagination-info" class="text-muted"></span>
+                    <div>
+                        <button class="btn btn-secondary" id="students-prev-btn" onclick="prevStudentsPage()" disabled>Previous 100</button>
+                        <button class="btn btn-secondary" id="students-next-btn" onclick="nextStudentsPage()" disabled>Next 100</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -745,21 +751,46 @@
         }
 
         // --- Students ---
+        let currentStudentsPage = 0;
+        const limitPerPage = 100;
+
         let studentSearchTimer = null;
         document.getElementById('student-search').addEventListener('input', (e) => {
             clearTimeout(studentSearchTimer);
+            currentStudentsPage = 0;
             studentSearchTimer = setTimeout(() => loadStudents(), 300);
         });
-        document.getElementById('student-filter').addEventListener('change', () => loadStudents());
+        document.getElementById('student-filter').addEventListener('change', () => {
+            currentStudentsPage = 0;
+            loadStudents();
+        });
+
+        function nextStudentsPage() {
+            currentStudentsPage++;
+            loadStudents();
+        }
+
+        function prevStudentsPage() {
+            if (currentStudentsPage > 0) {
+                currentStudentsPage--;
+                loadStudents();
+            }
+        }
 
         async function loadStudents() {
             const search = document.getElementById('student-search').value;
             const status = document.getElementById('student-filter').value;
-            const res = await fetch(`/admin/students?search=${encodeURIComponent(search)}&status=${status}`);
+            const skip = currentStudentsPage * limitPerPage;
+            
+            const res = await fetch(`/admin/students?search=${encodeURIComponent(search)}&status=${status}&skip=${skip}&limit=${limitPerPage}`);
             if (!res.ok) return;
             const data = await res.json();
             
-            document.querySelector('#students-table tbody').innerHTML = data.map(s => {
+            document.getElementById('students-prev-btn').disabled = (currentStudentsPage === 0);
+            document.getElementById('students-next-btn').disabled = (data.length < limitPerPage);
+            document.getElementById('students-pagination-info').innerText = `Showing ${skip + 1} - ${skip + data.length}`;
+
+            document.querySelector('#students-table tbody').innerHTML = data.map((s, idx) => {
                 let badgeClass = 'badge-neutral';
                 if (s.payment_status === 'verified') badgeClass = 'badge-success';
                 else if (s.payment_status === 'pending_verification') badgeClass = 'badge-warning';
@@ -768,7 +799,7 @@
                 return `
                 <tr>
                     <td><input type="checkbox" class="student-checkbox" value="${s.id}"></td>
-                    <td><span class="badge badge-neutral" style="font-family: monospace;">${s.serial_number || '-'}</span></td>
+                    <td><span class="badge badge-neutral" style="font-family: monospace;">${skip + idx + 1}</span></td>
                     <td class="font-semibold">${s.name}</td>
                     <td class="text-muted">${s.sap_id}<br><small>${s.email || 'No email'}</small></td>
                     <td>${s.branch}</td>
