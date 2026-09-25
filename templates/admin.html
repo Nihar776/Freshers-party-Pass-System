@@ -773,7 +773,6 @@
                     <td class="text-muted">${s.sap_id}<br><small>${s.email || 'No email'}</small></td>
                     <td>${s.branch}</td>
                     <td><span class="badge ${badgeClass}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_', ' ')}</span></td>
-                    <td>${emailBadge}</td>
                     <td>${s.is_used ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-neutral">No</span>'}</td>
                     <td>
                         <button class="btn btn-secondary py-1 px-3 text-sm" style="margin-right: 4px;" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}', '${s.food_preference}')">Edit</button>
