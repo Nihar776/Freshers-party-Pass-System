@@ -253,6 +253,7 @@ class OnlineOrder(Base):
     
     locked_total_price = Column(Float, nullable=False)
     applied_rule_id = Column(Integer, ForeignKey("discount_rules.id"), nullable=True)
+    discount_code_id = Column(Integer, ForeignKey("discount_codes.id"), nullable=True)
     upi_qr_shown_id = Column(Integer, ForeignKey("upi_qr_codes.id"), nullable=True)
     
     utr_number = Column(String(32), nullable=True)
@@ -267,6 +268,7 @@ class OnlineOrder(Base):
     
     leader = relationship("Student", foreign_keys=[leader_sap_id])
     applied_rule = relationship("DiscountRule", foreign_keys=[applied_rule_id])
+    discount_code = relationship("DiscountCode", foreign_keys=[discount_code_id])
     upi_qr_shown = relationship("UpiQrCode", foreign_keys=[upi_qr_shown_id])
     approved_by = relationship("User", foreign_keys=[approved_by_id])
     members = relationship("OrderMember", back_populates="order", cascade="all, delete-orphan")

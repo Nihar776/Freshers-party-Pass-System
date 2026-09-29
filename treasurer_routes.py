@@ -774,6 +774,8 @@ def verify_online_order(
         student.screenshot_phash = order.screenshot_phash
         if om.food_preference:
             student.food_preference = om.food_preference
+        if order.discount_code_id:
+            student.discount_code_id = order.discount_code_id
             
         db.flush()
         

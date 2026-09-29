@@ -8,6 +8,7 @@ from typing import Optional
 import csv
 import io
 import base64
+import uuid
 import openpyxl
 
 from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks, File, Form, UploadFile
@@ -289,7 +290,7 @@ def dashboard(
     )
     food_breakdown = [
         FoodPreferenceBreakdown(
-            food_preference=fp.value if fp else "unknown", count=c,
+            food_preference=fp.value if hasattr(fp, "value") else (fp or "unknown"), count=c,
             percent=round(100 * c / total_verified, 1) if total_verified else 0.0,
         )
         for fp, c in food_rows
@@ -319,9 +320,10 @@ def dashboard(
     meals_jain = 0
     meals_veg = 0
     for fp, count in meals_taken_rows:
-        if fp and fp.value == "jain":
+        fp_str = (fp.value if hasattr(fp, "value") else str(fp or "")).lower()
+        if fp_str == "jain":
             meals_jain += count
-        elif fp and fp.value == "veg":
+        elif fp_str == "veg":
             meals_veg += count
     
     total_meals = meals_jain + meals_veg
@@ -529,7 +531,8 @@ def export_attendees(
     for s in students:
         scanned_by = s.scanned_by.full_name if s.scanned_by else "Unknown"
         entered_at = (s.entered_at + timedelta(hours=5, minutes=30)).strftime("%Y-%m-%d %H:%M:%S") if s.entered_at else "Unknown"
-        food_pref = "Jain" if (s.food_preference and s.food_preference.value == "jain") else "Non-Jain"
+        food_val = (s.food_preference.value if hasattr(s.food_preference, "value") else str(s.food_preference or "")).lower()
+        food_pref = "Jain" if food_val == "jain" else "Non-Jain"
         food_taken = "Yes" if s.food_received else "No"
         food_taken_at = (s.food_received_at + timedelta(hours=5, minutes=30)).strftime("%Y-%m-%d %H:%M:%S") if s.food_received_at else ""
         food_scanned = s.food_scanned_by.full_name if s.food_scanned_by else ""
@@ -685,18 +688,21 @@ async def override_student(
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
+    old_food = student.food_preference.value if hasattr(student.food_preference, "value") else student.food_preference
+    old_status = student.payment_status.value if hasattr(student.payment_status, "value") else student.payment_status
+    old_mode = student.payment_mode.value if hasattr(student.payment_mode, "value") else student.payment_mode
     old_snapshot = {
-        "payment_status": student.payment_status.value if student.payment_status else None,
+        "payment_status": old_status,
         "is_used": student.is_used,
-        "food_preference": student.food_preference.value if student.food_preference else None,
-        "payment_mode": student.payment_mode.value if student.payment_mode else None,
+        "food_preference": old_food,
+        "payment_mode": old_mode,
         "utr_number": student.utr_number
     }
     
     new_snapshot = {}
     if payment_status is not None:
         student.payment_status = payment_status
-        new_snapshot["payment_status"] = payment_status.value
+        new_snapshot["payment_status"] = payment_status.value if hasattr(payment_status, "value") else str(payment_status)
         if payment_status == PaymentStatus.NOT_PURCHASED:
             student.group_id = None
             student.amount = 0.0
@@ -708,11 +714,12 @@ async def override_student(
         student.is_used = is_used
         new_snapshot["is_used"] = is_used
     if food_preference is not None:
-        student.food_preference = food_preference
-        new_snapshot["food_preference"] = food_preference.value
+        new_fp = food_preference.value if hasattr(food_preference, "value") else str(food_preference)
+        student.food_preference = new_fp
+        new_snapshot["food_preference"] = new_fp
     if payment_mode is not None:
         student.payment_mode = payment_mode
-        new_snapshot["payment_mode"] = payment_mode.value
+        new_snapshot["payment_mode"] = payment_mode.value if hasattr(payment_mode, "value") else str(payment_mode)
     if utr_number is not None:
         student.utr_number = utr_number
         new_snapshot["utr_number"] = utr_number
@@ -786,9 +793,9 @@ async def upload_food_csv(
             errors.append(f"Row {idx}: Student with SAP ID {sap_id} not found")
             continue
 
-        old_val = student.food_preference.value if student.food_preference else None
+        old_val = student.food_preference.value if hasattr(student.food_preference, "value") else student.food_preference
         if old_val != pref_raw:
-            student.food_preference = FoodPreference(pref_raw)
+            student.food_preference = pref_raw
             write_audit_log(
                 db, user_id=admin.id, action="bulk_food_update", table_name="students",
                 record_id=student.id, old_value={"food_preference": old_val}, new_value={"food_preference": pref_raw}
@@ -1023,10 +1030,12 @@ def bulk_update_students(
 
     updated_count = 0
     for student in students:
+        food_val = student.food_preference.value if hasattr(student.food_preference, "value") else student.food_preference
+        status_val = student.payment_status.value if hasattr(student.payment_status, "value") else (student.payment_status or "")
         old_snapshot = {
-            "payment_status": student.payment_status.value if student.payment_status else None,
+            "payment_status": status_val,
             "is_used": student.is_used,
-            "food_preference": student.food_preference.value if student.food_preference else None
+            "food_preference": food_val
         }
         new_snapshot = {}
 
@@ -1043,6 +1052,14 @@ def bulk_update_students(
                         student.utr_number = None
                         student.payment_screenshot = None
                         student.screenshot_phash = None
+                    elif new_status == PaymentStatus.VERIFIED:
+                        student.verified_by_id = admin.id
+                        if not student.verified_at:
+                            student.verified_at = datetime.utcnow()
+                        if not student.sold_at:
+                            student.sold_at = datetime.utcnow()
+                        if not student.pass_uuid:
+                            student.pass_uuid = uuid.uuid4().hex
             except ValueError:
                 continue
         elif payload.action == "is_used":
@@ -1051,16 +1068,16 @@ def bulk_update_students(
                 student.is_used = new_used
                 new_snapshot["is_used"] = new_used
         elif payload.action == "food_preference":
-            try:
-                new_food = FoodPreference(payload.value)
-                if student.food_preference != new_food:
-                    student.food_preference = new_food
-                    new_snapshot["food_preference"] = new_food.value
-            except ValueError:
-                continue
+            new_food = payload.value.strip().lower()
+            if (food_val or "").lower() != new_food:
+                student.food_preference = new_food
+                new_snapshot["food_preference"] = new_food
         elif payload.action == "resend_emails":
             if student.payment_status != PaymentStatus.VERIFIED or not student.email:
                 continue
+            if not student.pass_uuid:
+                student.pass_uuid = uuid.uuid4().hex
+                db.flush()
             token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
             qr_image = generate_qr_image(token)
             background_tasks.add_task(

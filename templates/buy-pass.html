@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buy Pass | Freshers Party</title>
+    <title>Buy Pass | Utsang</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
         /* ── Page shell ────────────────────────────────────────── */
@@ -23,6 +24,7 @@
             max-width: 560px;
             padding: 0 20px;
         }
+
         .step-dot {
             display: flex;
             flex-direction: column;
@@ -30,6 +32,7 @@
             gap: 6px;
             flex-shrink: 0;
         }
+
         .step-dot .dot {
             width: 32px;
             height: 32px;
@@ -44,24 +47,35 @@
             color: var(--text-muted);
             transition: all 0.3s;
         }
+
         .step-dot .dot-label {
             font-size: 11px;
             color: var(--text-muted);
             white-space: nowrap;
         }
+
         .step-dot.active .dot {
             background: var(--primary);
             border-color: var(--primary);
             color: #fff;
             box-shadow: 0 0 0 4px rgba(91, 44, 230, 0.2);
         }
-        .step-dot.active .dot-label { color: var(--primary); font-weight: 600; }
+
+        .step-dot.active .dot-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         .step-dot.done .dot {
             background: var(--success);
             border-color: var(--success);
             color: #fff;
         }
-        .step-dot.done .dot-label { color: var(--success); }
+
+        .step-dot.done .dot-label {
+            color: var(--success);
+        }
+
         .step-line {
             flex: 1;
             height: 2px;
@@ -69,7 +83,10 @@
             margin-bottom: 22px;
             transition: background 0.3s;
         }
-        .step-line.done { background: var(--success); }
+
+        .step-line.done {
+            background: var(--success);
+        }
 
         /* ── Card ───────────────────────────────────────────────── */
         .step-card {
@@ -77,17 +94,20 @@
             margin: 0 auto;
             padding: 0 16px;
         }
+
         .step-panel {
             background: var(--bg-panel);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             padding: 32px;
         }
+
         .step-panel h2 {
             font-size: 20px;
             font-weight: 700;
             margin-bottom: 6px;
         }
+
         .step-panel .step-sub {
             font-size: 14px;
             color: var(--text-muted);
@@ -106,10 +126,27 @@
             justify-content: space-between;
             align-items: center;
         }
-        .result-item:hover { border-color: var(--primary); background: rgba(91, 44, 230, 0.06); }
-        .result-item .name { font-weight: 700; font-size: 15px; }
-        .result-item .meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-        .result-item.taken { opacity: 0.45; cursor: not-allowed; }
+
+        .result-item:hover {
+            border-color: var(--primary);
+            background: rgba(91, 44, 230, 0.06);
+        }
+
+        .result-item .name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .result-item .meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .result-item.taken {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
 
         /* ── Price highlight ────────────────────────────────────── */
         .price-box {
@@ -122,9 +159,23 @@
             justify-content: space-between;
             align-items: center;
         }
-        .price-box .price-label { color: var(--text-muted); font-size: 14px; }
-        .price-box .price-value { font-size: 28px; font-weight: 800; color: var(--text-main); font-family: 'Outfit', sans-serif; }
-        .price-box .rule-badge { margin-top: 4px; font-size: 12px; }
+
+        .price-box .price-label {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .price-box .price-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .price-box .rule-badge {
+            margin-top: 4px;
+            font-size: 12px;
+        }
 
         /* ── Countdown ──────────────────────────────────────────── */
         .countdown-bar {
@@ -138,9 +189,22 @@
             gap: 10px;
             font-size: 14px;
         }
-        .countdown-bar .timer { font-weight: 700; color: var(--warning); font-variant-numeric: tabular-nums; font-size: 16px; }
-        .countdown-bar.expired { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); }
-        .countdown-bar.expired .timer { color: var(--danger); }
+
+        .countdown-bar .timer {
+            font-weight: 700;
+            color: var(--warning);
+            font-variant-numeric: tabular-nums;
+            font-size: 16px;
+        }
+
+        .countdown-bar.expired {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .countdown-bar.expired .timer {
+            color: var(--danger);
+        }
 
         /* ── QR block ───────────────────────────────────────────── */
         .qr-block {
@@ -151,7 +215,14 @@
             text-align: center;
             margin-bottom: 20px;
         }
-        .qr-block img { border-radius: 8px; max-width: 200px; margin: 0 auto 12px; display: block; }
+
+        .qr-block img {
+            border-radius: 8px;
+            max-width: 200px;
+            margin: 0 auto 12px;
+            display: block;
+        }
+
         .qr-block .upi-id {
             font-family: monospace;
             font-size: 14px;
@@ -162,7 +233,12 @@
             display: inline-block;
             color: var(--text-main);
         }
-        .qr-block .payee { color: var(--text-muted); font-size: 13px; margin-top: 8px; }
+
+        .qr-block .payee {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 8px;
+        }
 
         /* ── Upload zone ────────────────────────────────────────── */
         .upload-zone-label {
@@ -176,14 +252,22 @@
             color: var(--text-muted);
             font-size: 14px;
         }
-        .upload-zone-label:hover { border-color: var(--primary); }
-        .upload-zone-label .upload-icon { font-size: 28px; margin-bottom: 8px; }
+
+        .upload-zone-label:hover {
+            border-color: var(--primary);
+        }
+
+        .upload-zone-label .upload-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
 
         /* ── Success state ──────────────────────────────────────── */
         .success-card {
             text-align: center;
             padding: 48px 32px;
         }
+
         .success-icon {
             width: 72px;
             height: 72px;
@@ -196,8 +280,17 @@
             margin: 0 auto 20px;
             font-size: 32px;
         }
-        .success-card h2 { font-size: 22px; margin-bottom: 8px; }
-        .success-card p { color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+
+        .success-card h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .success-card p {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
 
         /* ── Group members list ─────────────────────────────────── */
         .member-chip {
@@ -211,6 +304,7 @@
             margin-bottom: 8px;
             font-size: 14px;
         }
+
         .member-chip .remove-btn {
             background: none;
             border: none;
@@ -220,23 +314,36 @@
             line-height: 1;
             padding: 0 4px;
         }
-        .member-chip .remove-btn:hover { opacity: 0.7; }
+
+        .member-chip .remove-btn:hover {
+            opacity: 0.7;
+        }
 
         /* ── Misc helpers ───────────────────────────────────────── */
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
+
         .spinner {
             display: inline-block;
-            width: 16px; height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-top-color: #fff;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
             vertical-align: middle;
             margin-right: 6px;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body class="page-wrapper">
     <div id="toast-container"></div>
 
@@ -255,7 +362,8 @@
         <!-- Page title -->
         <div style="text-align:center; margin-bottom: 8px;">
             <h1 style="font-size: 28px; font-weight: 800;">Get Your Entry Pass</h1>
-            <p style="color: var(--text-muted); font-size: 15px;">Online self-service · UPI payment · Instant email delivery</p>
+            <p style="color: var(--text-muted); font-size: 15px;">Online self-service · UPI payment · Instant email
+                delivery</p>
         </div>
 
         <!-- Stepper -->
@@ -293,8 +401,10 @@
                 <p class="step-sub">Type your name or SAP ID — results appear instantly.</p>
 
                 <div class="form-group" style="position:relative;">
-                    <input type="text" id="searchInput" class="form-control" placeholder="e.g. Riya Shah or 6000012345" autocomplete="off">
-                    <div id="search-spinner" class="hidden" style="position:absolute; right:12px; top:50%; transform:translateY(-50%);">
+                    <input type="text" id="searchInput" class="form-control" placeholder="e.g. Riya Shah or 6000012345"
+                        autocomplete="off">
+                    <div id="search-spinner" class="hidden"
+                        style="position:absolute; right:12px; top:50%; transform:translateY(-50%);">
                         <div class="spinner" style="border-top-color: var(--primary);"></div>
                     </div>
                 </div>
@@ -311,15 +421,17 @@
         <div class="step-card hidden" id="step-otp">
             <div class="step-panel">
                 <h2>Verify your identity</h2>
-                <p class="step-sub">A 6-digit OTP has been sent to <strong id="maskedEmail" style="color:var(--text);"></strong></p>
+                <p class="step-sub">A 6-digit OTP has been sent to <strong id="maskedEmail"
+                        style="color:var(--text);"></strong></p>
 
                 <div class="form-group">
                     <label class="form-label">OTP</label>
-                    <input type="text" id="otpInput" class="form-control" placeholder="Enter 6-digit OTP"
-                        maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+                    <input type="text" id="otpInput" class="form-control" placeholder="Enter 6-digit OTP" maxlength="6"
+                        inputmode="numeric" autocomplete="one-time-code">
                 </div>
 
-                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="verifyOtp()" id="btn-verify-otp">
+                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="verifyOtp()"
+                    id="btn-verify-otp">
                     Verify OTP
                 </button>
 
@@ -370,16 +482,20 @@
                     </div>
 
                     <div class="form-group" style="margin-bottom:6px;">
-                        <input type="text" id="friendSearch" class="form-control" placeholder="Search by name or SAP ID to add friend..." autocomplete="off">
+                        <input type="text" id="friendSearch" class="form-control"
+                            placeholder="Search by name or SAP ID to add friend..." autocomplete="off">
                     </div>
                     <div id="friendResults" class="grid gap-2" style="margin-top:6px;"></div>
                 </div>
 
-                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="reservePass()" id="btn-reserve">
+                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="reservePass()"
+                    id="btn-reserve">
                     Reserve Slot (holds for 30 min)
                 </button>
                 <div style="text-align:center; margin-top:16px;">
-                    <a href="#" onclick="location.reload(); return false;" style="color:var(--text-muted); font-size:14px; text-decoration:none;">← Start Over (Change Details)</a>
+                    <a href="#" onclick="location.reload(); return false;"
+                        style="color:var(--text-muted); font-size:14px; text-decoration:none;">← Start Over (Change
+                        Details)</a>
                 </div>
             </div>
         </div>
@@ -410,7 +526,8 @@
                 <div class="qr-block" id="qr-block">
                     <p class="text-muted text-sm" style="margin-bottom:12px;">Scan with any UPI app</p>
                     <img id="qr-img" src="" alt="UPI QR Code" style="display:none;">
-                    <div id="qr-placeholder" style="width:180px; height:180px; margin:0 auto 12px; background:var(--bg-surface); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--text-muted);">
+                    <div id="qr-placeholder"
+                        style="width:180px; height:180px; margin:0 auto 12px; background:var(--bg-surface); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--text-muted);">
                         Loading QR…
                     </div>
                     <div class="upi-id" id="qr-upi-id">—</div>
@@ -419,12 +536,14 @@
 
                 <!-- UTR + Screenshot -->
                 <div class="form-group">
-                    <label class="form-label">UTR / Transaction Reference Number <span class="text-muted text-sm">(optional but speeds up approval)</span></label>
+                    <label class="form-label">UTR / Transaction Reference Number <span
+                            class="text-muted text-sm">(optional but speeds up approval)</span></label>
                     <input type="text" id="utrInput" class="form-control" placeholder="e.g. 123456789012">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Payment Screenshot <span class="text-danger" style="font-size:12px;">*Required</span></label>
+                    <label class="form-label">Payment Screenshot <span class="text-danger"
+                            style="font-size:12px;">*Required</span></label>
                     <label class="upload-zone-label" for="screenshotInput" id="upload-label">
                         <div class="upload-icon">📎</div>
                         <div>Click to choose screenshot</div>
@@ -435,11 +554,14 @@
                     <div id="file-preview" style="margin-top:8px;"></div>
                 </div>
 
-                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="uploadPayment()" id="btn-upload">
+                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="uploadPayment()"
+                    id="btn-upload">
                     Submit for Verification
                 </button>
                 <div style="text-align:center; margin-top:16px;">
-                    <a href="#" onclick="cancelReservation(); return false;" style="color:var(--text-muted); font-size:14px; text-decoration:none;">← Cancel Reservation &amp; Edit Group</a>
+                    <a href="#" onclick="cancelReservation(); return false;"
+                        style="color:var(--text-muted); font-size:14px; text-decoration:none;">← Cancel Reservation
+                        &amp; Edit Group</a>
                 </div>
 
                 <p class="text-xs text-muted" style="text-align:center; margin-top:12px;">
@@ -467,19 +589,19 @@
 
     <script>
         /* ─────────────────── State ─────────────────── */
-        let currentSapId   = '';
-        let passUuid       = '';
-        let currentName    = '';
-        let currentMasked  = '';
-        let lockedPrice    = 0;
-        let orderId        = null;
-        let qrData         = null;
-        let timerInt       = null;
-        let holdExpiresAt  = null;
-        let groupMembers   = [];   // [{sap_id, name, branch}]
-        let searchTimer    = null;
-        let friendTimer    = null;
-        let foodEnabled    = false;
+        let currentSapId = '';
+        let passUuid = '';
+        let currentName = '';
+        let currentMasked = '';
+        let lockedPrice = 0;
+        let orderId = null;
+        let qrData = null;
+        let timerInt = null;
+        let holdExpiresAt = null;
+        let groupMembers = [];   // [{sap_id, name, branch}]
+        let searchTimer = null;
+        let friendTimer = null;
+        let foodEnabled = false;
 
         /* ─────────────────── Toast ─────────────────── */
         function showToast(msg, type = 'success') {
@@ -494,18 +616,18 @@
         /* ─────────────────── Stepper ──────────────── */
         function setStep(n) {
             // n = 1..5
-            [1,2,3,4,5].forEach(i => {
+            [1, 2, 3, 4, 5].forEach(i => {
                 const dot = document.getElementById(`sdot-${i}`);
-                dot.classList.remove('active','done');
-                if (i < n)  dot.classList.add('done');
+                dot.classList.remove('active', 'done');
+                if (i < n) dot.classList.add('done');
                 if (i === n) dot.classList.add('active');
             });
-            [1,2,3,4].forEach(i => {
+            [1, 2, 3, 4].forEach(i => {
                 const line = document.getElementById(`sline-${i}`);
                 line.classList.toggle('done', i < n);
             });
             // Show/hide panels
-            ['search','otp','reserve','pay','status'].forEach((id, idx) => {
+            ['search', 'otp', 'reserve', 'pay', 'status'].forEach((id, idx) => {
                 document.getElementById(`step-${id}`).classList.toggle('hidden', idx + 1 !== n);
             });
         }
@@ -523,7 +645,7 @@
                     lockedPrice = cfg.base_price || 500;
                     document.getElementById('preview-price').textContent = lockedPrice;
                 }
-            } catch(e) {}
+            } catch (e) { }
             if (foodEnabled) {
                 document.getElementById('food-group').style.display = '';
             }
@@ -562,7 +684,7 @@
                         <div>
                             <div class="name">${s.name}
                                 <span class="badge ${taken ? 'badge-warning' : 'badge-neutral'}" style="margin-left:6px;font-size:11px;">
-                                    ${taken ? s.payment_status.replace(/_/g,' ') : 'Available'}
+                                    ${taken ? s.payment_status.replace(/_/g, ' ') : 'Available'}
                                 </span>
                             </div>
                             <div class="meta">${s.masked_sap_id} · ${s.branch}</div>
@@ -574,7 +696,7 @@
                     }
                     resultsEl.appendChild(div);
                 });
-            } catch(err) {
+            } catch (err) {
                 document.getElementById('search-spinner').classList.add('hidden');
                 resultsEl.innerHTML = '<div class="text-muted text-sm" style="padding:12px 0;">Network error. Check your connection.</div>';
             }
@@ -582,16 +704,16 @@
 
         /* ─────────────────── Step 1→2: Send OTP ─────── */
         async function sendOtp(sapId, maskedEmail, name) {
-            currentSapId   = sapId;
-            currentMasked  = maskedEmail;
-            currentName    = name;
+            currentSapId = sapId;
+            currentMasked = maskedEmail;
+            currentName = name;
 
             const btn = document.createElement('button'); // temp for UX feedback
             try {
                 const res = await fetch('/api/student/send-otp', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({sap_id: sapId})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sap_id: sapId })
                 });
                 if (!res.ok) {
                     const d = await res.json();
@@ -602,7 +724,7 @@
                 document.getElementById('nav-student-name').textContent = name;
                 document.getElementById('nav-student-name').style.display = '';
                 setStep(2);
-            } catch(e) {
+            } catch (e) {
                 showToast('Network error. Try again.', 'error');
             }
         }
@@ -615,12 +737,12 @@
             try {
                 const res = await fetch('/api/student/send-otp', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({sap_id: currentSapId})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sap_id: currentSapId })
                 });
                 if (res.ok) { showToast('OTP resent!'); }
                 else { const d = await res.json(); showToast(d.detail || 'Try again in 60s', 'warning'); }
-            } catch(e) { showToast('Network error', 'error'); }
+            } catch (e) { showToast('Network error', 'error'); }
             a.textContent = 'Resend';
         }
 
@@ -634,8 +756,8 @@
             try {
                 const res = await fetch('/api/student/verify-otp', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({sap_id: currentSapId, otp})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sap_id: currentSapId, otp })
                 });
                 if (!res.ok) {
                     const d = await res.json();
@@ -649,10 +771,10 @@
                 // Fetch live price preview
                 await fetchPricePreview();
                 // Seed self as first member
-                groupMembers = [{sap_id: currentSapId, name: currentName, branch: '—'}];
+                groupMembers = [{ sap_id: currentSapId, name: currentName, branch: '—' }];
                 renderMembersList();
                 setStep(3);
-            } catch(err) {
+            } catch (err) {
                 showToast('Network error', 'error');
                 btn.disabled = false; btn.textContent = 'Verify OTP';
             }
@@ -673,7 +795,7 @@
                     lockedPrice = cfg.base_price || 500;
                     document.getElementById('preview-price').textContent = lockedPrice;
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
 
         /* ─────────────────── Step 3: Friend search ─── */
@@ -710,7 +832,7 @@
                         `;
                         if (!taken) {
                             div.addEventListener('click', () => {
-                                groupMembers.push({sap_id: s.sap_id, name: s.name, branch: s.branch, year: s.year});
+                                groupMembers.push({ sap_id: s.sap_id, name: s.name, branch: s.branch, year: s.year });
                                 document.getElementById('friendSearch').value = '';
                                 el.innerHTML = '';
                                 renderMembersList();
@@ -718,7 +840,7 @@
                         }
                         el.appendChild(div);
                     });
-            } catch(e) {}
+            } catch (e) { }
         }
 
         function renderMembersList() {
@@ -756,7 +878,7 @@
             try {
                 const res = await fetch('/api/student/reserve', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 if (!res.ok) {
@@ -766,22 +888,22 @@
                     return;
                 }
                 const data = await res.json();
-                lockedPrice     = data.locked_price;
-                holdExpiresAt   = new Date(
+                lockedPrice = data.locked_price;
+                holdExpiresAt = new Date(
                     data.reservation_expires_at.endsWith('Z') || data.reservation_expires_at.includes('+')
                         ? data.reservation_expires_at
                         : data.reservation_expires_at + 'Z'
                 );
 
                 document.getElementById('payAmount').textContent = lockedPrice;
-                document.getElementById('pay-rule').textContent  = data.rule_name || '';
+                document.getElementById('pay-rule').textContent = data.rule_name || '';
 
                 // Load QR
                 await loadQr(data.qr_id);
 
                 startCountdown();
                 setStep(4);
-            } catch(err) {
+            } catch (err) {
                 showToast('Network error', 'error');
                 btn.disabled = false; btn.textContent = 'Reserve Slot (holds for 30 min)';
             }
@@ -793,21 +915,21 @@
                 if (!res.ok) return;
                 const qr = await res.json();
                 document.getElementById('qr-upi-id').textContent = qr.upi_id;
-                document.getElementById('qr-payee').textContent  = qr.payee_name ? `Pay to: ${qr.payee_name}` : '';
-                const upiLink = `upi://pay?pa=${encodeURIComponent(qr.upi_id)}&pn=${encodeURIComponent(qr.payee_name||'')}&am=${lockedPrice}&cu=INR`;
+                document.getElementById('qr-payee').textContent = qr.payee_name ? `Pay to: ${qr.payee_name}` : '';
+                const upiLink = `upi://pay?pa=${encodeURIComponent(qr.upi_id)}&pn=${encodeURIComponent(qr.payee_name || '')}&am=${lockedPrice}&cu=INR`;
                 const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
                 const img = document.getElementById('qr-img');
                 img.src = qrApiUrl;
                 img.style.display = 'block';
                 document.getElementById('qr-placeholder').style.display = 'none';
-            } catch (e) {}
+            } catch (e) { }
         }
 
         /* ─────────────────── Countdown ─────────────── */
         function startCountdown() {
             clearInterval(timerInt);
-            const el   = document.getElementById('countdown');
-            const bar  = document.getElementById('countdown-bar');
+            const el = document.getElementById('countdown');
+            const bar = document.getElementById('countdown-bar');
             timerInt = setInterval(() => {
                 const diff = Math.floor((holdExpiresAt - new Date()) / 1000);
                 if (diff <= 0) {
@@ -832,7 +954,7 @@
             document.getElementById('upload-label').innerHTML = `
                 <div class="upload-icon">🖼</div>
                 <div style="font-weight:600;">${file.name}</div>
-                <div class="text-sm" style="margin-top:4px;">${(file.size/1024).toFixed(0)} KB · Click to change</div>
+                <div class="text-sm" style="margin-top:4px;">${(file.size / 1024).toFixed(0)} KB · Click to change</div>
             `;
         }
 
@@ -848,11 +970,11 @@
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const base64 = e.target.result;
-                const utr    = document.getElementById('utrInput').value.trim();
+                const utr = document.getElementById('utrInput').value.trim();
                 try {
                     const res = await fetch('/api/student/upload-payment', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             sap_id: currentSapId,
                             pass_uuid: passUuid,
@@ -868,7 +990,7 @@
                     }
                     clearInterval(timerInt);
                     setStep(5);
-                } catch(err) {
+                } catch (err) {
                     showToast('Network error', 'error');
                     btn.disabled = false; btn.textContent = 'Submit for Verification';
                 }
@@ -876,14 +998,14 @@
             reader.readAsDataURL(fileInput.files[0]);
         }
         async function cancelReservation() {
-            if(!confirm('This will cancel your current reservation so you can edit your group. Proceed?')) return;
+            if (!confirm('This will cancel your current reservation so you can edit your group. Proceed?')) return;
             try {
                 const res = await fetch('/api/student/cancel-reservation', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({sap_id: currentSapId, pass_uuid: passUuid})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sap_id: currentSapId, pass_uuid: passUuid })
                 });
-                if(res.ok) {
+                if (res.ok) {
                     clearInterval(timerInt);
                     document.getElementById('countdown-bar').classList.remove('danger');
                     setStep(3);
@@ -892,8 +1014,9 @@
                     const d = await res.json();
                     showToast(d.detail || 'Failed to cancel', 'error');
                 }
-            } catch(e) { showToast('Network error', 'error'); }
+            } catch (e) { showToast('Network error', 'error'); }
         }
     </script>
 </body>
+
 </html>

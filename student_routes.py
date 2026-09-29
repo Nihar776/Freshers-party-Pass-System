@@ -11,7 +11,11 @@ from io import BytesIO
 from PIL import Image
 
 from database import get_db, engine
-from schema_v2 import Student, PaymentStatus, DiscountRule, DiscountRuleType, ConditionType, Combinator, UpiQrCode, OnlineOrder, OrderMember, SaleChannel, PricingEffect
+from schema_v2 import (
+    Student, PaymentStatus, DiscountRule, DiscountRuleType, ConditionType,
+    Combinator, UpiQrCode, OnlineOrder, OrderMember, SaleChannel, PricingEffect,
+    DiscountCode, DiscountType
+)
 from settings_manager import get_settings
 from mailer import send_otp_email
 
@@ -45,6 +49,11 @@ class ReserveRequest(BaseModel):
     pass_uuid: str
     food_preference: Optional[str] = None
     group_sap_ids: Optional[List[str]] = None
+    coupon_code: Optional[str] = None
+
+class PriceQuoteRequest(BaseModel):
+    group_size: int = 1
+    coupon_code: Optional[str] = None
 
 class UploadPaymentRequest(BaseModel):
     sap_id: str
@@ -262,6 +271,101 @@ def verify_otp(req: VerifyOtpRequest, request: Request, db: Session = Depends(ge
     # Generate pass_uuid if not exists (already default, but let's just return it as a session token)
     return {"message": "OTP verified", "pass_uuid": student.pass_uuid}
 
+@router.get("/validate-coupon")
+def validate_student_coupon(
+    code: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    check_rate_limit(request)
+    if not code:
+        raise HTTPException(status_code=400, detail="Coupon code is required")
+    code_upper = code.upper().strip()
+    dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
+    if not dc:
+        raise HTTPException(status_code=404, detail="Invalid coupon code")
+    if not dc.is_active:
+        raise HTTPException(status_code=400, detail="This coupon code is inactive")
+    if dc.max_uses is not None and dc.times_used >= dc.max_uses:
+        raise HTTPException(status_code=400, detail="This coupon code has reached its usage limit")
+        
+    return {
+        "valid": True,
+        "code": dc.code,
+        "type": dc.discount_type.value if hasattr(dc.discount_type, "value") else str(dc.discount_type),
+        "value": dc.discount_value
+    }
+
+
+@router.post("/price-quote")
+def get_price_quote(req: PriceQuoteRequest, db: Session = Depends(get_db)):
+    settings = get_settings()
+    base_price = float(settings.get("base_price", 500))
+    count = max(1, req.group_size)
+    total_base = base_price * count
+
+    is_group = count > 1
+    active_rule = get_active_rule(db, is_group=is_group)
+    
+    rule_price = total_base
+    rule_name = None
+    if active_rule:
+        rule_name = active_rule.name
+        if active_rule.pricing_effect == PricingEffect.FIXED:
+            rule_price = active_rule.discount_value if not is_group else active_rule.group_total_price
+        elif active_rule.pricing_effect == PricingEffect.FLAT_OFF:
+            rule_price = max(0.0, total_base - active_rule.discount_value)
+        elif active_rule.pricing_effect == PricingEffect.PERCENT_OFF:
+            rule_price = max(0.0, total_base * (1.0 - (active_rule.discount_value / 100.0)))
+
+    coupon_price = total_base
+    coupon_info = None
+    if req.coupon_code:
+        code_upper = req.coupon_code.upper().strip()
+        dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
+        if not dc:
+            raise HTTPException(status_code=404, detail="Invalid coupon code")
+        if not dc.is_active:
+            raise HTTPException(status_code=400, detail="This coupon code is inactive")
+        if dc.max_uses is not None and dc.times_used >= dc.max_uses:
+            raise HTTPException(status_code=400, detail="This coupon code has reached its usage limit")
+            
+        dc_type = dc.discount_type.value if hasattr(dc.discount_type, "value") else str(dc.discount_type)
+        if dc_type == "percentage":
+            coupon_price = max(0.0, total_base * (1.0 - (dc.discount_value / 100.0)))
+            discount_desc = f"{dc.discount_value}% off"
+        else:
+            coupon_price = max(0.0, total_base - dc.discount_value)
+            discount_desc = f"₹{dc.discount_value} off"
+
+        coupon_info = {
+            "code": dc.code,
+            "type": dc_type,
+            "value": dc.discount_value,
+            "desc": discount_desc
+        }
+
+    # Best deal
+    if req.coupon_code and active_rule:
+        final_price = min(rule_price, coupon_price)
+    elif req.coupon_code:
+        final_price = coupon_price
+    elif active_rule:
+        final_price = rule_price
+    else:
+        final_price = total_base
+
+    return {
+        "base_price": base_price,
+        "group_size": count,
+        "total_base": total_base,
+        "final_price": round(final_price, 2),
+        "discount_amount": round(max(0.0, total_base - final_price), 2),
+        "rule_name": rule_name,
+        "coupon": coupon_info
+    }
+
+
 @router.post("/reserve")
 def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
     student = db.query(Student).filter(Student.sap_id == req.sap_id, Student.pass_uuid == req.pass_uuid).first()
@@ -291,6 +395,10 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
             }
         else:
             existing_order.status = PaymentStatus.EXPIRED
+            if existing_order.discount_code_id:
+                old_dc = db.query(DiscountCode).filter(DiscountCode.id == existing_order.discount_code_id).first()
+                if old_dc and old_dc.times_used > 0:
+                    old_dc.times_used -= 1
             db.commit()
             
     # Also check if student is in any member list of an active order
@@ -317,14 +425,49 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
     if is_group and active_rule and active_rule.group_size != len(all_saps):
         raise HTTPException(status_code=400, detail=f"Group rule requires exactly {active_rule.group_size} members.")
 
-    locked_price = base_price * len(all_saps)
+    total_base = base_price * len(all_saps)
+    locked_price = total_base
+    rule_applied = None
+    applied_label = None
+
     if active_rule:
+        rule_applied = active_rule
+        applied_label = active_rule.name
         if active_rule.pricing_effect == PricingEffect.FIXED:
             locked_price = active_rule.discount_value if not is_group else active_rule.group_total_price
         elif active_rule.pricing_effect == PricingEffect.FLAT_OFF:
-            locked_price = max(0, (base_price * len(all_saps)) - active_rule.discount_value)
+            locked_price = max(0.0, total_base - active_rule.discount_value)
         elif active_rule.pricing_effect == PricingEffect.PERCENT_OFF:
-            locked_price = max(0, (base_price * len(all_saps)) * (1 - active_rule.discount_value / 100.0))
+            locked_price = max(0.0, total_base * (1.0 - (active_rule.discount_value / 100.0)))
+
+    dc = None
+    if req.coupon_code:
+        code_upper = req.coupon_code.upper().strip()
+        dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
+        if not dc:
+            raise HTTPException(status_code=404, detail="Invalid coupon code")
+        if not dc.is_active:
+            raise HTTPException(status_code=400, detail="Coupon code is inactive")
+        if dc.max_uses is not None and dc.times_used >= dc.max_uses:
+            raise HTTPException(status_code=400, detail="Coupon code usage limit reached")
+
+        dc_type = dc.discount_type.value if hasattr(dc.discount_type, "value") else str(dc.discount_type)
+        if dc_type == "percentage":
+            coupon_price = max(0.0, total_base * (1.0 - (dc.discount_value / 100.0)))
+        elif dc_type == "flat":
+            coupon_price = max(0.0, total_base - dc.discount_value)
+        else:
+            coupon_price = total_base
+
+        if active_rule:
+            locked_price = min(locked_price, coupon_price)
+            if coupon_price <= locked_price:
+                applied_label = f"Coupon: {dc.code}"
+        else:
+            locked_price = coupon_price
+            applied_label = f"Coupon: {dc.code}"
+
+        dc.times_used += 1
 
     qr = db.query(UpiQrCode).filter_by(is_active=True).first()
     
@@ -332,7 +475,8 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
         leader_sap_id=req.sap_id,
         status=PaymentStatus.RESERVED,
         locked_total_price=locked_price,
-        applied_rule_id=active_rule.id if active_rule else None,
+        applied_rule_id=rule_applied.id if rule_applied else None,
+        discount_code_id=dc.id if dc else None,
         upi_qr_shown_id=qr.id if qr else None,
         reservation_expires_at=now + timedelta(minutes=settings.get("hold_time_minutes", 30))
     )
@@ -365,6 +509,7 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
         "message": "Reservation successful",
         "order_reference": order.order_reference,
         "locked_price": locked_price,
+        "rule_name": applied_label or "",
         "reservation_expires_at": order.reservation_expires_at,
         "qr_id": qr.id if qr else None
     }
@@ -385,6 +530,10 @@ def cancel_reservation(req: CancelReservationRequest, db: Session = Depends(get_
     if not order: raise HTTPException(status_code=400, detail="No active reservation found")
     
     order.status = PaymentStatus.EXPIRED
+    if order.discount_code_id:
+        dc = db.query(DiscountCode).filter(DiscountCode.id == order.discount_code_id).first()
+        if dc and dc.times_used > 0:
+            dc.times_used -= 1
     db.commit()
     return {"message": "Reservation cancelled"}
 

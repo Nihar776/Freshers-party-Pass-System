@@ -110,7 +110,7 @@ def verify_and_check_in(
     return VerifyResponse(
         message="Entry approved - issue wristband",
         student_name=student.name, sap_id=student.sap_id, entered_at=student.entered_at,
-        food_preference=student.food_preference.value if student.food_preference else "veg"
+        food_preference=student.food_preference.value if hasattr(student.food_preference, "value") else (student.food_preference or "veg")
     )
 
 
@@ -172,7 +172,7 @@ def verify_food_check_in(
     db.commit()
     db.refresh(student)
 
-    food_pref_str = student.food_preference.value if student.food_preference else "veg"
+    food_pref_str = student.food_preference.value if hasattr(student.food_preference, "value") else (student.food_preference or "veg")
     return VerifyResponse(
         message=f"Give {food_pref_str.upper()} Food",
         student_name=student.name, sap_id=student.sap_id, entered_at=student.food_received_at,

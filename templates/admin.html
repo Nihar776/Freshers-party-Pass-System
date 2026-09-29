@@ -1187,16 +1187,20 @@
                         value: valueStr
                     })
                 });
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch (_) {}
                 if (res.ok) {
-                    showToast(`Successfully updated ${selected.length} students`);
+                    showToast(data?.message || `Successfully updated ${selected.length} students`);
                     loadStudents();
                     document.getElementById('select-all-students').checked = false;
                 } else {
-                    const data = await res.json();
-                    showToast(data.detail || 'Bulk update failed', 'error');
+                    showToast(data?.detail || `Bulk update failed (${res.status})`, 'error');
                 }
             } catch(e) {
-                showToast('Network error', 'error');
+                console.error("Bulk action error:", e);
+                showToast(e.message || 'Network error', 'error');
             }
         }
 
