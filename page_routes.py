@@ -33,3 +33,7 @@ def treasurer_page(treasurer: User = Depends(require_role(UserRole.TREASURER, Us
 @router.get("/scanner", response_class=HTMLResponse)
 def scanner_page(volunteer: User = Depends(require_role(UserRole.VOLUNTEER, UserRole.ADMIN))):
     return HTMLResponse(content=(BASE_DIR / "templates" / "scanner.html").read_text(encoding="utf-8"))
+
+@router.get("/buy-pass", response_class=HTMLResponse)
+def buy_pass_page():
+    return HTMLResponse(content=(BASE_DIR / "templates" / "buy-pass.html").read_text(encoding="utf-8"))

@@ -74,6 +74,7 @@
             <div class="brand">Admin Center</div>
             <div class="nav-links">
                 <span class="nav-link text-muted" id="user-name">Loading...</span>
+                <a href="/buy-pass" class="nav-link" target="_blank">Public Portal</a>
                 <a href="/distributor-page" class="nav-link">Sell</a>
                 <a href="/treasurer-page" class="nav-link">Treasury</a>
                 <a href="/scanner" class="nav-link">Scanner</a>
@@ -88,9 +89,11 @@
             <button class="tab-btn" onclick="switchTab('sellers')">Seller Analytics</button>
             <button class="tab-btn" onclick="switchTab('students')">Students</button>
             <button class="tab-btn" onclick="switchTab('participants')">Participants</button>
+            <button class="tab-btn" onclick="switchTab('reservations')">Reservations</button>
             <button class="tab-btn" onclick="switchTab('users')">User Management</button>
             <button class="tab-btn" onclick="switchTab('roster')">Roster Upload</button>
-            <button class="tab-btn" onclick="switchTab('discounts')">Discount Codes</button>
+            <button class="tab-btn" onclick="switchTab('discounts')">Discount Management</button>
+            <button class="tab-btn" onclick="switchTab('config')">Settings</button>
             <button class="tab-btn" onclick="switchTab('audit')">Audit Log</button>
         </div>
 
@@ -225,6 +228,7 @@
                             <option value="payment_status:verified">Mark Verified (Paid)</option>
                             <option value="payment_status:pending_verification">Mark Pending</option>
                             <option value="payment_status:rejected">Mark Rejected</option>
+                            <option value="payment_status:not_purchased">Mark Not Purchased</option>
                             <option value="is_used:true">Mark Entered</option>
                             <option value="is_used:false">Mark Not Entered</option>
                             <option value="food_preference:veg">Set Food: Veg</option>
@@ -258,6 +262,31 @@
                         <button class="btn btn-secondary" id="students-prev-btn" onclick="prevStudentsPage()" disabled>Previous 100</button>
                         <button class="btn btn-secondary" id="students-next-btn" onclick="nextStudentsPage()" disabled>Next 100</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservations Tab -->
+        <div id="reservations-tab" class="tab-content">
+            <div class="panel">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="mb-0">Active Online Reservations</h3>
+                    <button class="btn btn-secondary" onclick="loadReservations()">Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table id="reservations-table">
+                        <thead>
+                            <tr>
+                                <th>Order Ref</th>
+                                <th>Leader SAP ID</th>
+                                <th>Status</th>
+                                <th>Members</th>
+                                <th>Expires At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -342,12 +371,25 @@
         <div id="roster-tab" class="tab-content">
             <div class="panel text-center">
                 <h3 class="mb-2">Upload Student Roster</h3>
-                <p class="text-muted mb-6">Upload a CSV file containing SAP ID, Name, Branch, and Gender to initialize the database.</p>
+                <p class="text-muted mb-4">Upload a CSV file containing student data to initialize the database.</p>
                 
+                <div style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); text-align: left; margin-bottom: 24px; display: inline-block;">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-semibold" style="font-size: 14px;">Expected CSV Format (Headers exactly as shown):</div>
+                        <a href="/admin/roster/sample" class="btn btn-sm btn-secondary">↓ Download Sample</a>
+                    </div>
+                    <code style="display: block; background: var(--bg-card); padding: 12px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 13px; color: var(--text-main);">sap_id,name,branch,year,gender,email
+500123456,Rahul Sharma,CSE,2,M,rahul@example.com
+500123457,Priya Patel,ECE,3,,priya@example.com</code>
+                    <div class="text-muted text-sm mt-3">
+                        <strong>Required columns:</strong> sap_id, name, branch, year, email<br>
+                        <strong>Optional columns:</strong> gender (leave blank if unknown)
+                    </div>
+                </div>
+
                 <div class="upload-zone" id="upload-zone" onclick="document.getElementById('roster-file').click()">
                     <div style="font-size: 32px; margin-bottom: 16px;">📄</div>
                     <div class="font-semibold mb-2">Click to select CSV file</div>
-                    <div class="text-muted text-sm">Required columns: sap_id, name, branch. Optional: gender.</div>
                     <input type="file" id="roster-file" accept=".csv" class="hidden" onchange="uploadRoster(event)">
                 </div>
             </div>
@@ -388,52 +430,150 @@
             </div>
         </div>
 
-        <!-- Discount Codes Tab -->
+        <!-- ══ DISCOUNT MANAGEMENT TAB ═══════════════════════════════════ -->
         <div id="discounts-tab" class="tab-content">
+
+            <!-- Inner sub-tab nav -->
+            <div style="display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:28px;">
+                <button class="disc-tab-btn active" onclick="switchDiscTab('auto-rules', this)"
+                    style="background:none;border:none;border-bottom:2px solid var(--primary);color:var(--primary);padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">
+                    ⚡ Auto Discount Rules
+                </button>
+                <button class="disc-tab-btn" onclick="switchDiscTab('coupon-codes', this)"
+                    style="background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">
+                    🎟 Coupon Codes
+                </button>
+            </div>
+
+            <!-- ── Auto Rules sub-tab ─────────────────────────────────── -->
+            <div id="disc-auto-rules">
+                <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; margin-bottom:20px;">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-semibold" style="margin-bottom:4px;">Automatic Discount Rules</div>
+                            <div class="text-sm text-muted">Rules are evaluated in priority order and applied automatically at checkout — no coupon code needed. Only the highest-priority matching rule fires.</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="openRuleModal()">+ New Rule</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="rules-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Discount</th>
+                                <th>Trigger Conditions</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── Coupon Codes sub-tab ───────────────────────────────── -->
+            <div id="disc-coupon-codes" style="display:none;">
+                <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; margin-bottom:20px;">
+                    <div class="font-semibold" style="margin-bottom:4px;">Manual Coupon Codes</div>
+                    <div class="text-sm text-muted">One-time codes students can enter at checkout for a specific discount. Useful for events, partnerships or targeted offers.</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Create Code -->
+                    <div class="panel">
+                        <h3 class="mb-4">Create Coupon Code</h3>
+                        <div class="form-group">
+                            <label class="form-label">Code <span class="text-muted text-sm">(e.g. WELCOME50)</span></label>
+                            <input type="text" id="dc-code" class="form-control" placeholder="ALL CAPS recommended" style="text-transform:uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Discount Type</label>
+                            <select id="dc-type" class="form-control">
+                                <option value="percentage">Percentage off (%)</option>
+                                <option value="flat">Flat amount off (₹)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Value <span class="text-danger">*</span></label>
+                            <input type="number" id="dc-value" class="form-control" placeholder="e.g. 10 for 10% or 100 for ₹100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Max Uses <span class="text-muted text-sm">(blank = unlimited)</span></label>
+                            <input type="number" id="dc-max" class="form-control" placeholder="e.g. 25">
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;" onclick="createDiscountCode()">Create Code</button>
+                    </div>
+
+                    <!-- Existing Codes -->
+                    <div class="panel">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3>Active &amp; Past Codes</h3>
+                            <button class="btn btn-secondary" onclick="loadDiscountCodes()">Refresh</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="discounts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Value</th>
+                                        <th>Uses</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="5" class="text-muted text-center">Loading…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ SETTINGS TAB (was "config") ════════════════════════════════ -->
+        <div id="config-tab" class="tab-content">
             <div class="grid grid-cols-2 gap-6">
-                <!-- Create Code Form -->
+                <!-- Base Pricing and Food -->
                 <div class="panel">
-                    <h3 class="mb-4">Create Discount Code</h3>
+                    <h3 class="mb-4">Global Event Settings</h3>
                     <div class="form-group">
-                        <label class="form-label">Code (e.g., WELCOME50)</label>
-                        <input type="text" id="dc-code" class="form-control" placeholder="Enter code">
+                        <label class="form-label">Base Pass Price (₹)</label>
+                        <input type="number" id="cfg-base-price" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Discount Type</label>
-                        <select id="dc-type" class="form-control">
-                            <option value="percentage">Percentage (%)</option>
-                            <option value="flat">Flat Amount (₹)</option>
+                        <label class="form-label">Food Selection Enabled</label>
+                        <select id="cfg-food-enabled" class="form-control">
+                            <option value="false">Disabled (No Food Selection UI)</option>
+                            <option value="true">Enabled (Users pick Veg/Jain)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Discount Value</label>
-                        <input type="number" id="dc-value" class="form-control" placeholder="e.g., 10 for 10% or 100 for ₹100">
+                        <label class="form-label">Reservation Timeout (minutes)</label>
+                        <input type="number" id="cfg-hold-time" class="form-control" placeholder="Default: 30">
+                        <small class="text-muted">How long students have to upload payment after reserving</small>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Max Uses (Optional)</label>
-                        <input type="number" id="dc-max" class="form-control" placeholder="Leave empty for unlimited">
-                    </div>
-                    <button class="btn btn-primary w-full" onclick="createDiscountCode()">Create Code</button>
+                    <button class="btn btn-primary" style="width:100%;" onclick="saveAdminConfig()">Save Settings</button>
                 </div>
 
-                <!-- Existing Codes -->
+                <!-- UPI QRs -->
                 <div class="panel">
-                    <h3 class="mb-4">Active & Past Codes</h3>
-                    <div class="table-responsive">
-                        <table class="table w-full" id="discounts-table">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Value</th>
-                                    <th>Uses</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated by JS -->
-                            </tbody>
+                    <h3 class="mb-4">UPI QR Codes</h3>
+                    <div class="table-container mb-4" style="max-height:200px; overflow-y:auto;">
+                        <table id="upi-qr-table">
+                            <thead><tr><th>Label</th><th>UPI ID</th><th>Active</th><th>Action</th></tr></thead>
+                            <tbody></tbody>
                         </table>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="qr-label" class="form-control" placeholder="Label">
+                        <input type="text" id="qr-upi"   class="form-control" placeholder="UPI ID">
+                        <input type="text" id="qr-name"  class="form-control" placeholder="Payee Name">
+                        <button class="btn btn-primary" onclick="addUpiQr()">Add</button>
                     </div>
                 </div>
             </div>
@@ -671,9 +811,32 @@
             if (tab === 'overview') loadDashboard();
             if (tab === 'sellers') loadSellers();
             if (tab === 'students') loadStudents();
+            if (tab === 'participants') renderParticipants();
+            if (tab === 'reservations') loadReservations();
             if (tab === 'users') loadUsers();
             if (tab === 'audit') loadAuditLog();
-            if (tab === 'discounts') loadDiscountCodes();
+            if (tab === 'discounts') {
+                loadDynamicRules();
+                loadDiscountCodes();
+            }
+            if (tab === 'config') {
+                loadUpiQrs();
+                loadAdminConfig();
+            }
+        }
+
+        function switchDiscTab(subTab, btnEl) {
+            document.querySelectorAll('.disc-tab-btn').forEach(b => {
+                b.classList.remove('active');
+                b.style.borderBottomColor = 'transparent';
+                b.style.color = 'var(--text-muted)';
+            });
+            btnEl.classList.add('active');
+            btnEl.style.borderBottomColor = 'var(--primary)';
+            btnEl.style.color = 'var(--primary)';
+
+            document.getElementById('disc-auto-rules').style.display = subTab === 'auto-rules' ? 'block' : 'none';
+            document.getElementById('disc-coupon-codes').style.display = subTab === 'coupon-codes' ? 'block' : 'none';
         }
 
         // --- Dashboard ---
@@ -1150,6 +1313,51 @@
             document.getElementById('screenshot-modal').classList.add('hidden');
         }
 
+        // --- Reservations ---
+        async function loadReservations() {
+            try {
+                const res = await fetch('/admin/reservations');
+                if(!res.ok) return;
+                const data = await res.json();
+                const tbody = document.querySelector('#reservations-table tbody');
+                tbody.innerHTML = data.map(r => `
+                    <tr>
+                        <td>${r.order_reference}</td>
+                        <td>${r.leader_sap_id}</td>
+                        <td><span class="badge ${r.status==='RESERVED'?'badge-warning':'badge-success'}">${r.status}</span></td>
+                        <td>${r.members.map(m => m.sap_id).join(', ')}</td>
+                        <td>${r.expires_at ? new Date(r.expires_at).toLocaleTimeString() : 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" onclick="editReservationGroup(${r.id}, '${r.members.map(m=>m.sap_id).join(',')}')">Edit Group</button>
+                            <button class="btn btn-sm btn-danger" onclick="cancelReservationAdmin(${r.id})">Cancel Lock</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {}
+        }
+
+        async function editReservationGroup(id, currentSaps) {
+            const input = prompt("Enter SAP IDs for the entire group (comma separated):", currentSaps);
+            if(input === null) return;
+            const saps = input.split(',').map(s=>s.trim()).filter(s=>s);
+            try {
+                const res = await fetch(`/admin/reservations/${id}/members`, {
+                    method: 'PUT', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({sap_ids: saps})
+                });
+                if(res.ok) { showToast('Group updated'); loadReservations(); }
+                else { const d=await res.json(); showToast(d.detail||'Failed', 'error'); }
+            } catch(e) { showToast('Network error', 'error'); }
+        }
+
+        async function cancelReservationAdmin(id) {
+            if(!confirm('End this reservation immediately?')) return;
+            try {
+                const res = await fetch(`/admin/reservations/${id}`, {method: 'DELETE'});
+                if(res.ok) { showToast('Reservation cancelled'); loadReservations(); }
+            } catch(e) {}
+        }
+
         // --- Users ---
         async function loadUsers() {
             const res = await fetch('/admin/users');
@@ -1484,7 +1692,851 @@
             }
         }
 
+        async function loadAdminConfig() {
+            try {
+                const res = await fetch('/admin/config');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('cfg-base-price').value = data.base_price;
+                    document.getElementById('cfg-food-enabled').value = data.food_enabled ? 'true' : 'false';
+                    document.getElementById('cfg-hold-time').value = data.hold_time_minutes;
+                }
+            } catch (e) {}
+        }
+        
+        async function saveAdminConfig() {
+            const bp = parseFloat(document.getElementById('cfg-base-price').value);
+            const food = document.getElementById('cfg-food-enabled').value === 'true';
+            const ht = parseInt(document.getElementById('cfg-hold-time').value) || 30;
+            try {
+                const res = await fetch('/admin/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ base_price: bp, food_enabled: food, hold_time_minutes: ht })
+                });
+                if (res.ok) showToast('Settings saved!');
+                else showToast('Failed to save settings', 'error');
+            } catch (e) {
+                showToast('Network error', 'error');
+            }
+        }
+        
+        async function loadUpiQrs() {
+            try {
+                const res = await fetch('/admin/upi-qrs');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.querySelector('#upi-qr-table tbody').innerHTML = data.map(q => `
+                        <tr>
+                            <td>${q.label}</td>
+                            <td>${q.upi_id}</td>
+                            <td>
+                                <button class="btn btn-sm ${q.is_active ? 'btn-success' : 'btn-secondary'}" onclick="toggleUpiQr(${q.id})">${q.is_active ? 'Active' : 'Disabled'}</button>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-secondary" onclick="previewAdminQr('${q.upi_id}', '${q.payee_name || ''}')">Preview</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteUpiQr(${q.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) {}
+        }
+        
+        function previewAdminQr(upiId, payeeName) {
+            const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&cu=INR`;
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiLink)}`;
+            document.getElementById('screenshot-img').src = qrApiUrl;
+            document.getElementById('screenshot-download').href = qrApiUrl;
+            document.getElementById('screenshot-download').download = `QR_${upiId}.png`;
+            document.getElementById('screenshot-modal').classList.remove('hidden');
+        }
+        
+        async function addUpiQr() {
+            const label = document.getElementById('qr-label').value;
+            const upi_id = document.getElementById('qr-upi').value;
+            const name = document.getElementById('qr-name').value;
+            if (!label || !upi_id || !name) { showToast('Fill all fields', 'warning'); return; }
+            try {
+                const res = await fetch('/admin/upi-qrs', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ label, upi_id, payee_name: name, is_active: true })
+                });
+                if (res.ok) { showToast('QR added'); loadUpiQrs(); }
+            } catch (e) {}
+        }
+
+        async function toggleUpiQr(id) {
+            await fetch(`/admin/upi-qrs/${id}/toggle`, {method: 'PATCH'});
+            loadUpiQrs();
+        }
+
+        async function deleteUpiQr(id) {
+            if(!confirm('Delete this QR?')) return;
+            await fetch(`/admin/upi-qrs/${id}`, {method: 'DELETE'});
+            loadUpiQrs();
+        }
+
+        let allDynamicRules = [];
+        async function loadDynamicRules() {
+            try {
+                const res = await fetch('/admin/rules');
+                const tbody = document.querySelector('#rules-table tbody');
+                if (!res.ok) { tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">Failed to load rules</td></tr>'; return; }
+                const rules = await res.json();
+                allDynamicRules = rules;
+                if (rules.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center" style="padding:24px;">No rules yet. Click "+ New Rule" to create one.</td></tr>';
+                    return;
+                }
+                const effectLabel = (r) => {
+                    if (r.pricing_effect === 'fixed')      return `Fixed ₹${r.discount_value}`;
+                    if (r.pricing_effect === 'flat_off')   return `₹${r.discount_value} off`;
+                    if (r.pricing_effect === 'percent_off') return `${r.discount_value}% off`;
+                    return r.discount_value;
+                };
+                const condLabel = (c) => {
+                    if (c.type === 'before_n')    return `< ${c.threshold} sold`;
+                    if (c.type === 'after_n')     return `≥ ${c.threshold} sold`;
+                    if (c.type === 'between_n_m') return `${c.threshold}–${c.threshold_max} sold`;
+                    if (c.type === 'before_t')    return `before ${c.threshold_time ? new Date(c.threshold_time).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'short',timeStyle:'short'}) : '?'}`;
+                    if (c.type === 'after_t')     return `after ${c.threshold_time ? new Date(c.threshold_time).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'short',timeStyle:'short'}) : '?'}`;
+                    if (c.type === 'between_t')   return `between times`;
+                    if (c.type === 'daily_slot')  return `daily slot`;
+                    return c.type;
+                };
+                tbody.innerHTML = rules.map(r => `
+                    <tr>
+                        <td>
+                            <div class="font-semibold">${r.name}</div>
+                            ${r.usage_cap ? `<div class="text-xs text-muted">Cap: ${r.usage_cap} uses</div>` : ''}
+                        </td>
+                        <td><span class="badge badge-neutral">${r.type.replace(/_/g,' ')}</span></td>
+                        <td class="font-semibold" style="color:var(--success)">${effectLabel(r)}</td>
+                        <td class="text-sm text-muted">
+                            ${r.conditions.length === 0 ? '<span class="text-muted">Always active</span>' :
+                              r.conditions.map(c => `<span class="badge badge-neutral" style="margin:2px;">${condLabel(c)}</span>`).join(` <span class="text-xs">${r.combinator}</span> `)}
+                        </td>
+                        <td>${r.priority}</td>
+                        <td>
+                            <button class="btn btn-sm ${r.is_enabled ? 'btn-success' : 'btn-secondary'}" onclick="toggleRule(${r.id})">
+                                ${r.is_enabled ? '● Enabled' : '○ Disabled'}
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" onclick="openRuleModal(${r.id})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteRule(${r.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        // ── Rule Builder Modal ──────────────────────────────────────────────
+        let ruleConditions = [];
+
+        function openRuleModal() {
+            ruleConditions = [];
+            document.getElementById('rule-name').value = '';
+            document.getElementById('rule-type').value = 'early_bird';
+            document.getElementById('rule-effect').value = 'fixed';
+            document.getElementById('rule-discount-value').value = '';
+            document.getElementById('rule-cap').value = '';
+            document.getElementById('rule-priority').value = '10';
+            document.getElementById('rule-cond-list').innerHTML = '<p class="text-muted text-sm">No conditions — rule is always active when enabled.</p>';
+            document.getElementById('rule-modal').style.display = 'flex';
+        }
+
+        function closeRuleModal() {
+            document.getElementById('rule-modal').style.display = 'none';
+        }
+
+        function addRuleCondition() {
+            const type = document.getElementById('new-cond-type').value;
+            const n    = document.getElementById('new-cond-n').value;
+            const nmax = document.getElementById('new-cond-nmax').value;
+            const t    = document.getElementById('new-cond-t').value;
+            const tmax = document.getElementById('new-cond-tmax').value;
+
+            if ((type === 'before_n' || type === 'after_n') && !n) { showToast('Enter a number threshold', 'warning'); return; }
+            if (type === 'between_n_m' && (!n || !nmax)) { showToast('Enter both N and Max', 'warning'); return; }
+            if ((type === 'before_t' || type === 'after_t') && !t) { showToast('Pick a datetime', 'warning'); return; }
+
+            const cond = { type, threshold: n ? parseInt(n) : null, threshold_max: nmax ? parseInt(nmax) : null,
+                           threshold_time: t || null, threshold_time_max: tmax || null };
+            ruleConditions.push(cond);
+            renderConditionChips();
+        }
+
+        function removeCondition(idx) {
+            ruleConditions.splice(idx, 1);
+            renderConditionChips();
+        }
+
+        function renderConditionChips() {
+            const el = document.getElementById('rule-cond-list');
+            if (ruleConditions.length === 0) {
+                el.innerHTML = '<p class="text-muted text-sm">No conditions — rule is always active when enabled.</p>';
+                return;
+            }
+            el.innerHTML = ruleConditions.map((c, i) => `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <span class="badge badge-neutral">${c.type.replace(/_/g,' ')}${c.threshold != null ? ': '+c.threshold : ''}${c.threshold_max != null ? '–'+c.threshold_max : ''}${c.threshold_time ? ' @ '+new Date(c.threshold_time).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'short',timeStyle:'short'}) : ''}</span>
+                    <button onclick="removeCondition(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;">×</button>
+                </div>
+            `).join('');
+        }
+
+        async function saveRule() {
+            const name   = document.getElementById('rule-name').value.trim();
+            const type   = document.getElementById('rule-type').value;
+            const effect = document.getElementById('rule-effect').value;
+            const val    = parseFloat(document.getElementById('rule-discount-value').value);
+            const cap    = document.getElementById('rule-cap').value;
+            const prio   = parseInt(document.getElementById('rule-priority').value) || 10;
+
+            if (!name) { showToast('Enter a rule name', 'warning'); return; }
+            if (isNaN(val) || val <= 0) { showToast('Enter a valid discount value', 'warning'); return; }
+
+            const payload = {
+                name, type, pricing_effect: effect, discount_value: val,
+                is_enabled: true, auto_applied: true, priority: prio,
+                usage_cap: cap ? parseInt(cap) : null,
+                condition_combinator: 'and',
+                conditions: ruleConditions.map(c => ({
+                    condition_type: c.type,
+                    threshold: c.threshold,
+                    threshold_max: c.threshold_max,
+                    threshold_time: c.threshold_time,
+                    threshold_time_max: c.threshold_time_max
+                }))
+            };
+
+            const btn = document.getElementById('btn-save-rule');
+            btn.disabled = true; btn.textContent = 'Saving…';
+            try {
+                const res = await fetch('/admin/rules', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast('Rule created!');
+                    closeRuleModal();
+                    loadDynamicRules();
+                } else {
+                    const d = await res.json();
+                    showToast(d.detail || 'Failed to save', 'error');
+                }
+            } catch(e) { showToast('Network error', 'error'); }
+            btn.disabled = false; btn.textContent = 'Create Rule';
+        }
+
+        async function toggleRule(id) {
+            await fetch(`/admin/rules/${id}/toggle`, {method: 'PATCH'});
+            loadDynamicRules();
+        }
+
+        async function deleteRule(id) {
+            if(!confirm('Delete this rule? This cannot be undone.')) return;
+            try {
+                const res = await fetch(`/admin/rules/${id}`, {method: 'DELETE'});
+                if (res.ok) {
+                    loadDynamicRules();
+                    showToast('Rule deleted successfully');
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Failed to delete rule', 'error');
+                }
+            } catch (e) {
+                showToast('Network error', 'error');
+            }
+        }
+
         init();
+    </script>
+
+    <!-- ── Rule Builder Modal ───────────────────────────────────────────── -->
+    <div id="rule-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2000; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+        <div class="panel" style="width:100%; max-width:580px; margin:auto; position:relative;">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="rule-modal-title">Create Discount Rule</h3>
+                <button onclick="closeRuleModal()" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;line-height:1;">×</button>
+            </div>
+
+            <!-- Step 1: Name + Type (always visible) -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Rule Name <span class="text-danger">*</span></label>
+                    <input type="text" id="rule-name" class="form-control" placeholder="e.g. Early Bird Special">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rule Type <span class="text-danger">*</span></label>
+                    <select id="rule-type" class="form-control" onchange="onRuleTypeChange()">
+                        <option value="">— Select type —</option>
+                        <option value="early_bird">🐦 Early Bird</option>
+                        <option value="flash_sale">⚡ Flash Sale</option>
+                        <option value="group_discount">👥 Group Discount</option>
+                        <option value="general">⚙️ General / Custom</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ── EARLY BIRD section ──────────────────────────── -->
+            <div id="section-early_bird" class="rule-section hidden" style="border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+                <div class="flex items-center gap-2 mb-3">
+                    <span style="font-size:18px;">🐦</span>
+                    <h4 style="margin:0; font-size:15px;">Early Bird Settings</h4>
+                </div>
+                <p class="text-sm text-muted mb-4">Applies only when a certain number of passes haven't been sold yet, OR before a specific date/time.</p>
+
+                <!-- Trigger type radio -->
+                <div class="form-group">
+                    <label class="form-label">Trigger Condition</label>
+                    <div style="display:flex; gap:12px;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1; background:var(--bg-dark); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px;">
+                            <input type="radio" name="eb-trigger" value="count" checked onchange="onEbTriggerChange()" style="accent-color:var(--primary);">
+                            <span>Before <strong>N registrations</strong></span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1; background:var(--bg-dark); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px;">
+                            <input type="radio" name="eb-trigger" value="time" onchange="onEbTriggerChange()" style="accent-color:var(--primary);">
+                            <span>Before <strong>Date/Time T</strong></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="eb-count-fields" class="form-group">
+                    <label class="form-label">Global Sales Threshold <span class="text-muted text-sm">(offer valid while total event passes sold &lt; N)</span></label>
+                    <input type="number" id="eb-n" class="form-control" placeholder="e.g. 100 (closes after 100 total passes sold)">
+                </div>
+
+                <div id="eb-time-fields" class="form-group hidden">
+                    <label class="form-label">Offer closes at (IST)</label>
+                    <input type="datetime-local" id="eb-t" class="form-control">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Discount Effect</label>
+                        <select id="eb-effect" class="form-control">
+                            <option value="fixed">Set the final pass price to (₹)</option>
+                            <option value="percent_off">Discount by Percentage (%)</option>
+                            <option value="flat_off">Subtract amount from base price (₹)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Value <span class="text-danger">*</span></label>
+                        <input type="number" id="eb-value" class="form-control" placeholder="e.g. 400">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group mb-0" id="eb-cap-container">
+                        <label class="form-label">Rule Limit <span class="text-muted text-sm">(max claims)</span></label>
+                        <input type="number" id="eb-cap" class="form-control" placeholder="Leave blank for unlimited">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="form-label">Priority</label>
+                        <input type="number" id="eb-priority" class="form-control" value="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── FLASH SALE section ─────────────────────────── -->
+            <div id="section-flash_sale" class="rule-section hidden" style="border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+                <div class="flex items-center gap-2 mb-3">
+                    <span style="font-size:18px;">⚡</span>
+                    <h4 style="margin:0; font-size:15px;">Flash Sale Settings</h4>
+                </div>
+                <p class="text-sm text-muted mb-4">Applies only within a specific time window (e.g. 6 PM–9 PM tonight).</p>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Sale Starts (IST)</label>
+                        <input type="datetime-local" id="fs-start" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sale Ends (IST)</label>
+                        <input type="datetime-local" id="fs-end" class="form-control">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Discount Effect</label>
+                        <select id="fs-effect" class="form-control">
+                            <option value="percent_off">Discount by Percentage (%)</option>
+                            <option value="flat_off">Subtract amount from base price (₹)</option>
+                            <option value="fixed">Set the final pass price to (₹)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Value <span class="text-danger">*</span></label>
+                        <input type="number" id="fs-value" class="form-control" placeholder="e.g. 15">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group mb-0">
+                        <label class="form-label">Slot Cap <span class="text-muted text-sm">(blank = unlimited)</span></label>
+                        <input type="number" id="fs-cap" class="form-control" placeholder="e.g. 30">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="form-label">Priority</label>
+                        <input type="number" id="fs-priority" class="form-control" value="50">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── GROUP DISCOUNT section ─────────────────────── -->
+            <div id="section-group_discount" class="rule-section hidden" style="border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+                <div class="flex items-center gap-2 mb-3">
+                    <span style="font-size:18px;">👥</span>
+                    <h4 style="margin:0; font-size:15px;">Group Discount Settings</h4>
+                </div>
+                <p class="text-sm text-muted mb-4">Applies when students buy as a group of a specific size. Each group member gets the discounted price.</p>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Group Size <span class="text-danger">*</span></label>
+                        <input type="number" id="grp-size" class="form-control" placeholder="e.g. 3, 5, 10" min="2" value="3">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pricing Mode</label>
+                        <select id="grp-pricing-mode" class="form-control" onchange="onGrpPricingChange()">
+                            <option value="total">Set the final pass price for the WHOLE GROUP (₹)</option>
+                            <option value="per_person">Set the final pass price per person (₹)</option>
+                            <option value="percent_off">Discount the entire group cart by Percentage (%)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="grp-value-group">
+                    <label class="form-label" id="grp-value-label">Set the final pass price for the WHOLE GROUP (₹) <span class="text-danger">*</span></label>
+                    <input type="number" id="grp-value" class="form-control" placeholder="e.g. 1200 for a group of 3">
+                    <div class="text-xs text-muted" id="grp-per-person-hint" style="margin-top:6px;"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group mb-0">
+                        <label class="form-label">Slot Cap <span class="text-muted text-sm">(blank = unlimited)</span></label>
+                        <input type="number" id="grp-cap" class="form-control" placeholder="e.g. 20 groups">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="form-label">Priority</label>
+                        <input type="number" id="grp-priority" class="form-control" value="80">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── GENERAL / CUSTOM section ───────────────────── -->
+            <div id="section-general" class="rule-section hidden" style="border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+                <div class="flex items-center gap-2 mb-3">
+                    <span style="font-size:18px;">⚙️</span>
+                    <h4 style="margin:0; font-size:15px;">Custom Rule Settings</h4>
+                </div>
+                <p class="text-sm text-muted mb-4">Build any combination of activation conditions. All conditions are AND-ed together.</p>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Discount Effect</label>
+                        <select id="gen-effect" class="form-control">
+                            <option value="fixed">Set the final pass price to (₹)</option>
+                            <option value="percent_off">Discount by Percentage (%)</option>
+                            <option value="flat_off">Subtract amount from base price (₹)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Value <span class="text-danger">*</span></label>
+                        <input type="number" id="gen-value" class="form-control" placeholder="e.g. 400 or 10">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Slot Cap <span class="text-muted text-sm">(blank = unlimited)</span></label>
+                        <input type="number" id="gen-cap" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <input type="number" id="gen-priority" class="form-control" value="10">
+                    </div>
+                </div>
+
+                <!-- Conditions builder -->
+                <div style="background:var(--bg-dark); border-radius:var(--radius-sm); padding:12px; margin-top:4px;">
+                    <label class="form-label mb-2">Activation Conditions <span class="text-xs text-muted">(optional — leave empty to always activate)</span></label>
+                    <div id="gen-cond-list" style="margin-bottom:10px;">
+                        <p class="text-muted text-sm">No conditions added yet.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4" style="margin-bottom:8px;">
+                        <div class="form-group mb-0">
+                            <label class="form-label">Condition Type</label>
+                            <select id="gen-cond-type" class="form-control" onchange="onGenCondTypeChange()">
+                                <option value="before_n">Before N passes sold</option>
+                                <option value="after_n">After N passes sold</option>
+                                <option value="between_n_m">Between N and M passes sold</option>
+                                <option value="before_t">Before specific date/time</option>
+                                <option value="after_t">After specific date/time</option>
+                                <option value="between_t">Between two date/times</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-0" id="gen-cond-val-wrap">
+                            <label class="form-label" id="gen-cond-val-label">N (threshold)</label>
+                            <input type="number" id="gen-cond-n" class="form-control" placeholder="e.g. 100">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4" id="gen-cond-extra" style="display:none; margin-bottom:8px;">
+                        <div class="form-group mb-0">
+                            <label class="form-label" id="gen-cond-extra-label">Max / End</label>
+                            <input type="number" id="gen-cond-nmax" class="form-control">
+                        </div>
+                        <div class="form-group mb-0" id="gen-cond-tmax-wrap" style="display:none;">
+                            <label class="form-label">End Date/Time</label>
+                            <input type="datetime-local" id="gen-cond-tmax" class="form-control">
+                        </div>
+                    </div>
+                    <input type="datetime-local" id="gen-cond-t" class="form-control hidden" style="margin-bottom:8px;">
+                    <button class="btn btn-secondary" style="width:100%;" onclick="addGenCondition()">+ Add Condition</button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-4" style="margin-top:4px;">
+                <button class="btn btn-secondary" style="flex:1;" onclick="closeRuleModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex:1;" id="btn-save-rule" onclick="saveRule()" disabled>Create Rule</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Modal open/close ────────────────────────────────────────────────
+        let editingRuleId = null;
+        function openRuleModal(ruleId = null) {
+            editingRuleId = ruleId;
+            document.getElementById('rule-name').value = '';
+            document.getElementById('rule-type').value = '';
+            document.querySelectorAll('.rule-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('btn-save-rule').disabled = false;
+            document.getElementById('btn-save-rule').innerText = ruleId ? 'Update Rule' : 'Create Rule';
+            document.getElementById('rule-modal-title').innerText = ruleId ? 'Edit Discount Rule' : 'Create Discount Rule';
+            document.getElementById('gen-cond-list').innerHTML = '<p class="text-muted text-sm">No conditions added yet.</p>';
+            genConditions = [];
+            
+            document.querySelector('input[name="eb-trigger"][value="count"]').checked = true;
+            onEbTriggerChange();
+            
+            if (ruleId) {
+                const r = allDynamicRules.find(x => x.id === ruleId);
+                document.getElementById('rule-name').value = r.name;
+                const type = r.type.toLowerCase();
+                document.getElementById('rule-type').value = type;
+                onRuleTypeChange();
+                
+                if (type === 'early_bird') {
+                    document.getElementById('eb-effect').value = r.pricing_effect.toLowerCase();
+                    document.getElementById('eb-value').value = r.discount_value;
+                    document.getElementById('eb-cap').value = r.usage_cap || '';
+                    document.getElementById('eb-priority').value = r.priority || 100;
+                    if (r.conditions && r.conditions.length > 0) {
+                        const c = r.conditions[0];
+                        if (c.type === 'BEFORE_N') {
+                            document.querySelector('input[name="eb-trigger"][value="count"]').checked = true;
+                            document.getElementById('eb-n').value = c.threshold;
+                        } else if (c.type === 'BEFORE_T') {
+                            document.querySelector('input[name="eb-trigger"][value="time"]').checked = true;
+                            if (c.threshold_time) document.getElementById('eb-t').value = c.threshold_time.slice(0, 16);
+                        }
+                    }
+                    onEbTriggerChange();
+                } else if (type === 'flash_sale') {
+                    document.getElementById('fs-effect').value = r.pricing_effect.toLowerCase();
+                    document.getElementById('fs-value').value = r.discount_value;
+                    document.getElementById('fs-cap').value = r.usage_cap || '';
+                    document.getElementById('fs-priority').value = r.priority || 50;
+                    if (r.conditions && r.conditions.length > 0) {
+                        const c = r.conditions[0];
+                        if (c.type === 'BETWEEN_T') {
+                            if(c.threshold_time) document.getElementById('fs-start').value = c.threshold_time.slice(0, 16);
+                            if(c.threshold_time_max) document.getElementById('fs-end').value = c.threshold_time_max.slice(0, 16);
+                        }
+                    }
+                } else if (type === 'group_discount') {
+                    document.getElementById('grp-size').value = r.group_size || '';
+                    if (r.pricing_effect === 'PERCENT_OFF') {
+                        document.getElementById('grp-pricing-mode').value = 'percent';
+                        document.getElementById('grp-value').value = r.discount_value;
+                    } else if (r.pricing_effect === 'FIXED') {
+                        if (r.group_total_price && r.group_total_price > r.discount_value) {
+                            document.getElementById('grp-pricing-mode').value = 'total';
+                            document.getElementById('grp-value').value = r.group_total_price;
+                        } else {
+                            document.getElementById('grp-pricing-mode').value = 'per_person';
+                            document.getElementById('grp-value').value = r.discount_value;
+                        }
+                    }
+                    document.getElementById('grp-cap').value = r.usage_cap || '';
+                    document.getElementById('grp-priority').value = r.priority || 80;
+                } else if (type === 'general') {
+                    document.getElementById('gen-effect').value = r.pricing_effect.toLowerCase();
+                    document.getElementById('gen-value').value = r.discount_value;
+                    document.getElementById('gen-cap').value = r.usage_cap || '';
+                    document.getElementById('gen-priority').value = r.priority || 10;
+                    if (r.conditions) {
+                        r.conditions.forEach(c => {
+                            genConditions.push({
+                                type: c.type.toLowerCase(),
+                                threshold: c.threshold,
+                                threshold_max: c.threshold_max,
+                                threshold_time: c.threshold_time ? c.threshold_time.slice(0, 16) : null,
+                                threshold_time_max: c.threshold_time_max ? c.threshold_time_max.slice(0, 16) : null
+                            });
+                        });
+                        renderGenConditions();
+                    }
+                }
+            } else {
+                document.getElementById('rule-type').value = 'early_bird';
+                onRuleTypeChange();
+            }
+            document.getElementById('rule-modal').style.display = 'flex';
+        }
+
+        function closeRuleModal() {
+            document.getElementById('rule-modal').style.display = 'none';
+        }
+
+        // ── Show/hide correct section based on type ────────────────────────
+        function onRuleTypeChange() {
+            const type = document.getElementById('rule-type').value;
+            document.querySelectorAll('.rule-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('btn-save-rule').disabled = !type;
+            if (type) document.getElementById('section-' + type).classList.remove('hidden');
+        }
+
+        // ── Early Bird: switch between N-count and time trigger ────────────
+        function onEbTriggerChange() {
+            const v = document.querySelector('input[name="eb-trigger"]:checked').value;
+            document.getElementById('eb-count-fields').classList.toggle('hidden', v !== 'count');
+            document.getElementById('eb-time-fields').classList.toggle('hidden', v !== 'time');
+            
+            // Hide Rule Limit if using 'count' to prevent confusion between global N and rule limit
+            const capContainer = document.getElementById('eb-cap-container');
+            if (capContainer) capContainer.style.visibility = (v === 'count') ? 'hidden' : 'visible';
+            if (v === 'count') document.getElementById('eb-cap').value = ''; 
+        }
+
+        // ── Group Discount: per-person hint ───────────────────────────────
+        document.addEventListener('input', () => {
+            if (document.getElementById('grp-pricing-mode').value === 'total') {
+                const size = parseInt(document.getElementById('grp-size').value) || 1;
+                const total = parseFloat(document.getElementById('grp-value').value);
+                const hint = document.getElementById('grp-per-person-hint');
+                if (!isNaN(total)) hint.textContent = `= ₹${(total / size).toFixed(0)} per person`;
+                else hint.textContent = '';
+            }
+        });
+
+        function onGrpPricingChange() {
+            const mode = document.getElementById('grp-pricing-mode').value;
+            const lbl  = document.getElementById('grp-value-label');
+            document.getElementById('grp-per-person-hint').textContent = '';
+            if (mode === 'total')       lbl.innerHTML = 'Set the final pass price for the WHOLE GROUP (₹) <span class="text-danger">*</span>';
+            else if (mode === 'per_person') lbl.innerHTML = 'Set the final pass price per person (₹) <span class="text-danger">*</span>';
+            else                        lbl.innerHTML = 'Discount the entire group cart by Percentage (%) <span class="text-danger">*</span>';
+        }
+
+        // ── General: dynamic condition input fields ───────────────────────
+        let genConditions = [];
+
+        function onGenCondTypeChange() {
+            const type = document.getElementById('gen-cond-type').value;
+            const isNum  = ['before_n','after_n','between_n_m'].includes(type);
+            const isTime = ['before_t','after_t','between_t'].includes(type);
+            const isRange = type === 'between_n_m' || type === 'between_t';
+
+            const valWrap = document.getElementById('gen-cond-val-wrap');
+            const valLabel = document.getElementById('gen-cond-val-label');
+            const tField  = document.getElementById('gen-cond-t');
+            const extra   = document.getElementById('gen-cond-extra');
+            const nInput  = document.getElementById('gen-cond-n');
+
+            valWrap.style.display  = isNum  ? '' : 'none';
+            tField.classList.toggle('hidden', !isTime);
+            extra.style.display    = isRange ? '' : 'none';
+            document.getElementById('gen-cond-tmax-wrap').style.display = type === 'between_t' ? '' : 'none';
+
+            if (type === 'before_n')    valLabel.textContent = 'Max N (offer active while sold < N)';
+            else if (type === 'after_n') valLabel.textContent = 'Min N (offer active after N sold)';
+            else if (type === 'between_n_m') { valLabel.textContent = 'From N'; document.getElementById('gen-cond-extra-label').textContent = 'To M'; }
+
+            nInput.type = isNum ? 'number' : 'datetime-local';
+            if (isTime) { nInput.style.display = 'none'; } else { nInput.style.display = ''; }
+        }
+
+        function addGenCondition() {
+            const type  = document.getElementById('gen-cond-type').value;
+            const isNum  = ['before_n','after_n','between_n_m'].includes(type);
+            const isTime = ['before_t','after_t','between_t'].includes(type);
+            const n      = document.getElementById('gen-cond-n').value;
+            const nmax   = document.getElementById('gen-cond-nmax').value;
+            const t      = document.getElementById('gen-cond-t').value;
+            const tmax   = document.getElementById('gen-cond-tmax').value;
+
+            if (isNum && !n)  { showToast('Enter a number threshold', 'warning'); return; }
+            if (type === 'between_n_m' && !nmax) { showToast('Enter the Max value', 'warning'); return; }
+            if (isTime && !t) { showToast('Pick a date/time', 'warning'); return; }
+            if (type === 'between_t' && !tmax) { showToast('Pick an end date/time', 'warning'); return; }
+
+            genConditions.push({ type, threshold: n ? parseInt(n) : null, threshold_max: nmax ? parseInt(nmax) : null,
+                                  threshold_time: t || null, threshold_time_max: tmax || null });
+            renderGenConditions();
+        }
+
+        function removeGenCondition(idx) { genConditions.splice(idx, 1); renderGenConditions(); }
+
+        function renderGenConditions() {
+            const el = document.getElementById('gen-cond-list');
+            if (genConditions.length === 0) { el.innerHTML = '<p class="text-muted text-sm">No conditions added yet.</p>'; return; }
+            el.innerHTML = genConditions.map((c, i) => `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <span class="badge badge-neutral" style="flex:1;justify-content:flex-start;">
+                        ${c.type.replace(/_/g,' ')}
+                        ${c.threshold != null ? ': ' + c.threshold : ''}
+                        ${c.threshold_max != null ? ' – ' + c.threshold_max : ''}
+                        ${c.threshold_time ? ' @ ' + new Date(c.threshold_time).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'short',timeStyle:'short'}) : ''}
+                    </span>
+                    <button onclick="removeGenCondition(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;line-height:1;">×</button>
+                </div>`).join('');
+        }
+
+        // ── Collect payload & POST ────────────────────────────────────────
+        async function saveRule() {
+            const name = document.getElementById('rule-name').value.trim();
+            const type = document.getElementById('rule-type').value;
+            if (!name) { showToast('Enter a rule name', 'warning'); return; }
+            if (!type) { showToast('Select a rule type', 'warning'); return; }
+
+            let payload = { name, type, is_enabled: true, auto_applied: true, conditions: [] };
+
+            if (type === 'early_bird') {
+                const trigger = document.querySelector('input[name="eb-trigger"]:checked').value;
+                const val = parseFloat(document.getElementById('eb-value').value);
+                if (isNaN(val) || val <= 0) { showToast('Enter a discount value', 'warning'); return; }
+                payload.pricing_effect  = document.getElementById('eb-effect').value;
+                payload.discount_value  = val;
+                payload.usage_cap       = document.getElementById('eb-cap').value ? parseInt(document.getElementById('eb-cap').value) : null;
+                payload.priority        = parseInt(document.getElementById('eb-priority').value) || 100;
+                payload.condition_combinator = 'and';
+                if (trigger === 'count') {
+                    const n = parseInt(document.getElementById('eb-n').value);
+                    if (!n) { showToast('Enter the max registration count', 'warning'); return; }
+                    payload.conditions = [{ condition_type: 'before_n', threshold: n }];
+                } else {
+                    const t = document.getElementById('eb-t').value;
+                    if (!t) { showToast('Pick the deadline date/time', 'warning'); return; }
+                    payload.conditions = [{ condition_type: 'before_t', threshold_time: t }];
+                }
+            }
+
+            else if (type === 'flash_sale') {
+                const start = document.getElementById('fs-start').value;
+                const end   = document.getElementById('fs-end').value;
+                const val   = parseFloat(document.getElementById('fs-value').value);
+                if (!start || !end) { showToast('Set both start and end times', 'warning'); return; }
+                if (isNaN(val) || val <= 0) { showToast('Enter a discount value', 'warning'); return; }
+                if (new Date(start) >= new Date(end)) { showToast('End time must be after start', 'error'); return; }
+                payload.pricing_effect  = document.getElementById('fs-effect').value;
+                payload.discount_value  = val;
+                payload.usage_cap       = document.getElementById('fs-cap').value ? parseInt(document.getElementById('fs-cap').value) : null;
+                payload.priority        = parseInt(document.getElementById('fs-priority').value) || 50;
+                payload.condition_combinator = 'and';
+                payload.conditions = [{ condition_type: 'between_t', threshold_time: start, threshold_time_max: end }];
+            }
+
+            else if (type === 'group_discount') {
+                const size  = parseInt(document.getElementById('grp-size').value);
+                const mode  = document.getElementById('grp-pricing-mode').value;
+                const val   = parseFloat(document.getElementById('grp-value').value);
+                if (isNaN(val) || val <= 0) { showToast('Enter the pricing value', 'warning'); return; }
+                payload.group_size = size;
+                payload.priority   = parseInt(document.getElementById('grp-priority').value) || 80;
+                payload.usage_cap  = document.getElementById('grp-cap').value ? parseInt(document.getElementById('grp-cap').value) : null;
+                payload.condition_combinator = 'and';
+                if (mode === 'total') {
+                    payload.pricing_effect = 'fixed';
+                    payload.discount_value = val / size;   // per-person equiv
+                    payload.group_total_price = val;
+                } else if (mode === 'per_person') {
+                    payload.pricing_effect = 'fixed';
+                    payload.discount_value = val;
+                    payload.group_total_price = val * size;
+                } else {
+                    payload.pricing_effect = 'percent_off';
+                    payload.discount_value = val;
+                }
+            }
+
+            else if (type === 'general') {
+                const val = parseFloat(document.getElementById('gen-value').value);
+                if (isNaN(val) || val <= 0) { showToast('Enter a discount value', 'warning'); return; }
+                payload.pricing_effect  = document.getElementById('gen-effect').value;
+                payload.discount_value  = val;
+                payload.usage_cap       = document.getElementById('gen-cap').value ? parseInt(document.getElementById('gen-cap').value) : null;
+                payload.priority        = parseInt(document.getElementById('gen-priority').value) || 10;
+                payload.condition_combinator = 'and';
+                payload.conditions = genConditions.map(c => ({
+                    condition_type: c.type,
+                    threshold: c.threshold,
+                    threshold_max: c.threshold_max,
+                    threshold_time: c.threshold_time,
+                    threshold_time_max: c.threshold_time_max
+                }));
+            }
+
+            // Ensure enum fields are UPPERCASE to match FastAPI Pydantic schemas
+            payload.type = payload.type.toUpperCase();
+            if (payload.pricing_effect) payload.pricing_effect = payload.pricing_effect.toUpperCase();
+            if (payload.condition_combinator) payload.condition_combinator = payload.condition_combinator.toUpperCase();
+            if (payload.conditions) {
+                payload.conditions.forEach(c => {
+                    if (c.condition_type) c.condition_type = c.condition_type.toUpperCase();
+                });
+            }
+
+            const btn = document.getElementById('btn-save-rule');
+            btn.disabled = true; btn.textContent = 'Saving…';
+            try {
+                const url = editingRuleId ? `/admin/rules/${editingRuleId}` : '/admin/rules';
+                const method = editingRuleId ? 'PUT' : 'POST';
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast(editingRuleId ? 'Rule updated successfully!' : 'Rule created successfully!');
+                    closeRuleModal();
+                    loadDynamicRules();
+                } else {
+                    const d = await res.json();
+                    let errMsg = 'Failed to create rule';
+                    if (Array.isArray(d.detail)) {
+                        // Format Pydantic validation errors nicely
+                        errMsg = d.detail.map(err => `${err.loc.slice(1).join('.')}: ${err.msg}`).join(' | ');
+                    } else if (typeof d.detail === 'string') {
+                        errMsg = d.detail;
+                    }
+                    showToast(errMsg, 'error');
+                }
+            } catch(e) { showToast('Network error', 'error'); }
+            btn.disabled = false; btn.textContent = 'Create Rule';
+        }
+
+        // Init condition field visibility
+        onGenCondTypeChange();
     </script>
 </body>
 </html>
+

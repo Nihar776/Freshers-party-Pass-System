@@ -167,3 +167,119 @@ def send_pass_email(
                 time.sleep(2)
             else:
                 raise exc
+
+
+def _build_generic_html(title: str, greeting: str, body: str, highlight: str = None) -> str:
+    highlight_html = f"""
+            <tr>
+              <td style="padding:24px 28px 8px;color:#e6e6ea;text-align:center;">
+                <div style="background:#262a38;padding:16px;border-radius:8px;font-size:24px;font-weight:bold;letter-spacing:4px;color:#ffffff;">
+                  {highlight}
+                </div>
+              </td>
+            </tr>
+    """ if highlight else ""
+    
+    return f"""\
+<html>
+  <body style="margin:0;padding:0;background:#0f1117;font-family:Segoe UI,Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f1117;padding:32px 0;">
+      <tr>
+        <td align="center">
+          <table width="480" cellpadding="0" cellspacing="0"
+                 style="background:#171a23;border-radius:16px;overflow:hidden;">
+            <tr>
+              <td style="background:#5b2ce6;padding:24px 28px;">
+                <h1 style="margin:6px 0 0;color:#ffffff;font-size:22px;">{title}</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 28px 8px;color:#e6e6ea;">
+                <p style="margin:0 0 12px;font-size:15px;">{greeting}</p>
+                <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#b7b7c2;">
+                  {body}
+                </p>
+              </td>
+            </tr>
+            {highlight_html}
+            <tr>
+              <td style="padding:16px 28px 24px;border-top:1px solid #262a38;margin-top:24px;">
+                <p style="margin:0;color:#7c7f8c;font-size:12px;line-height:1.6;">
+                  {EVENT_NAME} Team
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+"""
+
+def send_otp_email(recipient_email: str, student_name: str, otp: str):
+    if not SMTP_USER or not SMTP_PASS:
+        raise RuntimeError("SMTP_USER / SMTP_PASS not configured.")
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"Your OTP for {EVENT_NAME}"
+    msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_USER}>"
+    msg["To"] = recipient_email
+
+    text = f"Hi {student_name},\n\nYour OTP is {otp}. It is valid for 5 minutes.\nDo not share this."
+    html = _build_generic_html(
+        title=f"{EVENT_NAME} Verification",
+        greeting=f"Hi {student_name},",
+        body="Use the following One-Time Password to complete your request. It is valid for 5 minutes. Please do not share this code with anyone.",
+        highlight=otp
+    )
+    
+    msg.attach(MIMEText(text, "plain"))
+    msg.attach(MIMEText(html, "html"))
+
+    _send_email(msg)
+
+def send_pending_confirmation_email(recipient_email: str, student_name: str, utr_number: str):
+    if not SMTP_USER or not SMTP_PASS: return
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"Payment Under Review - {EVENT_NAME}"
+    msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_USER}>"
+    msg["To"] = recipient_email
+
+    text = f"Hi {student_name},\n\nYour payment (UTR: {utr_number}) is under review by our treasury team. You will receive your pass via email once approved."
+    html = _build_generic_html(
+        title="Payment Under Review",
+        greeting=f"Hi {student_name},",
+        body=f"We have received your payment screenshot and UTR number (<strong>{utr_number}</strong>). Our treasury team is currently verifying the transaction against our bank statements.<br><br>Once approved, you will receive another email containing your official Entry Pass QR code. This usually takes 24-48 hours.",
+    )
+    msg.attach(MIMEText(text, "plain"))
+    msg.attach(MIMEText(html, "html"))
+    _send_email(msg)
+
+def send_rejection_email(recipient_email: str, student_name: str, reason: str):
+    if not SMTP_USER or not SMTP_PASS: return
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"Payment Rejected - {EVENT_NAME}"
+    msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_USER}>"
+    msg["To"] = recipient_email
+
+    text = f"Hi {student_name},\n\nUnfortunately, your payment for the pass was rejected. Reason: {reason}"
+    html = _build_generic_html(
+        title="Payment Rejected",
+        greeting=f"Hi {student_name},",
+        body=f"Unfortunately, our treasury team could not verify your payment and your order has been rejected.<br><br><strong>Reason:</strong> {reason}<br><br>If you believe this is an error or your money was deducted, please contact the cultural committee.",
+    )
+    msg.attach(MIMEText(text, "plain"))
+    msg.attach(MIMEText(html, "html"))
+    _send_email(msg)
+
+def _send_email(msg):
+    if SMTP_USE_STARTTLS:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+    else:
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)

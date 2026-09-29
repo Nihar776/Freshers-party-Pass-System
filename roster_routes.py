@@ -72,11 +72,12 @@ def import_roster(
         sap_id = (row.get("sap_id") or "").strip()
         name = (row.get("name") or "").strip()
         branch = (row.get("branch") or "").strip()
+        year = (row.get("year") or "").strip() or None
         gender = (row.get("gender") or "").strip() or None
         email = (row.get("email") or "").strip() or None
 
-        if not sap_id or not name or not branch:
-            row_errors.append(f"Line {line_num}: missing sap_id/name/branch, skipped")
+        if not sap_id or not name or not branch or not year or not email:
+            row_errors.append(f"Line {line_num}: missing sap_id/name/branch/year/email, skipped")
             continue
 
         if sap_id in seen_in_file:
@@ -89,7 +90,7 @@ def import_roster(
             skipped_duplicates.append(sap_id)
             continue
 
-        student = Student(sap_id=sap_id, name=name, branch=branch, gender=gender, email=email)
+        student = Student(sap_id=sap_id, name=name, branch=branch, year=year, gender=gender, email=email)
         db.add(student)
         created += 1
 
@@ -111,6 +112,20 @@ def import_roster(
     db.commit()
 
     return RosterImportResult(created=created, skipped_duplicates=skipped_duplicates, row_errors=row_errors)
+
+@router.get("/roster/sample")
+def download_sample_csv():
+    import io
+    from fastapi.responses import StreamingResponse
+    
+    content = "sap_id,name,branch,year,gender,email\n500123456,Rahul Sharma,CSE,2,M,rahul@example.com\n500123457,Priya Patel,ECE,3,,priya@example.com\n"
+    
+    output = io.StringIO(content)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=sample_roster.csv"}
+    )
 
 
 @router.get("", response_model=list[StudentSummary])

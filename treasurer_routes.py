@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schema_v2 import (
-    Student, User, UserRole, PaymentStatus, PaymentMode,
+    Student, User, UserRole, PaymentStatus, PaymentMode, SaleChannel,
     CashHandover, Expense, BudgetAllocation, FundType,
     CashHandoverRequest, HandoverRequestStatus
 )
@@ -659,3 +659,181 @@ def finance_summary(
         total_cash_remaining=cash_verified - total_cash_expenses,
         total_upi_remaining=upi_verified - total_upi_expenses,
     )
+
+
+# ---------------------------------------------------------------------------
+# Online Orders Verification
+# ---------------------------------------------------------------------------
+from schema_v2 import OnlineOrder, OrderMember
+
+class PendingOnlineOrderItem(BaseModel):
+    order_id: int
+    order_reference: str
+    total_amount: float
+    member_count: int
+    utr_number: Optional[str]
+    created_at: str
+    duplicate_screenshot_warning: bool
+    has_screenshot: bool
+    members: list[VerificationMemberItem]
+    leader_sap_id: str
+
+@router.get("/online/pending", response_model=list[PendingOnlineOrderItem])
+def pending_online_verifications(
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    orders = db.query(OnlineOrder).filter(
+        OnlineOrder.status == PaymentStatus.PENDING_VERIFICATION
+    ).order_by(OnlineOrder.created_at.asc()).all()
+
+    result = []
+    for order in orders:
+        dup = False
+        if order.screenshot_phash:
+            # Check dup in online orders
+            dup_o = db.query(OnlineOrder).filter(
+                OnlineOrder.screenshot_phash == order.screenshot_phash,
+                OnlineOrder.id != order.id,
+                OnlineOrder.status.in_([PaymentStatus.PENDING_VERIFICATION, PaymentStatus.VERIFIED])
+            ).first()
+            # Check dup in distributor flow
+            dup_d = db.query(Student).filter(
+                Student.screenshot_phash == order.screenshot_phash,
+                Student.payment_status.in_([PaymentStatus.PENDING_VERIFICATION, PaymentStatus.VERIFIED])
+            ).first()
+            dup = bool(dup_o or dup_d)
+
+        members = []
+        for om in order.members:
+            if om.student:
+                members.append(VerificationMemberItem(
+                    student_id=om.student.id, sap_id=om.sap_id, name=om.student.name, email=om.student.email, branch=om.student.branch
+                ))
+
+        result.append(PendingOnlineOrderItem(
+            order_id=order.id,
+            order_reference=order.order_reference,
+            total_amount=order.locked_total_price,
+            member_count=len(members),
+            utr_number=order.utr_number,
+            created_at=order.created_at.isoformat(),
+            duplicate_screenshot_warning=dup,
+            has_screenshot=bool(order.payment_screenshot),
+            members=members,
+            leader_sap_id=order.leader_sap_id
+        ))
+
+    return result
+
+@router.get("/online/pending/{order_id}/screenshot")
+def get_online_screenshot(
+    order_id: int,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    order = db.query(OnlineOrder).filter(OnlineOrder.id == order_id).first()
+    if not order or not order.payment_screenshot:
+        raise HTTPException(status_code=404, detail="No screenshot on file")
+    return {"order_reference": order.order_reference, "screenshot_base64": order.payment_screenshot}
+
+
+@router.post("/online/verify/{order_id}", response_model=VerifyActionResult)
+def verify_online_order(
+    order_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    order = db.query(OnlineOrder).filter(OnlineOrder.id == order_id).first()
+    if not order: raise HTTPException(status_code=404, detail="Order not found")
+    if order.status != PaymentStatus.PENDING_VERIFICATION:
+        raise HTTPException(status_code=409, detail=f"Not pending - current status: {order.status.value}")
+
+    order.status = PaymentStatus.VERIFIED
+    order.approved_by_id = treasurer.id
+    db.flush()
+
+    verified_count = 0
+    errors = []
+    
+    for om in order.members:
+        student = om.student
+        if not student: continue
+            
+        old_snapshot = {"payment_status": student.payment_status.value}
+        student.payment_status = PaymentStatus.VERIFIED
+        student.sale_channel = SaleChannel.ONLINE
+        student.payment_mode = PaymentMode.UPI
+        student.amount = om.locked_price
+        student.verified_by_id = treasurer.id
+        student.verified_at = func.now()
+        student.sold_at = func.now()
+        student.utr_number = order.utr_number
+        student.payment_screenshot = order.payment_screenshot
+        student.screenshot_phash = order.screenshot_phash
+        if om.food_preference:
+            student.food_preference = om.food_preference
+            
+        db.flush()
+        
+        write_audit_log(
+            db, user_id=treasurer.id, action="payment_verified_online", table_name="students",
+            record_id=student.id, old_value=old_snapshot, new_value={"payment_status": "verified"},
+        )
+        
+        try:
+            token = generate_pass_token(sap_id=student.sap_id, pass_uuid=student.pass_uuid)
+            qr_image = generate_qr_image(token)
+            background_tasks.add_task(
+                send_pass_email,
+                recipient_email=student.email, 
+                student_name=student.name, 
+                qr_image_bytes=qr_image, 
+                sap_id=student.sap_id
+            )
+            verified_count += 1
+        except Exception as exc:
+            errors.append(f"{student.sap_id}: {exc}")
+
+    db.commit()
+
+    if errors:
+        raise HTTPException(status_code=502, detail=f"Verified {verified_count}, but some emails failed: {', '.join(errors)}")
+
+    return VerifyActionResult(message=f"{verified_count} online passes verified and being emailed", sap_id=order.leader_sap_id, payment_status=PaymentStatus.VERIFIED)
+
+
+@router.post("/online/reject/{order_id}", response_model=VerifyActionResult)
+def reject_online_order(
+    order_id: int,
+    payload: RejectRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    order = db.query(OnlineOrder).filter(OnlineOrder.id == order_id).first()
+    if not order: raise HTTPException(status_code=404, detail="Order not found")
+    if order.status != PaymentStatus.PENDING_VERIFICATION:
+        raise HTTPException(status_code=409, detail=f"Not pending - current status: {order.status.value}")
+
+    order.status = PaymentStatus.REJECTED
+    order.rejection_reason = payload.reason
+    order.approved_by_id = treasurer.id
+    
+    leader = order.leader
+        
+    if leader and leader.email:
+        from mailer import send_rejection_email
+        background_tasks.add_task(
+            send_rejection_email,
+            recipient_email=leader.email,
+            student_name=leader.name,
+            reason=payload.reason
+        )
+    
+    # We do not modify the Student rows because they were never in a pending state
+    # The OnlineOrder tracks the rejection.
+    db.commit()
+
+    return VerifyActionResult(message="Online order rejected", sap_id=order.leader_sap_id, payment_status=PaymentStatus.REJECTED)

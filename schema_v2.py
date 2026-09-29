@@ -84,9 +84,99 @@ class FoodPreference(str, enum.Enum):
 
 class PaymentStatus(str, enum.Enum):
     NOT_PURCHASED = "not_purchased"        # roster row, no sale yet
-    PENDING_VERIFICATION = "pending_verification"  # UPI sale, awaiting treasurer
+    RESERVED = "reserved"                  # online portal: pending OTP/payment
+    PENDING_VERIFICATION = "pending_verification"  # UPI sale, awaiting treasurer (PENDING_APPROVAL)
     VERIFIED = "verified"                  # cash: instant. UPI: after treasurer approval
     REJECTED = "rejected"                  # treasurer rejected - SAP unlocks for resale
+    EXPIRED = "expired"                    # online portal: reservation hold timed out
+
+
+class DiscountRuleType(str, enum.Enum):
+    EARLY_BIRD = "EARLY_BIRD"
+    FLASH_SALE = "FLASH_SALE"
+    GROUP = "GROUP"
+    GENERAL = "GENERAL"
+    CODE = "CODE"
+
+
+class PricingEffect(str, enum.Enum):
+    FIXED = "FIXED"
+    FLAT_OFF = "FLAT_OFF"
+    PERCENT_OFF = "PERCENT_OFF"
+
+
+class ConditionType(str, enum.Enum):
+    AFTER_N = "AFTER_N"
+    BEFORE_N = "BEFORE_N"
+    BETWEEN_N_M = "BETWEEN_N_M"
+    AFTER_T = "AFTER_T"
+    BEFORE_T = "BEFORE_T"
+    BETWEEN_T = "BETWEEN_T"
+    DAILY_SLOT = "DAILY_SLOT"
+    AFTER_RULE_USED = "AFTER_RULE_USED"
+    AFTER_RULE_EXHAUSTED = "AFTER_RULE_EXHAUSTED"
+
+
+class Combinator(str, enum.Enum):
+    AND = "AND"
+    OR = "OR"
+
+
+class DiscountRule(Base):
+    __tablename__ = "discount_rules"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(120), nullable=False)
+    type = Column(Enum(DiscountRuleType), nullable=False)
+    is_enabled = Column(Boolean, default=False, nullable=False)
+    usage_cap = Column(Integer, nullable=True)
+    
+    group_size = Column(Integer, nullable=True)
+    group_total_price = Column(Float, nullable=True)
+    per_person_price = Column(Float, nullable=True)
+    
+    priority = Column(Integer, default=0, nullable=False)
+    pricing_effect = Column(Enum(PricingEffect), nullable=False)
+    discount_value = Column(Float, nullable=True) # Could be flat off or percent off. For fixed price, we use per_person_price/group_total_price or discount_value as fixed
+    auto_applied = Column(Boolean, default=True, nullable=False)
+    condition_combinator = Column(Enum(Combinator), default=Combinator.AND, nullable=False)
+    
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class ActivationCondition(Base):
+    __tablename__ = "activation_conditions"
+
+    id = Column(Integer, primary_key=True)
+    rule_id = Column(Integer, ForeignKey("discount_rules.id"), nullable=False)
+    condition_type = Column(Enum(ConditionType), nullable=False)
+    
+    val_n = Column(Integer, nullable=True)
+    val_m = Column(Integer, nullable=True)
+    time_t1 = Column(DateTime, nullable=True)
+    time_t2 = Column(DateTime, nullable=True)
+    time_slot_start = Column(String(5), nullable=True) # HH:MM
+    time_slot_end = Column(String(5), nullable=True)   # HH:MM
+    target_rule_id = Column(Integer, ForeignKey("discount_rules.id"), nullable=True)
+    
+    rule = relationship("DiscountRule", foreign_keys=[rule_id], backref="conditions")
+    target_rule = relationship("DiscountRule", foreign_keys=[target_rule_id])
+
+
+class UpiQrCode(Base):
+    __tablename__ = "upi_qr_codes"
+
+    id = Column(Integer, primary_key=True)
+    label = Column(String(120), nullable=False)
+    upi_id = Column(String(120), nullable=False)
+    payee_name = Column(String(120), nullable=False)
+    is_active = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class SaleChannel(str, enum.Enum):
+    DISTRIBUTOR = "distributor"
+    ONLINE = "online"
 
 
 class Student(Base):
@@ -99,16 +189,19 @@ class Student(Base):
     sap_id = Column(String(64), unique=True, index=True, nullable=False)
     name = Column(String(120), nullable=False)
     branch = Column(String(64), nullable=False, index=True)
+    year = Column(String(20), nullable=True, index=True)
     gender = Column(String(20), nullable=True)
     email = Column(String(255), nullable=True)  # can be filled at sale time if roster lacks it
+    phone = Column(String(20), nullable=True)   # added for online portal if it wasn't there
 
     # --- Sale data (filled by distributor at point of sale) ---
     pass_type = Column(Enum(PassType), default=PassType.FULL, nullable=False)
-    food_preference = Column(Enum(FoodPreference, values_callable=lambda obj: [e.value for e in obj]), default=FoodPreference.VEG, nullable=False)
+    food_preference = Column(String(50), default="veg", nullable=True) # changed to String to support dynamic foods
     payment_mode = Column(Enum(PaymentMode), nullable=True)
     amount = Column(Float, nullable=True)
     payment_status = Column(Enum(PaymentStatus), default=PaymentStatus.NOT_PURCHASED,
                              nullable=False, index=True)
+    sale_channel = Column(Enum(SaleChannel), nullable=True) # DISTRIBUTOR or ONLINE
 
     distributor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     sold_at = Column(DateTime, nullable=True)
@@ -137,12 +230,59 @@ class Student(Base):
     food_scanned_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # roster import time
+    
+    # --- Transient OTP Session (Only active session fields) ---
+    otp_hash = Column(String(255), nullable=True)
+    otp_expires_at = Column(DateTime, nullable=True)
+    otp_attempts = Column(Integer, default=0, nullable=False)
+    otp_last_sent_at = Column(DateTime, nullable=True)
 
     distributor = relationship("User", foreign_keys=[distributor_id])
     verified_by = relationship("User", foreign_keys=[verified_by_id])
     scanned_by = relationship("User", foreign_keys=[scanned_by_id])
     food_scanned_by = relationship("User", foreign_keys=[food_scanned_by_id])
     discount_code = relationship("DiscountCode", foreign_keys=[discount_code_id])
+
+class OnlineOrder(Base):
+    __tablename__ = "online_orders"
+
+    id = Column(Integer, primary_key=True)
+    order_reference = Column(String(32), unique=True, index=True, default=_uuid, nullable=False)
+    leader_sap_id = Column(String(64), ForeignKey("students.sap_id"), nullable=False)
+    status = Column(Enum(PaymentStatus), default=PaymentStatus.RESERVED, nullable=False)
+    
+    locked_total_price = Column(Float, nullable=False)
+    applied_rule_id = Column(Integer, ForeignKey("discount_rules.id"), nullable=True)
+    upi_qr_shown_id = Column(Integer, ForeignKey("upi_qr_codes.id"), nullable=True)
+    
+    utr_number = Column(String(32), nullable=True)
+    payment_screenshot = Column(Text, nullable=True)
+    screenshot_phash = Column(String(64), nullable=True)
+    
+    rejection_reason = Column(String(255), nullable=True)
+    approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    reservation_expires_at = Column(DateTime, nullable=True)
+    
+    leader = relationship("Student", foreign_keys=[leader_sap_id])
+    applied_rule = relationship("DiscountRule", foreign_keys=[applied_rule_id])
+    upi_qr_shown = relationship("UpiQrCode", foreign_keys=[upi_qr_shown_id])
+    approved_by = relationship("User", foreign_keys=[approved_by_id])
+    members = relationship("OrderMember", back_populates="order", cascade="all, delete-orphan")
+
+
+class OrderMember(Base):
+    __tablename__ = "order_members"
+
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey("online_orders.id"), nullable=False)
+    sap_id = Column(String(64), ForeignKey("students.sap_id"), nullable=False)
+    food_preference = Column(String(50), nullable=True)
+    locked_price = Column(Float, nullable=False)
+    
+    order = relationship("OnlineOrder", back_populates="members")
+    student = relationship("Student", foreign_keys=[sap_id])
 
 
 # ---------------------------------------------------------------------------

@@ -90,6 +90,7 @@ a:hover {
   font-weight: 700;
   background: linear-gradient(135deg, #fff, #9ba1b6);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -319,6 +320,11 @@ tr:hover td {
   color: var(--text-muted);
 }
 
+.badge-primary {
+  background-color: rgba(99, 56, 240, 0.15);
+  color: #a78bfa;
+}
+
 /* Utilities */
 .grid {
   display: grid;
@@ -353,6 +359,9 @@ tr:hover td {
 .text-sm { font-size: 13px; }
 .font-bold { font-weight: 700; }
 .font-semibold { font-weight: 600; }
+
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.text-xs { font-size: 11px; }
 
 .hidden { display: none !important; }
 

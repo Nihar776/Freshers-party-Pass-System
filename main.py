@@ -21,6 +21,8 @@ from volunteer_routes import router as gate_router
 from admin_routes import router as admin_router
 from bootstrap_routes import router as bootstrap_router
 from page_routes import router as page_router
+from student_routes import router as student_router
+from admin_config_routes import router as admin_config_router
 
 from config import EVENT_ID, EVENT_NAME
 
@@ -51,6 +53,8 @@ app.include_router(gate_router)         # /verify /gate-stats
 app.include_router(admin_router)        # /admin/dashboard /admin/audit-log
 app.include_router(bootstrap_router)    # /bootstrap-admin-page /bootstrap-admin (one-time only)
 app.include_router(page_router)         # HTML pages
+app.include_router(student_router)      # /api/student/*
+app.include_router(admin_config_router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

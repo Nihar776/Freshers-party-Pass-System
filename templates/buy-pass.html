@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Pass | Freshers Party</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* ── Page shell ────────────────────────────────────────── */
+        .page-wrapper {
+            min-height: 100vh;
+            background: radial-gradient(ellipse at top, #1a1c29 0%, #090a0f 70%);
+            padding-bottom: 60px;
+        }
+
+        /* ── Stepper ────────────────────────────────────────────── */
+        .stepper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin: 32px auto 36px;
+            max-width: 560px;
+            padding: 0 20px;
+        }
+        .step-dot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .step-dot .dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-surface);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+        .step-dot .dot-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .step-dot.active .dot {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(91, 44, 230, 0.2);
+        }
+        .step-dot.active .dot-label { color: var(--primary); font-weight: 600; }
+        .step-dot.done .dot {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
+        }
+        .step-dot.done .dot-label { color: var(--success); }
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            margin-bottom: 22px;
+            transition: background 0.3s;
+        }
+        .step-line.done { background: var(--success); }
+
+        /* ── Card ───────────────────────────────────────────────── */
+        .step-card {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        .step-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+        }
+        .step-panel h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .step-panel .step-sub {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        /* ── Search results (same style as distributor) ─────────── */
+        .result-item {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-surface);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .result-item:hover { border-color: var(--primary); background: rgba(91, 44, 230, 0.06); }
+        .result-item .name { font-weight: 700; font-size: 15px; }
+        .result-item .meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+        .result-item.taken { opacity: 0.45; cursor: not-allowed; }
+
+        /* ── Price highlight ────────────────────────────────────── */
+        .price-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .price-box .price-label { color: var(--text-muted); font-size: 14px; }
+        .price-box .price-value { font-size: 28px; font-weight: 800; color: var(--text-main); font-family: 'Outfit', sans-serif; }
+        .price-box .rule-badge { margin-top: 4px; font-size: 12px; }
+
+        /* ── Countdown ──────────────────────────────────────────── */
+        .countdown-bar {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 10px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .countdown-bar .timer { font-weight: 700; color: var(--warning); font-variant-numeric: tabular-nums; font-size: 16px; }
+        .countdown-bar.expired { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); }
+        .countdown-bar.expired .timer { color: var(--danger); }
+
+        /* ── QR block ───────────────────────────────────────────── */
+        .qr-block {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .qr-block img { border-radius: 8px; max-width: 200px; margin: 0 auto 12px; display: block; }
+        .qr-block .upi-id {
+            font-family: monospace;
+            font-size: 14px;
+            background: var(--bg-surface);
+            padding: 6px 14px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            display: inline-block;
+            color: var(--text-main);
+        }
+        .qr-block .payee { color: var(--text-muted); font-size: 13px; margin-top: 8px; }
+
+        /* ── Upload zone ────────────────────────────────────────── */
+        .upload-zone-label {
+            display: block;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .upload-zone-label:hover { border-color: var(--primary); }
+        .upload-zone-label .upload-icon { font-size: 28px; margin-bottom: 8px; }
+
+        /* ── Success state ──────────────────────────────────────── */
+        .success-card {
+            text-align: center;
+            padding: 48px 32px;
+        }
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+        }
+        .success-card h2 { font-size: 22px; margin-bottom: 8px; }
+        .success-card p { color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+
+        /* ── Group members list ─────────────────────────────────── */
+        .member-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .member-chip .remove-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0 4px;
+        }
+        .member-chip .remove-btn:hover { opacity: 0.7; }
+
+        /* ── Misc helpers ───────────────────────────────────────── */
+        .hidden { display: none !important; }
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="page-wrapper">
+    <div id="toast-container"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-inner">
+            <div class="brand">Freshers Party 🎉</div>
+            <div class="nav-links">
+                <span class="nav-link" id="nav-student-name" style="display:none;"></span>
+                <a href="/login-page" class="nav-link" style="font-size:13px;">Staff Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Page title -->
+        <div style="text-align:center; margin-bottom: 8px;">
+            <h1 style="font-size: 28px; font-weight: 800;">Get Your Entry Pass</h1>
+            <p style="color: var(--text-muted); font-size: 15px;">Online self-service · UPI payment · Instant email delivery</p>
+        </div>
+
+        <!-- Stepper -->
+        <div class="stepper" id="stepper">
+            <div class="step-dot active" id="sdot-1">
+                <div class="dot">1</div>
+                <div class="dot-label">Find</div>
+            </div>
+            <div class="step-line" id="sline-1"></div>
+            <div class="step-dot" id="sdot-2">
+                <div class="dot">2</div>
+                <div class="dot-label">Verify</div>
+            </div>
+            <div class="step-line" id="sline-2"></div>
+            <div class="step-dot" id="sdot-3">
+                <div class="dot">3</div>
+                <div class="dot-label">Reserve</div>
+            </div>
+            <div class="step-line" id="sline-3"></div>
+            <div class="step-dot" id="sdot-4">
+                <div class="dot">4</div>
+                <div class="dot-label">Pay</div>
+            </div>
+            <div class="step-line" id="sline-4"></div>
+            <div class="step-dot" id="sdot-5">
+                <div class="dot">✓</div>
+                <div class="dot-label">Done</div>
+            </div>
+        </div>
+
+        <!-- ── STEP 1: Search ── -->
+        <div class="step-card" id="step-search">
+            <div class="step-panel">
+                <h2>Find your name</h2>
+                <p class="step-sub">Type your name or SAP ID — results appear instantly.</p>
+
+                <div class="form-group" style="position:relative;">
+                    <input type="text" id="searchInput" class="form-control" placeholder="e.g. Riya Shah or 6000012345" autocomplete="off">
+                    <div id="search-spinner" class="hidden" style="position:absolute; right:12px; top:50%; transform:translateY(-50%);">
+                        <div class="spinner" style="border-top-color: var(--primary);"></div>
+                    </div>
+                </div>
+
+                <div id="searchResults" class="grid gap-2" style="margin-top:4px;"></div>
+
+                <p class="text-sm text-muted" style="margin-top:16px; text-align:center;">
+                    Only students pre-enrolled by the college are visible here.
+                </p>
+            </div>
+        </div>
+
+        <!-- ── STEP 2: OTP ── -->
+        <div class="step-card hidden" id="step-otp">
+            <div class="step-panel">
+                <h2>Verify your identity</h2>
+                <p class="step-sub">A 6-digit OTP has been sent to <strong id="maskedEmail" style="color:var(--text);"></strong></p>
+
+                <div class="form-group">
+                    <label class="form-label">OTP</label>
+                    <input type="text" id="otpInput" class="form-control" placeholder="Enter 6-digit OTP"
+                        maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+                </div>
+
+                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="verifyOtp()" id="btn-verify-otp">
+                    Verify OTP
+                </button>
+
+                <div style="text-align:center; margin-top:14px;">
+                    <button class="btn btn-secondary" style="font-size:13px; padding:6px 14px;" onclick="goBack(1)">
+                        ← Go back
+                    </button>
+                    <span style="color:var(--text-muted); font-size:13px; margin-left:10px;">Didn't receive it?
+                        <a href="#" style="color:var(--primary);" onclick="resendOtp(event)">Resend</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── STEP 3: Reserve ── -->
+        <div class="step-card hidden" id="step-reserve">
+            <div class="step-panel">
+                <h2>Confirm your order</h2>
+                <p class="step-sub">Review the pricing and optionally add friends to a group ticket.</p>
+
+                <!-- Pricing -->
+                <div class="price-box" id="price-preview">
+                    <div>
+                        <div class="price-label">Total to pay</div>
+                        <div id="preview-rule" class="rule-badge text-muted"></div>
+                    </div>
+                    <div class="price-value">₹<span id="preview-price">—</span></div>
+                </div>
+
+                <!-- Food preference -->
+                <div class="form-group" id="food-group" style="display:none;">
+                    <label class="form-label">Food Preference</label>
+                    <select id="foodSelect" class="form-control">
+                        <option value="veg">Non-Jain (Veg)</option>
+                        <option value="jain">Jain</option>
+                    </select>
+                </div>
+
+                <!-- Group members -->
+                <div class="form-group" id="group-section">
+                    <label class="form-label">
+                        Add Friends (optional group ticket)
+                        <span class="badge badge-neutral" style="margin-left:6px; font-size:11px;">unlimited</span>
+                    </label>
+
+                    <div id="members-list" style="margin-bottom:8px;">
+                        <!-- Primary member chip always shows -->
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:6px;">
+                        <input type="text" id="friendSearch" class="form-control" placeholder="Search by name or SAP ID to add friend..." autocomplete="off">
+                    </div>
+                    <div id="friendResults" class="grid gap-2" style="margin-top:6px;"></div>
+                </div>
+
+                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="reservePass()" id="btn-reserve">
+                    Reserve Slot (holds for 30 min)
+                </button>
+                <div style="text-align:center; margin-top:16px;">
+                    <a href="#" onclick="location.reload(); return false;" style="color:var(--text-muted); font-size:14px; text-decoration:none;">← Start Over (Change Details)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── STEP 4: Payment ── -->
+        <div class="step-card hidden" id="step-pay">
+            <div class="step-panel">
+                <h2>Complete your payment</h2>
+                <p class="step-sub">Scan the QR, pay the exact amount, then upload your screenshot.</p>
+
+                <!-- Countdown -->
+                <div class="countdown-bar" id="countdown-bar">
+                    <span>⏱ Slot reserved for</span>
+                    <span class="timer" id="countdown">30:00</span>
+                    <span style="color:var(--text-muted); font-size:13px;">— do not close this tab</span>
+                </div>
+
+                <!-- Amount -->
+                <div class="price-box" style="margin-bottom:20px;">
+                    <div>
+                        <div class="price-label">Amount to pay</div>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;" id="pay-rule"></div>
+                    </div>
+                    <div class="price-value">₹<span id="payAmount">—</span></div>
+                </div>
+
+                <!-- UPI QR -->
+                <div class="qr-block" id="qr-block">
+                    <p class="text-muted text-sm" style="margin-bottom:12px;">Scan with any UPI app</p>
+                    <img id="qr-img" src="" alt="UPI QR Code" style="display:none;">
+                    <div id="qr-placeholder" style="width:180px; height:180px; margin:0 auto 12px; background:var(--bg-surface); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--text-muted);">
+                        Loading QR…
+                    </div>
+                    <div class="upi-id" id="qr-upi-id">—</div>
+                    <div class="payee" id="qr-payee">—</div>
+                </div>
+
+                <!-- UTR + Screenshot -->
+                <div class="form-group">
+                    <label class="form-label">UTR / Transaction Reference Number <span class="text-muted text-sm">(optional but speeds up approval)</span></label>
+                    <input type="text" id="utrInput" class="form-control" placeholder="e.g. 123456789012">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Payment Screenshot <span class="text-danger" style="font-size:12px;">*Required</span></label>
+                    <label class="upload-zone-label" for="screenshotInput" id="upload-label">
+                        <div class="upload-icon">📎</div>
+                        <div>Click to choose screenshot</div>
+                        <div class="text-sm" style="margin-top:4px;">PNG, JPG or WEBP · Max 5 MB</div>
+                    </label>
+                    <input type="file" id="screenshotInput" accept="image/png, image/jpeg, image/webp" class="hidden"
+                        onchange="previewFile(this)">
+                    <div id="file-preview" style="margin-top:8px;"></div>
+                </div>
+
+                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="uploadPayment()" id="btn-upload">
+                    Submit for Verification
+                </button>
+                <div style="text-align:center; margin-top:16px;">
+                    <a href="#" onclick="cancelReservation(); return false;" style="color:var(--text-muted); font-size:14px; text-decoration:none;">← Cancel Reservation &amp; Edit Group</a>
+                </div>
+
+                <p class="text-xs text-muted" style="text-align:center; margin-top:12px;">
+                    Treasury team verifies within 24–48 hrs. Your QR pass will be emailed to you once approved.
+                </p>
+            </div>
+        </div>
+
+        <!-- ── STEP 5: Done ── -->
+        <div class="step-card hidden" id="step-status">
+            <div class="step-panel success-card">
+                <div class="success-icon">✅</div>
+                <h2>Payment Submitted!</h2>
+                <p>
+                    Your payment screenshot has been received and is pending treasury verification.<br><br>
+                    Once approved, your <strong>Entry Pass QR code</strong> will be emailed to your registered address.
+                    This usually takes <strong>24–48 hours</strong>.
+                </p>
+                <div style="margin-top:28px;">
+                    <button class="btn btn-secondary" onclick="location.reload()">Buy Another Pass</button>
+                </div>
+            </div>
+        </div>
+    </div><!-- /container -->
+
+    <script>
+        /* ─────────────────── State ─────────────────── */
+        let currentSapId   = '';
+        let passUuid       = '';
+        let currentName    = '';
+        let currentMasked  = '';
+        let lockedPrice    = 0;
+        let orderId        = null;
+        let qrData         = null;
+        let timerInt       = null;
+        let holdExpiresAt  = null;
+        let groupMembers   = [];   // [{sap_id, name, branch}]
+        let searchTimer    = null;
+        let friendTimer    = null;
+        let foodEnabled    = false;
+
+        /* ─────────────────── Toast ─────────────────── */
+        function showToast(msg, type = 'success') {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.innerHTML = `<span>${msg}</span>`;
+            c.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3500);
+        }
+
+        /* ─────────────────── Stepper ──────────────── */
+        function setStep(n) {
+            // n = 1..5
+            [1,2,3,4,5].forEach(i => {
+                const dot = document.getElementById(`sdot-${i}`);
+                dot.classList.remove('active','done');
+                if (i < n)  dot.classList.add('done');
+                if (i === n) dot.classList.add('active');
+            });
+            [1,2,3,4].forEach(i => {
+                const line = document.getElementById(`sline-${i}`);
+                line.classList.toggle('done', i < n);
+            });
+            // Show/hide panels
+            ['search','otp','reserve','pay','status'].forEach((id, idx) => {
+                document.getElementById(`step-${id}`).classList.toggle('hidden', idx + 1 !== n);
+            });
+        }
+
+        function goBack(toStep) { setStep(toStep); }
+
+        /* ─────────────────── Init ──────────────────── */
+        async function init() {
+            // Load food setting
+            try {
+                const r = await fetch('/admin/config');
+                if (r.ok) {
+                    const cfg = await r.json();
+                    foodEnabled = !!cfg.food_enabled;
+                    lockedPrice = cfg.base_price || 500;
+                    document.getElementById('preview-price').textContent = lockedPrice;
+                }
+            } catch(e) {}
+            if (foodEnabled) {
+                document.getElementById('food-group').style.display = '';
+            }
+        }
+        init();
+
+        /* ─────────────────── Step 1: Dynamic search ── */
+        document.getElementById('searchInput').addEventListener('input', e => {
+            clearTimeout(searchTimer);
+            const q = e.target.value.trim();
+            const resultsEl = document.getElementById('searchResults');
+            if (q.length < 2) { resultsEl.innerHTML = ''; return; }
+            document.getElementById('search-spinner').classList.remove('hidden');
+            searchTimer = setTimeout(() => runSearch(q), 300);
+        });
+
+        async function runSearch(q) {
+            const resultsEl = document.getElementById('searchResults');
+            try {
+                const res = await fetch(`/api/student/search?query=${encodeURIComponent(q)}`);
+                document.getElementById('search-spinner').classList.add('hidden');
+                if (!res.ok) { resultsEl.innerHTML = '<div class="text-muted text-sm" style="padding:12px 0;">Search error. Try again.</div>'; return; }
+                const students = await res.json();
+
+                if (students.length === 0) {
+                    resultsEl.innerHTML = '<div class="text-muted text-sm" style="padding:12px 0;">No students found. Try a different name or SAP ID.</div>';
+                    return;
+                }
+
+                resultsEl.innerHTML = '';
+                students.forEach(s => {
+                    const div = document.createElement('div');
+                    const taken = s.payment_status !== 'not_purchased';
+                    div.className = 'result-item' + (taken ? ' taken' : '');
+                    div.innerHTML = `
+                        <div>
+                            <div class="name">${s.name}
+                                <span class="badge ${taken ? 'badge-warning' : 'badge-neutral'}" style="margin-left:6px;font-size:11px;">
+                                    ${taken ? s.payment_status.replace(/_/g,' ') : 'Available'}
+                                </span>
+                            </div>
+                            <div class="meta">${s.masked_sap_id} · ${s.branch}</div>
+                        </div>
+                        ${!taken ? '<span style="color:var(--primary);font-size:13px;font-weight:600;">Select →</span>' : ''}
+                    `;
+                    if (!taken) {
+                        div.addEventListener('click', () => sendOtp(s.sap_id, s.masked_email, s.name));
+                    }
+                    resultsEl.appendChild(div);
+                });
+            } catch(err) {
+                document.getElementById('search-spinner').classList.add('hidden');
+                resultsEl.innerHTML = '<div class="text-muted text-sm" style="padding:12px 0;">Network error. Check your connection.</div>';
+            }
+        }
+
+        /* ─────────────────── Step 1→2: Send OTP ─────── */
+        async function sendOtp(sapId, maskedEmail, name) {
+            currentSapId   = sapId;
+            currentMasked  = maskedEmail;
+            currentName    = name;
+
+            const btn = document.createElement('button'); // temp for UX feedback
+            try {
+                const res = await fetch('/api/student/send-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({sap_id: sapId})
+                });
+                if (!res.ok) {
+                    const d = await res.json();
+                    showToast(d.detail || 'Failed to send OTP', 'error');
+                    return;
+                }
+                document.getElementById('maskedEmail').textContent = maskedEmail || 'your registered email';
+                document.getElementById('nav-student-name').textContent = name;
+                document.getElementById('nav-student-name').style.display = '';
+                setStep(2);
+            } catch(e) {
+                showToast('Network error. Try again.', 'error');
+            }
+        }
+
+        async function resendOtp(e) {
+            e.preventDefault();
+            if (!currentSapId) return;
+            const a = e.target;
+            a.textContent = 'Sending…';
+            try {
+                const res = await fetch('/api/student/send-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({sap_id: currentSapId})
+                });
+                if (res.ok) { showToast('OTP resent!'); }
+                else { const d = await res.json(); showToast(d.detail || 'Try again in 60s', 'warning'); }
+            } catch(e) { showToast('Network error', 'error'); }
+            a.textContent = 'Resend';
+        }
+
+        /* ─────────────────── Step 2: Verify OTP ─────── */
+        async function verifyOtp() {
+            const otp = document.getElementById('otpInput').value.trim();
+            if (otp.length !== 6) { showToast('Enter the 6-digit OTP', 'warning'); return; }
+            const btn = document.getElementById('btn-verify-otp');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Verifying…';
+
+            try {
+                const res = await fetch('/api/student/verify-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({sap_id: currentSapId, otp})
+                });
+                if (!res.ok) {
+                    const d = await res.json();
+                    showToast(d.detail || 'Invalid OTP', 'error');
+                    btn.disabled = false; btn.textContent = 'Verify OTP';
+                    return;
+                }
+                const data = await res.json();
+                passUuid = data.pass_uuid;
+
+                // Fetch live price preview
+                await fetchPricePreview();
+                // Seed self as first member
+                groupMembers = [{sap_id: currentSapId, name: currentName, branch: '—'}];
+                renderMembersList();
+                setStep(3);
+            } catch(err) {
+                showToast('Network error', 'error');
+                btn.disabled = false; btn.textContent = 'Verify OTP';
+            }
+        }
+
+        // Allow Enter key on OTP input
+        document.getElementById('otpInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') verifyOtp();
+        });
+
+        /* ─────────────────── Step 3: Price preview ─── */
+        async function fetchPricePreview() {
+            // Just fetch settings for live price; actual locking happens on reserve
+            try {
+                const r = await fetch('/admin/config');
+                if (r.ok) {
+                    const cfg = await r.json();
+                    lockedPrice = cfg.base_price || 500;
+                    document.getElementById('preview-price').textContent = lockedPrice;
+                }
+            } catch(e) {}
+        }
+
+        /* ─────────────────── Step 3: Friend search ─── */
+        let friendSearchTimeout;
+        document.getElementById('friendSearch').addEventListener('input', (e) => {
+            const q = e.target.value.trim();
+            const el = document.getElementById('friendResults');
+            clearTimeout(friendSearchTimeout);
+            if (q.length < 2) { el.innerHTML = ''; return; }
+            el.innerHTML = '<div class="text-sm text-muted">Searching...</div>';
+            friendSearchTimeout = setTimeout(() => runFriendSearch(q), 300);
+        });
+
+        async function runFriendSearch(q) {
+            // unlimited group size allowed
+            const el = document.getElementById('friendResults');
+            try {
+                const res = await fetch(`/api/student/search?query=${encodeURIComponent(q)}`);
+                if (!res.ok) return;
+                const students = await res.json();
+                el.innerHTML = '';
+                students
+                    .filter(s => s.sap_id !== currentSapId && !groupMembers.find(m => m.sap_id === s.sap_id))
+                    .forEach(s => {
+                        const taken = s.payment_status !== 'not_purchased';
+                        const div = document.createElement('div');
+                        div.className = 'result-item' + (taken ? ' taken' : '');
+                        div.innerHTML = `
+                            <div>
+                                <div class="name">${s.name}</div>
+                                <div class="meta">${s.masked_sap_id} · ${s.branch}${s.year ? ` (Year ${s.year})` : ''}</div>
+                            </div>
+                            ${!taken ? '<span style="color:var(--primary);font-size:13px;">+ Add</span>' : '<span style="font-size:12px;color:var(--text-muted);">Unavailable</span>'}
+                        `;
+                        if (!taken) {
+                            div.addEventListener('click', () => {
+                                groupMembers.push({sap_id: s.sap_id, name: s.name, branch: s.branch, year: s.year});
+                                document.getElementById('friendSearch').value = '';
+                                el.innerHTML = '';
+                                renderMembersList();
+                            });
+                        }
+                        el.appendChild(div);
+                    });
+            } catch(e) {}
+        }
+
+        function renderMembersList() {
+            const el = document.getElementById('members-list');
+            el.innerHTML = groupMembers.map((m, i) => `
+                <div class="member-chip">
+                    <div>
+                        <span class="font-semibold">${m.name}</span>
+                        ${i === 0 ? '<span class="badge badge-primary" style="margin-left:6px;font-size:10px;">You</span>' : ''}
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${m.sap_id} · ${m.branch}${m.year ? ` · Year ${m.year}` : ''}</div>
+                    </div>
+                    ${i > 0 ? `<button class="remove-btn" onclick="removeMember(${i})">×</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function removeMember(idx) {
+            groupMembers.splice(idx, 1);
+            renderMembersList();
+        }
+
+        /* ─────────────────── Step 3→4: Reserve ────────── */
+        async function reservePass() {
+            const btn = document.getElementById('btn-reserve');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Reserving…';
+
+            const isGroup = groupMembers.length > 1;
+            const payload = {
+                sap_id: currentSapId,
+                pass_uuid: passUuid,
+                food_preference: foodEnabled ? document.getElementById('foodSelect').value : null,
+                group_sap_ids: isGroup ? groupMembers.slice(1).map(m => m.sap_id) : []
+            };
+
+            try {
+                const res = await fetch('/api/student/reserve', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    const d = await res.json();
+                    showToast(d.detail || 'Reservation failed', 'error');
+                    btn.disabled = false; btn.textContent = 'Reserve Slot (holds for 30 min)';
+                    return;
+                }
+                const data = await res.json();
+                lockedPrice     = data.locked_price;
+                holdExpiresAt   = new Date(
+                    data.reservation_expires_at.endsWith('Z') || data.reservation_expires_at.includes('+')
+                        ? data.reservation_expires_at
+                        : data.reservation_expires_at + 'Z'
+                );
+
+                document.getElementById('payAmount').textContent = lockedPrice;
+                document.getElementById('pay-rule').textContent  = data.rule_name || '';
+
+                // Load QR
+                await loadQr(data.qr_id);
+
+                startCountdown();
+                setStep(4);
+            } catch(err) {
+                showToast('Network error', 'error');
+                btn.disabled = false; btn.textContent = 'Reserve Slot (holds for 30 min)';
+            }
+        }
+
+        async function loadQr(qrId) {
+            try {
+                const res = await fetch(`/admin/upi-qrs/active`);
+                if (!res.ok) return;
+                const qr = await res.json();
+                document.getElementById('qr-upi-id').textContent = qr.upi_id;
+                document.getElementById('qr-payee').textContent  = qr.payee_name ? `Pay to: ${qr.payee_name}` : '';
+                const upiLink = `upi://pay?pa=${encodeURIComponent(qr.upi_id)}&pn=${encodeURIComponent(qr.payee_name||'')}&am=${lockedPrice}&cu=INR`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+                const img = document.getElementById('qr-img');
+                img.src = qrApiUrl;
+                img.style.display = 'block';
+                document.getElementById('qr-placeholder').style.display = 'none';
+            } catch (e) {}
+        }
+
+        /* ─────────────────── Countdown ─────────────── */
+        function startCountdown() {
+            clearInterval(timerInt);
+            const el   = document.getElementById('countdown');
+            const bar  = document.getElementById('countdown-bar');
+            timerInt = setInterval(() => {
+                const diff = Math.floor((holdExpiresAt - new Date()) / 1000);
+                if (diff <= 0) {
+                    clearInterval(timerInt);
+                    el.textContent = 'EXPIRED';
+                    bar.classList.add('expired');
+                    showToast('Your reservation expired. Please restart.', 'error');
+                    setTimeout(() => location.reload(), 3000);
+                } else {
+                    const m = Math.floor(diff / 60);
+                    const s = diff % 60;
+                    el.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+                    if (diff < 120) bar.classList.add('expired');
+                }
+            }, 1000);
+        }
+
+        /* ─────────────────── File preview ──────────── */
+        function previewFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById('upload-label').innerHTML = `
+                <div class="upload-icon">🖼</div>
+                <div style="font-weight:600;">${file.name}</div>
+                <div class="text-sm" style="margin-top:4px;">${(file.size/1024).toFixed(0)} KB · Click to change</div>
+            `;
+        }
+
+        /* ─────────────────── Step 4: Upload ────────── */
+        async function uploadPayment() {
+            const fileInput = document.getElementById('screenshotInput');
+            if (!fileInput.files[0]) { showToast('Please select your payment screenshot', 'warning'); return; }
+            if (fileInput.files[0].size > 5 * 1024 * 1024) { showToast('File too large (max 5 MB)', 'error'); return; }
+
+            const btn = document.getElementById('btn-upload');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Uploading…';
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target.result;
+                const utr    = document.getElementById('utrInput').value.trim();
+                try {
+                    const res = await fetch('/api/student/upload-payment', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            sap_id: currentSapId,
+                            pass_uuid: passUuid,
+                            utr_number: utr || null,
+                            payment_screenshot: base64
+                        })
+                    });
+                    if (!res.ok) {
+                        const d = await res.json();
+                        showToast(d.detail || 'Upload failed', 'error');
+                        btn.disabled = false; btn.textContent = 'Submit for Verification';
+                        return;
+                    }
+                    clearInterval(timerInt);
+                    setStep(5);
+                } catch(err) {
+                    showToast('Network error', 'error');
+                    btn.disabled = false; btn.textContent = 'Submit for Verification';
+                }
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+        async function cancelReservation() {
+            if(!confirm('This will cancel your current reservation so you can edit your group. Proceed?')) return;
+            try {
+                const res = await fetch('/api/student/cancel-reservation', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({sap_id: currentSapId, pass_uuid: passUuid})
+                });
+                if(res.ok) {
+                    clearInterval(timerInt);
+                    document.getElementById('countdown-bar').classList.remove('danger');
+                    setStep(3);
+                    showToast('Reservation cancelled');
+                } else {
+                    const d = await res.json();
+                    showToast(d.detail || 'Failed to cancel', 'error');
+                }
+            } catch(e) { showToast('Network error', 'error'); }
+        }
+    </script>
+</body>
+</html>

@@ -20,7 +20,8 @@ from datetime import datetime, date, timedelta
 from database import get_db
 from schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
-    FoodPreference, Expense, CashHandover, AuditLog, DiscountCode, DiscountType
+    FoodPreference, Expense, CashHandover, AuditLog, DiscountCode, DiscountType,
+    OnlineOrder, OrderMember
 )
 from session_auth import require_role
 from audit import verify_chain_integrity, write_audit_log
@@ -603,6 +604,70 @@ def export_sales(
         headers={"Content-Disposition": "attachment; filename=sales.xlsx"}
     )
 
+# ---------------------------------------------------------------------------
+# Online Reservations Management
+# ---------------------------------------------------------------------------
+
+@router.get("/reservations")
+def list_reservations(db: Session = Depends(get_db), admin: User = Depends(require_role(*ADMIN_ONLY))):
+    orders = db.query(OnlineOrder).filter(
+        OnlineOrder.status.in_([PaymentStatus.RESERVED, PaymentStatus.PENDING_VERIFICATION])
+    ).all()
+    
+    res = []
+    for o in orders:
+        members = [{"sap_id": m.sap_id, "name": m.student.name if m.student else m.sap_id} for m in o.members]
+        res.append({
+            "id": o.id,
+            "order_reference": o.order_reference,
+            "leader_sap_id": o.leader_sap_id,
+            "status": o.status,
+            "expires_at": o.reservation_expires_at.isoformat() if o.reservation_expires_at else None,
+            "created_at": o.created_at.isoformat(),
+            "members": members,
+            "total_amount": sum(m.locked_price for m in o.members)
+        })
+    return res
+
+@router.delete("/reservations/{order_id}")
+def cancel_reservation_admin(order_id: int, db: Session = Depends(get_db), admin: User = Depends(require_role(*ADMIN_ONLY))):
+    order = db.query(OnlineOrder).filter(OnlineOrder.id == order_id).first()
+    if not order: raise HTTPException(status_code=404)
+    order.status = PaymentStatus.EXPIRED
+    
+    write_audit_log(db, admin.id, "reservation_cancelled_admin", "online_orders", order.id, {"order_ref": order.order_reference})
+    db.commit()
+    return {"message": "Reservation cancelled"}
+
+class UpdateReservationMembers(BaseModel):
+    sap_ids: list[str]
+
+@router.put("/reservations/{order_id}/members")
+def update_reservation_members(order_id: int, req: UpdateReservationMembers, db: Session = Depends(get_db), admin: User = Depends(require_role(*ADMIN_ONLY))):
+    order = db.query(OnlineOrder).filter(OnlineOrder.id == order_id).first()
+    if not order: raise HTTPException(status_code=404)
+    
+    if len(req.sap_ids) == 0:
+        raise HTTPException(status_code=400, detail="Cannot have empty group")
+        
+    old_members = [m.sap_id for m in order.members]
+    
+    # Simple replacement: Delete old members, re-create. 
+    # Warning: this requires recalculating price or we just copy the per-person price.
+    if order.members:
+        per_person = order.members[0].locked_price
+    else:
+        per_person = 0
+        
+    db.query(OrderMember).filter(OrderMember.order_id == order.id).delete()
+    
+    for sap in req.sap_ids:
+        db.add(OrderMember(order_id=order.id, sap_id=sap, locked_price=per_person))
+        
+    write_audit_log(db, admin.id, "reservation_members_edited", "online_orders", order.id, {"old": old_members, "new": req.sap_ids})
+    db.commit()
+    return {"message": "Members updated"}
+
 
 @router.patch("/students/{student_id}/override")
 async def override_student(
@@ -632,6 +697,13 @@ async def override_student(
     if payment_status is not None:
         student.payment_status = payment_status
         new_snapshot["payment_status"] = payment_status.value
+        if payment_status == PaymentStatus.NOT_PURCHASED:
+            student.group_id = None
+            student.amount = 0.0
+            student.verified_by_id = None
+            student.utr_number = None
+            student.payment_screenshot = None
+            student.screenshot_phash = None
     if is_used is not None:
         student.is_used = is_used
         new_snapshot["is_used"] = is_used
@@ -964,6 +1036,13 @@ def bulk_update_students(
                 if student.payment_status != new_status:
                     student.payment_status = new_status
                     new_snapshot["payment_status"] = new_status.value
+                    if new_status == PaymentStatus.NOT_PURCHASED:
+                        student.group_id = None
+                        student.amount = 0.0
+                        student.verified_by_id = None
+                        student.utr_number = None
+                        student.payment_screenshot = None
+                        student.screenshot_phash = None
             except ValueError:
                 continue
         elif payload.action == "is_used":
