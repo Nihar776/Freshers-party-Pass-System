@@ -2039,7 +2039,7 @@
                         <option value="">— Select type —</option>
                         <option value="early_bird">🐦 Early Bird</option>
                         <option value="flash_sale">⚡ Flash Sale</option>
-                        <option value="group_discount">👥 Group Discount</option>
+                        <option value="group">👥 Group Discount</option>
                         <option value="general">⚙️ General / Custom</option>
                     </select>
                 </div>
@@ -2152,7 +2152,7 @@
             </div>
 
             <!-- ── GROUP DISCOUNT section ─────────────────────── -->
-            <div id="section-group_discount" class="rule-section hidden" style="border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+            <div id="section-group" class="rule-section hidden" style="border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
                 <div class="flex items-center gap-2 mb-3">
                     <span style="font-size:18px;">👥</span>
                     <h4 style="margin:0; font-size:15px;">Group Discount Settings</h4>
@@ -2517,7 +2517,7 @@
                 payload.conditions = [{ condition_type: 'between_t', threshold_time: start, threshold_time_max: end }];
             }
 
-            else if (type === 'group_discount') {
+            else if (type === 'group') {
                 const size  = parseInt(document.getElementById('grp-size').value);
                 const mode  = document.getElementById('grp-pricing-mode').value;
                 const val   = parseFloat(document.getElementById('grp-value').value);

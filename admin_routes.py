@@ -157,6 +157,7 @@ class AdminStudentSummary(BaseModel):
     id: int
     sap_id: str
     name: str
+    year: Optional[str] = None
     email: Optional[str] = None
     branch: str
     payment_status: PaymentStatus
