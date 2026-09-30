@@ -20,6 +20,7 @@ from config import (
     EVENT_NAME,
     EVENT_VENUE,
     EVENT_DATE,
+    EVENT_INSTRUCTIONS,
 )
 
 CID = "qr_pass_image"
@@ -58,7 +59,7 @@ def _build_html(student_name: str, sap_id: str) -> str:
 <tr>
 <td style="padding:24px 28px 8px;color:#e6e6ea;">
                 <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#b7b7c2;font-weight: bold;">
-       Show the QR code below for collecting your wristbands at 12pm - 1pm on 26th September 2026
+       {EVENT_INSTRUCTIONS}
                 </p>
               </td>
 </tr>

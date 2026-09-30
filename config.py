@@ -47,6 +47,7 @@ EVENT_ID: str = os.getenv("EVENT_ID", "FRESHERS_2026")
 EVENT_NAME: str = os.getenv("EVENT_NAME", "Freshers' Party 2026")
 EVENT_VENUE: str = os.getenv("EVENT_VENUE", "College Main Auditorium")
 EVENT_DATE: str = os.getenv("EVENT_DATE", "TBD")
+EVENT_INSTRUCTIONS: str = os.getenv("EVENT_INSTRUCTIONS", "Show the QR code below for collecting your wristbands.")
 
 # --- Database ---
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./event_passes.db")

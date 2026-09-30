@@ -40,6 +40,7 @@ class SearchRequest(BaseModel):
 class SendOtpRequest(BaseModel):
     sap_id: str
     email: Optional[str] = None
+    phone: Optional[str] = None
 
 class VerifyOtpRequest(BaseModel):
     sap_id: str
@@ -232,6 +233,8 @@ def send_otp(req: SendOtpRequest, request: Request, background_tasks: Background
             raise HTTPException(status_code=400, detail="Please enter a valid email address.")
         target_email = provided_email
         student.email = provided_email
+        if hasattr(req, 'phone') and req.phone and str(req.phone).strip():
+            student.phone = str(req.phone).strip()
         db.flush()
 
     # Check cooldown

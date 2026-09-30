@@ -22,7 +22,7 @@ from audit import write_audit_log
 
 router = APIRouter(prefix="/admin/roster", tags=["roster"])
 
-REQUIRED_COLUMNS = {"sap_id", "name", "branch"}
+REQUIRED_COLUMNS = {"sap_id", "name", "branch", "year"}
 
 
 class RosterImportResult(BaseModel):
@@ -83,6 +83,10 @@ def import_roster(
 
             if not sap_id or not name or not branch or not year:
                 row_errors.append(f"Line {line_num}: missing sap_id/name/branch/year, skipped")
+                continue
+
+            if year not in {"FY", "SY", "TY", "LY"}:
+                row_errors.append(f"Line {line_num}: invalid year '{year}' (must be FY, SY, TY, or LY), skipped")
                 continue
 
             if sap_id in seen_in_file:

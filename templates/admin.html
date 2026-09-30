@@ -392,6 +392,17 @@
                     <div class="font-semibold mb-2">Click to select CSV file</div>
                     <input type="file" id="roster-file" accept=".csv" class="hidden" onchange="uploadRoster(event)">
                 </div>
+
+                <div style="margin: 24px 0; text-align: center; color: var(--text-muted); position: relative;">
+                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 0;">
+                    <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--bg-panel); padding: 0 12px; font-size: 14px;">OR</span>
+                </div>
+
+                <div style="text-align: left;">
+                    <div class="font-semibold mb-2">Paste CSV Data Directly</div>
+                    <textarea id="roster-csv-text" class="form-control" style="height: 150px; font-family: monospace; font-size: 13px; width: 100%; box-sizing: border-box;" placeholder="sap_id,name,branch,year&#10;57601260001,Aarav Sharma,CSE,SY&#10;..."></textarea>
+                    <button class="btn btn-primary mt-3" onclick="uploadRosterText()">Upload Pasted CSV</button>
+                </div>
             </div>
         </div>
 
@@ -1525,10 +1536,25 @@
         }
 
         // --- Roster ---
+        async function uploadRosterText() {
+            const text = document.getElementById('roster-csv-text').value.trim();
+            if (!text) {
+                showToast('Please paste CSV data first', 'warning');
+                return;
+            }
+            const blob = new Blob([text], { type: 'text/csv' });
+            const file = new File([blob], 'pasted_roster.csv', { type: 'text/csv' });
+            await submitRosterFile(file);
+        }
+
         async function uploadRoster(e) {
             const file = e.target.files[0];
             if (!file) return;
-            
+            await submitRosterFile(file);
+            e.target.value = ''; // Reset input
+        }
+
+        async function submitRosterFile(file) {
             const formData = new FormData();
             formData.append('file', file);
             
@@ -1552,6 +1578,7 @@
                         msg += ` (${data.row_errors.length} row warnings).`;
                     }
                     showToast(`Success: ${msg}`);
+                    document.getElementById('roster-csv-text').value = '';
                     loadRoster(); // reload table automatically
                 } else {
                     const detail = (data && data.detail) ? data.detail : `Upload failed (Status ${res.status}: ${res.statusText || 'Server Error'})`;
@@ -1561,7 +1588,6 @@
                 console.error("Roster upload error:", err);
                 showToast(err.message === 'Failed to fetch' ? 'Server unreachable. Please ensure the backend server is running.' : 'Network error during upload', 'error');
             }
-            e.target.value = ''; // Reset input
         }
 
         // --- Audit Log ---

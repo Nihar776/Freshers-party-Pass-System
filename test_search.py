@@ -1,18 +1,18 @@
-"""Quick test of the search query."""
-from database import SessionLocal
-from schema_v2 import Student
-from sqlalchemy import func
+import os
+from fastapi.testclient import TestClient
+from main import app
 
-db = SessionLocal()
+client = TestClient(app)
 
-for q in ["rah", "test", "03", "Sarah"]:
-    like = f"%{q.lower()}%"
-    results = db.query(Student).filter(
-        (func.lower(Student.name).like(like)) | (func.lower(Student.sap_id).like(like))
-    ).order_by(Student.name).limit(20).all()
-    print(f'Search "{q}": {len(results)} results')
-    for s in results:
-        print(f"  {s.sap_id} | {s.name} | {s.payment_status.value}")
-    print()
+def test_search():
+    print("Testing /api/student/search?query=57601260009")
+    response = client.get("/api/student/search?query=57601260009")
+    print("Status:", response.status_code)
+    try:
+        print("Response:", response.json())
+    except Exception as e:
+        print("Error parsing json:", e)
+        print("Text:", response.text)
 
-db.close()
+if __name__ == "__main__":
+    test_search()
