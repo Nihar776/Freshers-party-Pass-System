@@ -49,73 +49,80 @@ def import_roster(
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.ADMIN)),
 ):
-    filename = file.filename or "unknown.csv"
-    if not filename.lower().endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Please upload a .csv file")
-
     try:
-        raw = file.file.read().decode("utf-8-sig")  # utf-8-sig strips a stray BOM from Excel exports
-        reader = csv.DictReader(io.StringIO(raw))
-        if reader.fieldnames:
-            reader.fieldnames = [c.strip() for c in reader.fieldnames]
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid file encoding. Please ensure the file is a valid CSV (not an Excel .xlsx file) and saved with UTF-8 encoding.")
+        filename = file.filename or "unknown.csv"
+        if not filename.lower().endswith(".csv"):
+            raise HTTPException(status_code=400, detail="Please upload a .csv file")
 
-    if not reader.fieldnames or not REQUIRED_COLUMNS.issubset(set(reader.fieldnames)):
-        raise HTTPException(
-            status_code=400,
-            detail=f"CSV must have columns: {sorted(REQUIRED_COLUMNS)}. Found: {reader.fieldnames}",
+        try:
+            raw = file.file.read().decode("utf-8-sig")  # utf-8-sig strips a stray BOM from Excel exports
+            reader = csv.DictReader(io.StringIO(raw))
+            if reader.fieldnames:
+                reader.fieldnames = [c.strip() for c in reader.fieldnames]
+        except UnicodeDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid file encoding. Please ensure the file is a valid CSV (not an Excel .xlsx file) and saved with UTF-8 encoding.")
+
+        if not reader.fieldnames or not REQUIRED_COLUMNS.issubset(set(reader.fieldnames)):
+            raise HTTPException(
+                status_code=400,
+                detail=f"CSV must have columns: {sorted(REQUIRED_COLUMNS)}. Found: {reader.fieldnames}",
+            )
+
+        created = 0
+        skipped_duplicates: list[str] = []
+        row_errors: list[str] = []
+        seen_in_file: set[str] = set()  # catch duplicate SAP IDs within the uploaded file itself
+
+        for line_num, row in enumerate(reader, start=2):  # header is line 1
+            sap_id = (row.get("sap_id") or "").strip()
+            name = (row.get("name") or "").strip()
+            branch = (row.get("branch") or "").strip()
+            year = (row.get("year") or "").strip() or None
+            gender = (row.get("gender") or "").strip() or None
+            email = (row.get("email") or "").strip() or None
+
+            if not sap_id or not name or not branch or not year:
+                row_errors.append(f"Line {line_num}: missing sap_id/name/branch/year, skipped")
+                continue
+
+            if sap_id in seen_in_file:
+                row_errors.append(f"Line {line_num}: duplicate SAP ID '{sap_id}' within this file, skipped")
+                continue
+            seen_in_file.add(sap_id)
+
+            existing = db.query(Student).filter(Student.sap_id == sap_id).first()
+            if existing:
+                skipped_duplicates.append(sap_id)
+                continue
+
+            student = Student(sap_id=sap_id, name=name, branch=branch, year=year, gender=gender, email=email)
+            db.add(student)
+            created += 1
+
+        db.flush()  # assign IDs without fully committing yet, so audit log record_id is stable
+
+        write_audit_log(
+            db,
+            user_id=admin.id,
+            action="roster_imported",
+            table_name="students",
+            record_id=0,  # batch action, not a single record
+            new_value={
+                "filename": filename,
+                "created": created,
+                "skipped_duplicates": len(skipped_duplicates),
+                "row_errors": len(row_errors),
+            },
         )
+        db.commit()
 
-    created = 0
-    skipped_duplicates: list[str] = []
-    row_errors: list[str] = []
-    seen_in_file: set[str] = set()  # catch duplicate SAP IDs within the uploaded file itself
-
-    for line_num, row in enumerate(reader, start=2):  # header is line 1
-        sap_id = (row.get("sap_id") or "").strip()
-        name = (row.get("name") or "").strip()
-        branch = (row.get("branch") or "").strip()
-        year = (row.get("year") or "").strip() or None
-        gender = (row.get("gender") or "").strip() or None
-        email = (row.get("email") or "").strip() or None
-
-        if not sap_id or not name or not branch or not year:
-            row_errors.append(f"Line {line_num}: missing sap_id/name/branch/year, skipped")
-            continue
-
-        if sap_id in seen_in_file:
-            row_errors.append(f"Line {line_num}: duplicate SAP ID '{sap_id}' within this file, skipped")
-            continue
-        seen_in_file.add(sap_id)
-
-        existing = db.query(Student).filter(Student.sap_id == sap_id).first()
-        if existing:
-            skipped_duplicates.append(sap_id)
-            continue
-
-        student = Student(sap_id=sap_id, name=name, branch=branch, year=year, gender=gender, email=email)
-        db.add(student)
-        created += 1
-
-    db.flush()  # assign IDs without fully committing yet, so audit log record_id is stable
-
-    write_audit_log(
-        db,
-        user_id=admin.id,
-        action="roster_imported",
-        table_name="students",
-        record_id=0,  # batch action, not a single record
-        new_value={
-            "filename": file.filename,
-            "created": created,
-            "skipped_duplicates": len(skipped_duplicates),
-            "row_errors": len(row_errors),
-        },
-    )
-    db.commit()
-
-    return RosterImportResult(created=created, skipped_duplicates=skipped_duplicates, row_errors=row_errors)
+        return RosterImportResult(created=created, skipped_duplicates=skipped_duplicates, row_errors=row_errors)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        trace = traceback.format_exc()
+        raise HTTPException(status_code=500, detail=f"Server Crash: {trace}")
 
 @router.get("/roster/sample")
 def download_sample_csv():
