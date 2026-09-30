@@ -48,7 +48,7 @@ def _build_html(student_name: str, sap_id: str) -> str:
                 <p style="margin:0 0 12px;font-size:15px;">Hi {student_name},</p>
                 <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#b7b7c2;">
                   You're confirmed for {EVENT_NAME}. Show the QR code below at the
-                  entry gate - a volunteer will scan it and hand you your wristband.
+                  entry gate - a volunteer will scan it and allow your entry.
                   Each code works once, so don't share a screenshot with anyone else.
 
                 </p>
@@ -126,7 +126,7 @@ def send_pass_email(
         f"Hi {student_name},\n\n"
         f"You're confirmed for {EVENT_NAME} at {EVENT_VENUE} on {EVENT_DATE}.\n"
         f"Your entry pass QR code is attached as a PNG - show it at the gate "
-        f"for your wristband. SAP ID: {sap_id}\n"
+        f"for your entry. SAP ID: {sap_id}\n"
     )
     alt.attach(MIMEText(text_fallback, "plain"))
     alt.attach(MIMEText(_build_html(student_name, sap_id), "html"))
