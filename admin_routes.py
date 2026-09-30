@@ -403,6 +403,7 @@ def list_students_admin(
             sap_id=s.sap_id,
 
             name=s.name,
+            year=s.year,
             email=s.email,
             branch=s.branch,
             payment_status=s.payment_status,

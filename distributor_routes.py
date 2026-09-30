@@ -521,7 +521,8 @@ def my_sales(
     return [
         MySaleSummary(
             sap_id=r.sap_id,
- student_id=r.id,name=r.name, email=r.email, pass_type=r.pass_type, payment_mode=r.payment_mode,
+            year=r.year,
+            name=r.name, email=r.email, pass_type=r.pass_type, payment_mode=r.payment_mode,
             amount=r.amount, payment_status=r.payment_status,
             sold_at=r.sold_at.isoformat() if r.sold_at else None,
         )
