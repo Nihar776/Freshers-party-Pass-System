@@ -54,6 +54,7 @@ class StudentSearchResult(BaseModel):
     sap_id: str
     name: str
     branch: str
+    year: Optional[str] = None
     email: Optional[str] = None
     gender: Optional[str]
     payment_status: PaymentStatus
@@ -78,6 +79,7 @@ class GroupSellResult(BaseModel):
 class MySaleSummary(BaseModel):
     sap_id: str
     name: str
+    year: Optional[str] = None
     email: Optional[str] = None
     pass_type: PassType
     payment_mode: Optional[PaymentMode]

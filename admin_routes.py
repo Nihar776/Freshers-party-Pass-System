@@ -639,7 +639,7 @@ def cancel_reservation_admin(order_id: int, db: Session = Depends(get_db), admin
     if not order: raise HTTPException(status_code=404)
     order.status = PaymentStatus.EXPIRED
     
-    write_audit_log(db, admin.id, "reservation_cancelled_admin", "online_orders", order.id, {"order_ref": order.order_reference})
+    write_audit_log(db, user_id=admin.id, action="reservation_cancelled_admin", table_name="online_orders", record_id=order.id, old_value={"order_ref": order.order_reference})
     db.commit()
     return {"message": "Reservation cancelled"}
 
@@ -668,7 +668,7 @@ def update_reservation_members(order_id: int, req: UpdateReservationMembers, db:
     for sap in req.sap_ids:
         db.add(OrderMember(order_id=order.id, sap_id=sap, locked_price=per_person))
         
-    write_audit_log(db, admin.id, "reservation_members_edited", "online_orders", order.id, {"old": old_members, "new": req.sap_ids})
+    write_audit_log(db, user_id=admin.id, action="reservation_members_edited", table_name="online_orders", record_id=order.id, new_value={"old": old_members, "new": req.sap_ids})
     db.commit()
     return {"message": "Members updated"}
 
