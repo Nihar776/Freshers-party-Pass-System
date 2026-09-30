@@ -327,16 +327,20 @@ def get_price_quote(req: PriceQuoteRequest, db: Session = Depends(get_db)):
     is_group = count > 1
     active_rule = get_active_rule(db, is_group=is_group)
     
-    rule_price = total_base
     rule_name = None
-    if active_rule:
-        rule_name = active_rule.name
-        if active_rule.pricing_effect == PricingEffect.FIXED:
-            rule_price = active_rule.discount_value if not is_group else active_rule.group_total_price
-        elif active_rule.pricing_effect == PricingEffect.FLAT_OFF:
-            rule_price = max(0.0, total_base - active_rule.discount_value)
-        elif active_rule.pricing_effect == PricingEffect.PERCENT_OFF:
-            rule_price = max(0.0, total_base * (1.0 - (active_rule.discount_value / 100.0)))
+    rule_price = total_base
+    
+    if active_rule and active_rule.type.value == "GROUP":
+        if is_group and active_rule.group_size != count:
+            pass # ignore group rule if size doesn't match
+        else:
+            rule_name = active_rule.name
+            if active_rule.pricing_effect == PricingEffect.FIXED:
+                rule_price = active_rule.group_total_price
+            elif active_rule.pricing_effect == PricingEffect.FLAT_OFF:
+                rule_price = max(0.0, total_base - active_rule.discount_value)
+            elif active_rule.pricing_effect == PricingEffect.PERCENT_OFF:
+                rule_price = max(0.0, total_base * (1.0 - (active_rule.discount_value / 100.0)))
 
     coupon_price = total_base
     coupon_info = None
@@ -350,10 +354,16 @@ def get_price_quote(req: PriceQuoteRequest, db: Session = Depends(get_db)):
         if dc.max_uses is not None and dc.times_used >= dc.max_uses:
             raise HTTPException(status_code=400, detail="This coupon code has reached its usage limit")
             
+        if dc.required_group_size is not None and dc.required_group_size != count:
+            raise HTTPException(status_code=400, detail=f"This coupon requires exactly {dc.required_group_size} members.")
+            
         dc_type = dc.discount_type.value if hasattr(dc.discount_type, "value") else str(dc.discount_type)
         if dc_type == "percentage":
             coupon_price = max(0.0, total_base * (1.0 - (dc.discount_value / 100.0)))
             discount_desc = f"{dc.discount_value}% off"
+        elif dc_type == "fixed":
+            coupon_price = dc.discount_value
+            discount_desc = f"Fixed Price ₹{dc.discount_value}"
         else:
             coupon_price = max(0.0, total_base - dc.discount_value)
             discount_desc = f"₹{dc.discount_value} off"
@@ -366,14 +376,21 @@ def get_price_quote(req: PriceQuoteRequest, db: Session = Depends(get_db)):
         }
 
     # Best deal
-    if req.coupon_code and active_rule:
+    if req.coupon_code and rule_name:
         final_price = min(rule_price, coupon_price)
     elif req.coupon_code:
         final_price = coupon_price
-    elif active_rule:
+    elif rule_name:
         final_price = rule_price
     else:
         final_price = total_base
+
+    if final_price == rule_price and rule_name and not (req.coupon_code and coupon_price < rule_price):
+        # The auto-group rule is better or the only one
+        coupon_info = None # override to rule details
+        auto_rule_name = rule_name
+    else:
+        auto_rule_name = None
 
     return {
         "base_price": base_price,
@@ -382,7 +399,8 @@ def get_price_quote(req: PriceQuoteRequest, db: Session = Depends(get_db)):
         "final_price": round(final_price, 2),
         "discount_amount": round(max(0.0, total_base - final_price), 2),
         "rule_name": rule_name,
-        "coupon": coupon_info
+        "coupon_info": coupon_info,
+        "auto_rule_name": auto_rule_name
     }
 
 
@@ -439,26 +457,26 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
     # Lock the rules table exclusively to serialize concurrent reservations
     db.execute(text("LOCK TABLE discount_rules IN EXCLUSIVE MODE"))
     
-    active_rule = get_active_rule(db, is_group=is_group)
     base_price = settings.get("base_price", 500)
     
-    if is_group and active_rule and active_rule.group_size != len(all_saps):
-        raise HTTPException(status_code=400, detail=f"Group rule requires exactly {active_rule.group_size} members.")
-
     total_base = base_price * len(all_saps)
     locked_price = total_base
     rule_applied = None
     applied_label = None
 
-    if active_rule:
-        rule_applied = active_rule
-        applied_label = active_rule.name
-        if active_rule.pricing_effect == PricingEffect.FIXED:
-            locked_price = active_rule.discount_value if not is_group else active_rule.group_total_price
-        elif active_rule.pricing_effect == PricingEffect.FLAT_OFF:
-            locked_price = max(0.0, total_base - active_rule.discount_value)
-        elif active_rule.pricing_effect == PricingEffect.PERCENT_OFF:
-            locked_price = max(0.0, total_base * (1.0 - (active_rule.discount_value / 100.0)))
+    active_rule = get_active_rule(db, is_group=is_group)
+    if active_rule and active_rule.type.value == "GROUP":
+        if is_group and active_rule.group_size != len(all_saps):
+            pass # ignore group rule if size doesn't match
+        else:
+            rule_applied = active_rule
+            applied_label = active_rule.name
+            if active_rule.pricing_effect == PricingEffect.FIXED:
+                locked_price = active_rule.group_total_price
+            elif active_rule.pricing_effect == PricingEffect.FLAT_OFF:
+                locked_price = max(0.0, total_base - active_rule.discount_value)
+            elif active_rule.pricing_effect == PricingEffect.PERCENT_OFF:
+                locked_price = max(0.0, total_base * (1.0 - (active_rule.discount_value / 100.0)))
 
     dc = None
     if req.coupon_code:
@@ -471,21 +489,30 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
         if dc.max_uses is not None and dc.times_used >= dc.max_uses:
             raise HTTPException(status_code=400, detail="Coupon code usage limit reached")
 
+        if dc.required_group_size is not None and dc.required_group_size != len(all_saps):
+            raise HTTPException(status_code=400, detail=f"Coupon code requires exactly {dc.required_group_size} members.")
+
         dc_type = dc.discount_type.value if hasattr(dc.discount_type, "value") else str(dc.discount_type)
         if dc_type == "percentage":
             coupon_price = max(0.0, total_base * (1.0 - (dc.discount_value / 100.0)))
+        elif dc_type == "fixed":
+            coupon_price = dc.discount_value
         elif dc_type == "flat":
             coupon_price = max(0.0, total_base - dc.discount_value)
         else:
             coupon_price = total_base
 
-        if active_rule:
-            locked_price = min(locked_price, coupon_price)
-            if coupon_price <= locked_price:
+        if rule_applied:
+            if coupon_price < locked_price:
+                locked_price = coupon_price
                 applied_label = f"Coupon: {dc.code}"
+                rule_applied = None
         else:
             locked_price = coupon_price
             applied_label = f"Coupon: {dc.code}"
+        
+        # We don't deduct dc.times_used here yet. It gets deducted upon successful PAYMENT/VERIFICATION.
+        # Wait, if we reserve, maybe we hold it? No, keeping it simple.
 
         dc.times_used += 1
 

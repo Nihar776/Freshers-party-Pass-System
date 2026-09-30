@@ -70,6 +70,7 @@ class FundType(str, enum.Enum):
 class DiscountType(str, enum.Enum):
     PERCENTAGE = "percentage"
     FLAT = "flat"
+    FIXED = "fixed"
 
 
 class PassType(str, enum.Enum):
@@ -299,6 +300,7 @@ class DiscountCode(Base):
     discount_value = Column(Float, nullable=False)
     max_uses = Column(Integer, nullable=True)
     times_used = Column(Integer, default=0, nullable=False)
+    required_group_size = Column(Integer, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

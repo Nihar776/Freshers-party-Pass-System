@@ -103,6 +103,37 @@ def create_rule(payload: RuleCreate, db: Session = Depends(get_db), admin: User 
         )
         db.add(cond)
         
+    # Automatically generate DiscountCode if not GROUP
+    import re
+    if rule.type.value != "GROUP":
+        base_code = re.sub(r'[^A-Z0-9]', '', rule.name.upper())
+        if not base_code:
+            base_code = f"RULE{rule.id}"
+            
+        from schema_v2 import DiscountCode, DiscountType
+        existing = db.query(DiscountCode).filter(DiscountCode.code == base_code).first()
+        suffix = 1
+        final_code = base_code
+        while existing:
+            final_code = f"{base_code}{suffix}"
+            existing = db.query(DiscountCode).filter(DiscountCode.code == final_code).first()
+            suffix += 1
+            
+        dtype = DiscountType.FLAT if rule.pricing_effect.value == "FLAT_OFF" else DiscountType.PERCENTAGE
+        if rule.pricing_effect.value == "FIXED":
+            dtype = DiscountType.FIXED
+            
+        dc = DiscountCode(
+            code=final_code,
+            discount_type=dtype,
+            discount_value=rule.discount_value if rule.pricing_effect.value != "FIXED" else rule.per_person_price,
+            max_uses=rule.usage_cap,
+            required_group_size=rule.group_size,
+            is_active=rule.is_enabled,
+            created_by_id=admin.id
+        )
+        db.add(dc)
+
     db.commit()
     return {"message": "Rule created", "id": rule.id}
 

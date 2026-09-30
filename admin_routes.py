@@ -122,6 +122,7 @@ class DiscountCodeCreate(BaseModel):
     discount_type: DiscountType
     discount_value: float
     max_uses: Optional[int] = None
+    required_group_size: Optional[int] = None
 
 
 class DiscountCodeResponse(BaseModel):
@@ -130,6 +131,7 @@ class DiscountCodeResponse(BaseModel):
     discount_type: DiscountType
     discount_value: float
     max_uses: Optional[int]
+    required_group_size: Optional[int]
     times_used: int
     is_active: bool
     created_at: str
@@ -1135,6 +1137,7 @@ def create_discount_code(
         discount_type=payload.discount_type,
         discount_value=payload.discount_value,
         max_uses=payload.max_uses,
+        required_group_size=payload.required_group_size,
         created_by_id=admin.id
     )
     db.add(dc)
@@ -1145,12 +1148,31 @@ def create_discount_code(
         table_name="discount_codes", record_id=dc.id,
         new_value={"code": dc.code, "type": dc.discount_type.value, "value": dc.discount_value, "max": dc.max_uses}
     )
+
+    # Auto generate a DiscountRule for the code
+    from schema_v2 import DiscountRule, DiscountRuleType, PricingEffect
+    pe = PricingEffect.PERCENT_OFF if dc.discount_type.value == "percentage" else (PricingEffect.FIXED if dc.discount_type.value == "fixed" else PricingEffect.FLAT_OFF)
+    dr = DiscountRule(
+        name=f"Code: {dc.code}",
+        type=DiscountRuleType.CODE,
+        is_enabled=True,
+        usage_cap=dc.max_uses,
+        group_size=dc.required_group_size,
+        group_total_price=dc.discount_value if pe == PricingEffect.FIXED else None,
+        per_person_price=dc.discount_value if pe == PricingEffect.FIXED else None,
+        discount_value=dc.discount_value,
+        pricing_effect=pe,
+        auto_applied=False
+    )
+    db.add(dr)
+    
     db.commit()
     db.refresh(dc)
 
     return DiscountCodeResponse(
         id=dc.id, code=dc.code, discount_type=dc.discount_type,
         discount_value=dc.discount_value, max_uses=dc.max_uses,
+        required_group_size=dc.required_group_size,
         times_used=dc.times_used, is_active=dc.is_active,
         created_at=dc.created_at.isoformat()
     )
@@ -1198,6 +1220,7 @@ def list_discount_codes(
         DiscountCodeResponse(
             id=c.id, code=c.code, discount_type=c.discount_type,
             discount_value=c.discount_value, max_uses=c.max_uses,
+            required_group_size=c.required_group_size,
             times_used=c.times_used, is_active=c.is_active,
             created_at=c.created_at.isoformat()
         ) for c in codes
@@ -1228,6 +1251,7 @@ def toggle_discount_code(
     return DiscountCodeResponse(
         id=dc.id, code=dc.code, discount_type=dc.discount_type,
         discount_value=dc.discount_value, max_uses=dc.max_uses,
+        required_group_size=dc.required_group_size,
         times_used=dc.times_used, is_active=dc.is_active,
         created_at=dc.created_at.isoformat()
     )

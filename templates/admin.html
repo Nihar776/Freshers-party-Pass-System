@@ -506,15 +506,22 @@
                             <select id="dc-type" class="form-control">
                                 <option value="percentage">Percentage off (%)</option>
                                 <option value="flat">Flat amount off (₹)</option>
+                                <option value="fixed">Fixed Price (₹)</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Value <span class="text-danger">*</span></label>
                             <input type="number" id="dc-value" class="form-control" placeholder="e.g. 10 for 10% or 100 for ₹100">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Max Uses <span class="text-muted text-sm">(blank = unlimited)</span></label>
-                            <input type="number" id="dc-max" class="form-control" placeholder="e.g. 25">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">Max Uses <span class="text-muted text-sm">(blank = unlimited)</span></label>
+                                <input type="number" id="dc-max" class="form-control" placeholder="e.g. 25">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Required Group Size <span class="text-muted text-sm">(blank = any)</span></label>
+                                <input type="number" id="dc-group" class="form-control" placeholder="e.g. 8">
+                            </div>
                         </div>
                         <button class="btn btn-primary" style="width:100%;" onclick="createDiscountCode()">Create Code</button>
                     </div>
@@ -531,6 +538,7 @@
                                     <tr>
                                         <th>Code</th>
                                         <th>Value</th>
+                                        <th>Req. Size</th>
                                         <th>Uses</th>
                                         <th>Status</th>
                                         <th>Action</th>
@@ -1675,7 +1683,8 @@
                 document.querySelector('#discounts-table tbody').innerHTML = codes.map(c => `
                     <tr>
                         <td class="font-semibold">${c.code}</td>
-                        <td>${c.discount_type === 'percentage' ? c.discount_value + '%' : '₹' + c.discount_value}</td>
+                        <td>${c.discount_type === 'percentage' ? c.discount_value + '%' : (c.discount_type === 'fixed' ? 'Fixed ₹' + c.discount_value : '₹' + c.discount_value + ' Off')}</td>
+                        <td>${c.required_group_size || 'Any'}</td>
                         <td>${c.times_used} / ${c.max_uses || '∞'}</td>
                         <td><span class="badge ${c.is_active ? 'badge-success' : 'badge-danger'}">${c.is_active ? 'Active' : 'Inactive'}</span></td>
                         <td>
@@ -1696,6 +1705,8 @@
             const value = parseFloat(document.getElementById('dc-value').value);
             const maxInput = document.getElementById('dc-max').value.trim();
             const maxUses = maxInput ? parseInt(maxInput, 10) : null;
+            const groupInput = document.getElementById('dc-group').value.trim();
+            const reqGroupSize = groupInput ? parseInt(groupInput, 10) : null;
 
             if (!code || isNaN(value)) {
                 showToast('Please enter a code and valid discount value', 'error');
@@ -1706,7 +1717,7 @@
                 const res = await fetch('/admin/discount-codes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code, discount_type: type, discount_value: value, max_uses: maxUses })
+                    body: JSON.stringify({ code, discount_type: type, discount_value: value, max_uses: maxUses, required_group_size: reqGroupSize })
                 });
                 
                 if (res.ok) {
@@ -1714,6 +1725,7 @@
                     document.getElementById('dc-code').value = '';
                     document.getElementById('dc-value').value = '';
                     document.getElementById('dc-max').value = '';
+                    document.getElementById('dc-group').value = '';
                     loadDiscountCodes();
                 } else {
                     const data = await res.json();

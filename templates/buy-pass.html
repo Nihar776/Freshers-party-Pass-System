@@ -484,6 +484,16 @@
                     <div class="price-value">₹<span id="preview-price">—</span></div>
                 </div>
 
+                <!-- Coupon -->
+                <div class="form-group" id="coupon-group">
+                    <label class="form-label">Have a promo code?</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="couponInput" class="form-control" placeholder="Enter coupon code" style="flex:1; text-transform:uppercase;">
+                        <button class="btn btn-secondary" style="padding: 0 16px;" onclick="applyCoupon()" id="btn-apply-coupon">Apply</button>
+                    </div>
+                    <div id="coupon-msg" style="font-size:12px; margin-top:4px;"></div>
+                </div>
+
                 <!-- Food preference -->
                 <div class="form-group" id="food-group" style="display:none;">
                     <label class="form-label">Food Preference</label>
@@ -965,16 +975,100 @@
         });
 
         /* ─────────────────── Step 3: Price preview ─── */
-        async function fetchPricePreview() {
-            // Just fetch settings for live price; actual locking happens on reserve
+        let appliedCoupon = null;
+        
+        async function applyCoupon() {
+            const code = document.getElementById('couponInput').value.trim();
+            const btn = document.getElementById('btn-apply-coupon');
+            const msg = document.getElementById('coupon-msg');
+            
+            if (!code) {
+                appliedCoupon = null;
+                msg.textContent = '';
+                fetchPricePreview();
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>';
+            msg.textContent = '';
+            
             try {
-                const r = await fetch('/admin/config');
-                if (r.ok) {
-                    const cfg = await r.json();
-                    lockedPrice = cfg.base_price || 500;
-                    document.getElementById('preview-price').textContent = lockedPrice;
+                const r = await fetch('/api/student/price-quote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ group_size: Math.max(1, groupMembers.length), coupon_code: code })
+                });
+                
+                if (!r.ok) {
+                    const d = await r.json();
+                    msg.textContent = d.detail || 'Invalid coupon';
+                    msg.style.color = 'var(--danger)';
+                    appliedCoupon = null;
+                } else {
+                    const data = await r.json();
+                    appliedCoupon = code;
+                    msg.textContent = data.coupon_info ? data.coupon_info.desc + ' applied!' : 'Code applied!';
+                    msg.style.color = 'var(--success)';
+                    
+                    document.getElementById('preview-price').textContent = data.final_price;
+                    const ruleEl = document.getElementById('preview-rule');
+                    if (data.coupon_info) {
+                        ruleEl.textContent = `Applied: ${data.coupon_info.code}`;
+                        ruleEl.style.display = 'block';
+                        ruleEl.className = 'rule-badge badge-success';
+                    } else {
+                        ruleEl.textContent = '';
+                        ruleEl.style.display = 'none';
+                    }
                 }
-            } catch (e) { }
+            } catch(e) {
+                msg.textContent = 'Error verifying code';
+                msg.style.color = 'var(--danger)';
+            }
+            btn.disabled = false;
+            btn.textContent = 'Apply';
+            
+            // if we failed, re-fetch without code
+            if (!appliedCoupon) {
+                fetchPricePreview();
+            }
+        }
+
+        async function fetchPricePreview() {
+            try {
+                const code = appliedCoupon;
+                const r = await fetch('/api/student/price-quote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ group_size: Math.max(1, groupMembers.length), coupon_code: code })
+                });
+                if (r.ok) {
+                    const data = await r.json();
+                    document.getElementById('preview-price').textContent = data.final_price;
+                    const ruleEl = document.getElementById('preview-rule');
+                    
+                    if (data.coupon_info) {
+                        ruleEl.textContent = `Applied: ${data.coupon_info.code}`;
+                        ruleEl.style.display = 'block';
+                        ruleEl.className = 'rule-badge badge-success';
+                    } else if (data.auto_rule_name) {
+                        ruleEl.textContent = `Applied: ${data.auto_rule_name}`;
+                        ruleEl.style.display = 'block';
+                        ruleEl.className = 'rule-badge badge-success';
+                    } else {
+                        ruleEl.textContent = '';
+                        ruleEl.style.display = 'none';
+                    }
+                } else if (code) {
+                    // if coupon fails, clear it and retry
+                    appliedCoupon = null;
+                    document.getElementById('couponInput').value = '';
+                    document.getElementById('coupon-msg').textContent = 'Coupon no longer valid for this group size';
+                    document.getElementById('coupon-msg').style.color = 'var(--danger)';
+                    fetchPricePreview();
+                }
+            } catch (e) { console.error(e); }
         }
 
         /* ─────────────────── Step 3: Friend search ─── */
@@ -1044,6 +1138,7 @@
         function removeMember(idx) {
             groupMembers.splice(idx, 1);
             renderMembersList();
+            fetchPricePreview();
         }
 
         /* ─────────────────── Friend Verify Modal Logic ─ */
@@ -1128,6 +1223,7 @@
                     document.getElementById('friendSearch').value = '';
                     document.getElementById('friendResults').innerHTML = '';
                     renderMembersList();
+                    fetchPricePreview();
                     closeFriendVerify();
                 }
             } catch (e) {
