@@ -385,6 +385,20 @@
             }
         }
 
+        // --- Masking ---
+        function maskSapId(sap) {
+            if (!sap) return '';
+            sap = String(sap);
+            if (sap.length > 4) return sap.substring(0, sap.length - 4) + '****';
+            return sap;
+        }
+        function maskEmail(email) {
+            if (!email) return 'No email';
+            const parts = email.split('@');
+            if (parts.length === 2) return parts[0][0] + '****@' + parts[1];
+            return email;
+        }
+
         // --- Tabs ---
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -431,7 +445,7 @@
                     div.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                         <div>
                                             <div class="name">${s.name} <span class="badge ${s.payment_status}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_',' ')}</span></div>
-                                            <div class="meta">${s.sap_id} · ${s.branch}${s.gender ? ' · ' + s.gender : ''}${s.email ? ' · ' + s.email : ''}</div>
+                                            <div class="meta">Year ${s.year || '?'} · ${s.branch} · ${maskSapId(s.sap_id)} · ${maskEmail(s.email)}</div>
                                         </div>
                                       </div>`;
 
@@ -503,7 +517,7 @@
                 <div class="cart-item">
                     <div>
                         <div class="font-semibold">${s.name}</div>
-                        <div class="text-muted text-sm">${s.sap_id}${s.email ? ' · ' + s.email : ''}</div>
+                        <div class="text-muted text-sm">Year ${s.year || '?'} · ${s.branch} · ${maskSapId(s.sap_id)} · ${maskEmail(s.email)}</div>
                     </div>
                     <div class="cart-item-actions">
                         <label class="flex items-center gap-2" style="cursor: pointer;">

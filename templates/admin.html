@@ -596,6 +596,10 @@
         <div class="panel" style="width: 400px; position: relative;">
             <h3 class="mb-4">Override Student Record</h3>
             <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="edit-email" class="form-control" placeholder="Student Email">
+            </div>
+            <div class="form-group">
                 <label class="form-label">Payment Status</label>
                 <select id="edit-status" class="form-control" onchange="toggleEditPaymentFields()">
                     <option value="not_purchased">Not Purchased</option>
@@ -951,6 +955,20 @@
             }
         }
 
+        // --- Masking ---
+        function maskSapId(sap) {
+            if (!sap) return '';
+            sap = String(sap);
+            if (sap.length > 4) return sap.substring(0, sap.length - 4) + '****';
+            return sap;
+        }
+        function maskEmail(email) {
+            if (!email) return 'No email';
+            const parts = email.split('@');
+            if (parts.length === 2) return parts[0][0] + '****@' + parts[1];
+            return email;
+        }
+
         async function loadStudents() {
             const search = document.getElementById('student-search').value;
             const status = document.getElementById('student-filter').value;
@@ -975,12 +993,11 @@
                     <td><input type="checkbox" class="student-checkbox" value="${s.id}"></td>
                     <td><span class="badge badge-neutral" style="font-family: monospace;">${skip + idx + 1}</span></td>
                     <td class="font-semibold">${s.name}</td>
-                    <td class="text-muted">${s.sap_id}<br><small>${s.email || 'No email'}</small></td>
-                    <td>${s.branch}</td>
+                    <td class="text-muted text-sm">Year ${s.year || '?'} · ${s.branch}<br>${maskSapId(s.sap_id)} · ${maskEmail(s.email)}</td>
                     <td><span class="badge ${badgeClass}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_', ' ')}</span></td>
                     <td>${s.is_used ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-neutral">No</span>'}</td>
                     <td>
-                        <button class="btn btn-secondary py-1 px-3 text-sm" style="margin-right: 4px;" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}', '${s.food_preference}')">Edit</button>
+                        <button class="btn btn-secondary py-1 px-3 text-sm" style="margin-right: 4px;" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}', '${s.food_preference}', '${s.email || ''}')">Edit</button>
                         ${s.payment_status === 'verified' ? `<button class="btn btn-secondary py-1 px-3 text-sm" onclick="resendEmail('${s.sap_id}')">Resend Mail</button>` : ''}
                     </td>
                 </tr>
@@ -1077,8 +1094,11 @@
                             ${members.map(m => `
                                 <tr>
                                     <td class="text-muted">${m.serial_number || '-'}</td>
-                                    <td class="font-semibold">${m.sap_id}</td>
-                                    <td>${m.name}</td>
+                                    <td class="text-muted text-sm">${maskSapId(m.sap_id)}</td>
+                                    <td>
+                                        <div class="font-semibold">${m.name}</div>
+                                        <div class="text-muted text-xs">Year ${m.year || '?'} · ${m.branch} · ${maskEmail(m.email)}</div>
+                                    </td>
                                     <td>₹${m.amount ? m.amount.toFixed(0) : 0}</td>
                                 </tr>
                             `).join('')}
@@ -1215,11 +1235,12 @@
             }
         }
 
-        function openEditModal(id, currentStatus, currentUsed, paymentMode, foodPref) {
+        function openEditModal(id, currentStatus, currentUsed, paymentMode, foodPref, currentEmail) {
             currentEditStudentId = id;
             document.getElementById('edit-status').value = currentStatus;
             document.getElementById('edit-used').value = currentUsed.toString();
             document.getElementById('edit-food-pref').value = foodPref || 'veg';
+            document.getElementById('edit-email').value = currentEmail || '';
             
             const screenshotBtn = document.getElementById('screenshot-btn-container');
             if (paymentMode === 'upi') {
@@ -1263,11 +1284,13 @@
             const status = document.getElementById('edit-status').value;
             const used = document.getElementById('edit-used').value;
             const foodPref = document.getElementById('edit-food-pref').value;
+            const email = document.getElementById('edit-email').value.trim();
             
             const formData = new FormData();
             formData.append('payment_status', status);
             formData.append('is_used', used === 'true');
             formData.append('food_preference', foodPref);
+            formData.append('email', email);
             
             if (status === 'verified') {
                 formData.append('payment_mode', document.getElementById('edit-payment-mode').value);

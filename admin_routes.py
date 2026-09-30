@@ -680,6 +680,7 @@ async def override_student(
     food_preference: Optional[FoodPreference] = Form(None),
     payment_mode: Optional[PaymentMode] = Form(None),
     utr_number: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
     screenshot: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(*ADMIN_ONLY)),
@@ -696,7 +697,8 @@ async def override_student(
         "is_used": student.is_used,
         "food_preference": old_food,
         "payment_mode": old_mode,
-        "utr_number": student.utr_number
+        "utr_number": student.utr_number,
+        "email": student.email
     }
     
     new_snapshot = {}
@@ -723,6 +725,9 @@ async def override_student(
     if utr_number is not None:
         student.utr_number = utr_number
         new_snapshot["utr_number"] = utr_number
+    if email is not None:
+        student.email = email
+        new_snapshot["email"] = email
         
     if screenshot is not None:
         ss_bytes = await screenshot.read()

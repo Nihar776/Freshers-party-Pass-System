@@ -424,14 +424,21 @@
 
                 <!-- Email Prompt (Shown ONLY if student has no email in DB; silently removed if email exists) -->
                 <div id="email-prompt-box" class="form-group" style="display:none; margin-bottom: 20px;">
-                    <p class="step-sub" style="margin-bottom:12px;">We don't have an email on record for you. Please enter your email address to receive your OTP and pass.</p>
-                    <label class="form-label">Email Address <span style="color:var(--danger);">*</span></label>
-                    <div style="display:flex; gap:8px;">
+                    <p class="step-sub" style="margin-bottom:12px;">We don't have contact info on record for you. Please enter your email and phone number to receive your OTP and pass.</p>
+                    
+                    <div style="margin-bottom:12px;">
+                        <label class="form-label">Email Address <span style="color:var(--danger);">*</span></label>
                         <input type="email" id="customEmailInput" class="form-control" placeholder="e.g. yourname@gmail.com" autocomplete="email">
-                        <button class="btn btn-primary" id="btn-send-custom-otp" onclick="submitCustomEmailAndSendOtp()" style="white-space:nowrap; padding:0 18px;">
-                            Send OTP →
-                        </button>
                     </div>
+                    
+                    <div style="margin-bottom:16px;">
+                        <label class="form-label">Phone Number <span style="color:var(--danger);">*</span></label>
+                        <input type="tel" id="customPhoneInput" class="form-control" placeholder="10-digit number" autocomplete="tel">
+                    </div>
+                    
+                    <button class="btn btn-primary" id="btn-send-custom-otp" onclick="submitCustomEmailAndSendOtp()" style="width: 100%;">
+                        Send OTP →
+                    </button>
                 </div>
 
                 <!-- OTP Section -->
@@ -746,7 +753,7 @@
                                     ${taken ? s.payment_status.replace(/_/g, ' ') : 'Available'}
                                 </span>
                             </div>
-                            <div class="meta">${s.masked_sap_id} · ${s.branch}</div>
+                            <div class="meta">Year ${s.year || '?'} · ${s.branch} · ${s.masked_sap_id} · ${s.masked_email || 'No email'}</div>
                         </div>
                         ${!taken ? '<span style="color:var(--primary);font-size:13px;font-weight:600;">Select →</span>' : ''}
                     `;
@@ -789,8 +796,9 @@
                 emailBox.style.display = 'block';
                 otpBox.style.display = 'none';
                 resendWrapper.style.display = 'none';
-                title.textContent = 'Enter your email';
+                title.textContent = 'Enter your contact info';
                 document.getElementById('customEmailInput').value = '';
+                document.getElementById('customPhoneInput').value = '';
                 setStep(2);
                 setTimeout(() => document.getElementById('customEmailInput').focus(), 150);
             }
@@ -798,12 +806,18 @@
 
         async function submitCustomEmailAndSendOtp() {
             const email = document.getElementById('customEmailInput').value.trim();
+            const phone = document.getElementById('customPhoneInput').value.trim();
+            
             if (!email) {
                 showToast('Please enter an email address', 'error');
                 return;
             }
             if (!email.includes('@') || !email.includes('.')) {
                 showToast('Please enter a valid email address', 'error');
+                return;
+            }
+            if (!phone || phone.length < 10) {
+                showToast('Please enter a valid 10-digit phone number', 'error');
                 return;
             }
             currentEnteredEmail = email;
@@ -816,7 +830,7 @@
                 const res = await fetch('/api/student/send-otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sap_id: currentSapId, email: email })
+                    body: JSON.stringify({ sap_id: currentSapId, email: email, phone: phone })
                 });
                 const d = await res.json();
                 if (!res.ok) {
@@ -991,7 +1005,7 @@
                         div.innerHTML = `
                             <div>
                                 <div class="name">${s.name}</div>
-                                <div class="meta">${s.masked_sap_id} · ${s.branch}${s.year ? ` (Year ${s.year})` : ''}</div>
+                                <div class="meta">Year ${s.year || '?'} · ${s.branch} · ${s.masked_sap_id} · ${s.masked_email || 'No email'}</div>
                             </div>
                             ${!taken ? '<span style="color:var(--primary);font-size:13px;">+ Add</span>' : '<span style="font-size:12px;color:var(--text-muted);">Unavailable</span>'}
                         `;
