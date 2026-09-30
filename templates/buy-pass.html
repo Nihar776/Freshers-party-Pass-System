@@ -488,8 +488,7 @@
                 <div class="form-group" id="coupon-group">
                     <label class="form-label">Have a promo code?</label>
                     <div style="display:flex; gap:8px;">
-                        <input type="text" id="couponInput" class="form-control" placeholder="Enter coupon code" style="flex:1; text-transform:uppercase;">
-                        <button class="btn btn-secondary" style="padding: 0 16px;" onclick="applyCoupon()" id="btn-apply-coupon">Apply</button>
+                        <input type="text" id="couponInput" class="form-control" placeholder="Type coupon code..." style="flex:1; text-transform:uppercase;">
                     </div>
                     <div id="coupon-msg" style="font-size:12px; margin-top:4px;"></div>
                 </div>
@@ -976,22 +975,25 @@
 
         /* ─────────────────── Step 3: Price preview ─── */
         let appliedCoupon = null;
+        let couponTimeout;
         
-        async function applyCoupon() {
-            const code = document.getElementById('couponInput').value.trim();
-            const btn = document.getElementById('btn-apply-coupon');
-            const msg = document.getElementById('coupon-msg');
-            
-            if (!code) {
+        document.getElementById('couponInput').addEventListener('input', (e) => {
+            clearTimeout(couponTimeout);
+            const val = e.target.value.trim();
+            if (!val) {
                 appliedCoupon = null;
-                msg.textContent = '';
+                document.getElementById('coupon-msg').textContent = '';
                 fetchPricePreview();
                 return;
             }
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span>';
-            msg.textContent = '';
+            document.getElementById('coupon-msg').textContent = 'Checking...';
+            document.getElementById('coupon-msg').style.color = 'var(--text-muted)';
+            couponTimeout = setTimeout(() => applyCoupon(val), 500);
+        });
+
+        async function applyCoupon(code) {
+            const msg = document.getElementById('coupon-msg');
+            msg.textContent = 'Verifying code...';
             
             try {
                 const r = await fetch('/api/student/price-quote', {
@@ -1026,8 +1028,6 @@
                 msg.textContent = 'Error verifying code';
                 msg.style.color = 'var(--danger)';
             }
-            btn.disabled = false;
-            btn.textContent = 'Apply';
             
             // if we failed, re-fetch without code
             if (!appliedCoupon) {
