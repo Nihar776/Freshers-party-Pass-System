@@ -49,13 +49,17 @@ def import_roster(
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.ADMIN)),
 ):
-    if not file.filename.lower().endswith(".csv"):
+    filename = file.filename or "unknown.csv"
+    if not filename.lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="Please upload a .csv file")
 
-    raw = file.file.read().decode("utf-8-sig")  # utf-8-sig strips a stray BOM from Excel exports
-    reader = csv.DictReader(io.StringIO(raw))
-    if reader.fieldnames:
-        reader.fieldnames = [c.strip() for c in reader.fieldnames]
+    try:
+        raw = file.file.read().decode("utf-8-sig")  # utf-8-sig strips a stray BOM from Excel exports
+        reader = csv.DictReader(io.StringIO(raw))
+        if reader.fieldnames:
+            reader.fieldnames = [c.strip() for c in reader.fieldnames]
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid file encoding. Please ensure the file is a valid CSV (not an Excel .xlsx file) and saved with UTF-8 encoding.")
 
     if not reader.fieldnames or not REQUIRED_COLUMNS.issubset(set(reader.fieldnames)):
         raise HTTPException(
