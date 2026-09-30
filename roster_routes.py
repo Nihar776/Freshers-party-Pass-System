@@ -76,8 +76,8 @@ def import_roster(
         gender = (row.get("gender") or "").strip() or None
         email = (row.get("email") or "").strip() or None
 
-        if not sap_id or not name or not branch or not year or not email:
-            row_errors.append(f"Line {line_num}: missing sap_id/name/branch/year/email, skipped")
+        if not sap_id or not name or not branch or not year:
+            row_errors.append(f"Line {line_num}: missing sap_id/name/branch/year, skipped")
             continue
 
         if sap_id in seen_in_file:

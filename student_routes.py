@@ -39,6 +39,7 @@ class SearchRequest(BaseModel):
 
 class SendOtpRequest(BaseModel):
     sap_id: str
+    email: Optional[str] = None
 
 class VerifyOtpRequest(BaseModel):
     sap_id: str
@@ -207,6 +208,7 @@ def search_student(query: str, request: Request, db: Session = Depends(get_db)):
             "year": s.year or "",
             "masked_sap_id": masked_sap,
             "masked_email": masked_email,
+            "has_email": bool(s.email and s.email.strip()),
             "payment_status": status_disp
         })
     return results
@@ -216,12 +218,22 @@ def send_otp(req: SendOtpRequest, request: Request, background_tasks: Background
     check_rate_limit(request)
     student = db.query(Student).filter(Student.sap_id == req.sap_id).first()
     if not student: raise HTTPException(status_code=404, detail="Student not found")
-    if not student.email: raise HTTPException(status_code=400, detail="No email on record. Contact admin.")
     
     # Check if already verified or pending
     if student.payment_status in [PaymentStatus.VERIFIED, PaymentStatus.PENDING_VERIFICATION]:
         raise HTTPException(status_code=400, detail="Pass already purchased or pending.")
         
+    target_email = (student.email or "").strip()
+    if not target_email:
+        provided_email = (req.email or "").strip()
+        if not provided_email:
+            raise HTTPException(status_code=400, detail="Please enter your email address to receive your OTP.")
+        if "@" not in provided_email or "." not in provided_email.split("@")[-1]:
+            raise HTTPException(status_code=400, detail="Please enter a valid email address.")
+        target_email = provided_email
+        student.email = provided_email
+        db.flush()
+
     # Check cooldown
     now = datetime.utcnow()
     if student.otp_last_sent_at and (now - student.otp_last_sent_at).total_seconds() < 60:
@@ -236,11 +248,16 @@ def send_otp(req: SendOtpRequest, request: Request, background_tasks: Background
     
     try:
         from mailer import send_otp_email
-        background_tasks.add_task(send_otp_email, student.email, student.name, otp)
+        background_tasks.add_task(send_otp_email, target_email, student.name, otp)
     except Exception as e:
         pass # The task will be queued and handle its own errors
+
+    masked_target = target_email
+    parts = target_email.split("@")
+    if len(parts) == 2:
+        masked_target = parts[0][0] + "****@" + parts[1]
         
-    return {"message": "OTP sent successfully"}
+    return {"message": "OTP sent successfully", "masked_email": masked_target}
     
 @router.post("/verify-otp")
 def verify_otp(req: VerifyOtpRequest, request: Request, db: Session = Depends(get_db)):

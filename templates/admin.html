@@ -382,8 +382,8 @@
 500123456,Rahul Sharma,CSE,2,M,rahul@example.com
 500123457,Priya Patel,ECE,3,,priya@example.com</code>
                     <div class="text-muted text-sm mt-3">
-                        <strong>Required columns:</strong> sap_id, name, branch, year, email<br>
-                        <strong>Optional columns:</strong> gender (leave blank if unknown)
+                        <strong>Required columns:</strong> sap_id, name, branch, year<br>
+                        <strong>Optional columns:</strong> gender, email (leave blank if unknown)
                     </div>
                 </div>
 
@@ -1538,19 +1538,28 @@
                     method: 'POST',
                     body: formData
                 });
-                const data = await res.json();
-                if (res.ok) {
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch (_) {}
+
+                if (res.ok && data) {
                     let msg = `Created ${data.created} students.`;
                     if (data.skipped_duplicates && data.skipped_duplicates.length > 0) {
                         msg += ` Skipped ${data.skipped_duplicates.length} duplicates.`;
                     }
+                    if (data.row_errors && data.row_errors.length > 0) {
+                        msg += ` (${data.row_errors.length} row warnings).`;
+                    }
                     showToast(`Success: ${msg}`);
                     loadRoster(); // reload table automatically
                 } else {
-                    showToast(data.detail || 'Upload failed', 'error');
+                    const detail = (data && data.detail) ? data.detail : `Upload failed (Status ${res.status}: ${res.statusText || 'Server Error'})`;
+                    showToast(detail, 'error');
                 }
             } catch (err) {
-                showToast('Network error during upload', 'error');
+                console.error("Roster upload error:", err);
+                showToast(err.message === 'Failed to fetch' ? 'Server unreachable. Please ensure the backend server is running.' : 'Network error during upload', 'error');
             }
             e.target.value = ''; // Reset input
         }

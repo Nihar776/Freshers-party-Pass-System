@@ -420,26 +420,42 @@
         <!-- ── STEP 2: OTP ── -->
         <div class="step-card hidden" id="step-otp">
             <div class="step-panel">
-                <h2>Verify your identity</h2>
-                <p class="step-sub">A 6-digit OTP has been sent to <strong id="maskedEmail"
-                        style="color:var(--text);"></strong></p>
+                <h2 id="step2-title">Verify your identity</h2>
 
-                <div class="form-group">
-                    <label class="form-label">OTP</label>
-                    <input type="text" id="otpInput" class="form-control" placeholder="Enter 6-digit OTP" maxlength="6"
-                        inputmode="numeric" autocomplete="one-time-code">
+                <!-- Email Prompt (Shown ONLY if student has no email in DB; silently removed if email exists) -->
+                <div id="email-prompt-box" class="form-group" style="display:none; margin-bottom: 20px;">
+                    <p class="step-sub" style="margin-bottom:12px;">We don't have an email on record for you. Please enter your email address to receive your OTP and pass.</p>
+                    <label class="form-label">Email Address <span style="color:var(--danger);">*</span></label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="email" id="customEmailInput" class="form-control" placeholder="e.g. yourname@gmail.com" autocomplete="email">
+                        <button class="btn btn-primary" id="btn-send-custom-otp" onclick="submitCustomEmailAndSendOtp()" style="white-space:nowrap; padding:0 18px;">
+                            Send OTP →
+                        </button>
+                    </div>
                 </div>
 
-                <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="verifyOtp()"
-                    id="btn-verify-otp">
-                    Verify OTP
-                </button>
+                <!-- OTP Section -->
+                <div id="otp-input-box">
+                    <p class="step-sub" id="otp-sub-desc">A 6-digit OTP has been sent to <strong id="maskedEmail"
+                            style="color:var(--text);"></strong></p>
+
+                    <div class="form-group">
+                        <label class="form-label">OTP</label>
+                        <input type="text" id="otpInput" class="form-control" placeholder="Enter 6-digit OTP" maxlength="6"
+                            inputmode="numeric" autocomplete="one-time-code">
+                    </div>
+
+                    <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="verifyOtp()"
+                        id="btn-verify-otp">
+                        Verify OTP
+                    </button>
+                </div>
 
                 <div style="text-align:center; margin-top:14px;">
                     <button class="btn btn-secondary" style="font-size:13px; padding:6px 14px;" onclick="goBack(1)">
                         ← Go back
                     </button>
-                    <span style="color:var(--text-muted); font-size:13px; margin-left:10px;">Didn't receive it?
+                    <span id="resend-wrapper" style="color:var(--text-muted); font-size:13px; margin-left:10px;">Didn't receive it?
                         <a href="#" style="color:var(--primary);" onclick="resendOtp(event)">Resend</a>
                     </span>
                 </div>
@@ -593,6 +609,8 @@
         let passUuid = '';
         let currentName = '';
         let currentMasked = '';
+        let currentEnteredEmail = '';
+        let studentHasEmail = false;
         let lockedPrice = 0;
         let orderId = null;
         let qrData = null;
@@ -692,7 +710,7 @@
                         ${!taken ? '<span style="color:var(--primary);font-size:13px;font-weight:600;">Select →</span>' : ''}
                     `;
                     if (!taken) {
-                        div.addEventListener('click', () => sendOtp(s.sap_id, s.masked_email, s.name));
+                        div.addEventListener('click', () => selectStudent(s));
                     }
                     resultsEl.appendChild(div);
                 });
@@ -702,28 +720,108 @@
             }
         }
 
-        /* ─────────────────── Step 1→2: Send OTP ─────── */
+        /* ─────────────────── Step 1→2: Student Selection & OTP ─── */
+        function selectStudent(s) {
+            currentSapId = s.sap_id;
+            currentMasked = s.masked_email || '';
+            currentName = s.name;
+            currentEnteredEmail = '';
+            studentHasEmail = !!s.has_email;
+
+            document.getElementById('nav-student-name').textContent = s.name;
+            document.getElementById('nav-student-name').style.display = '';
+
+            const emailBox = document.getElementById('email-prompt-box');
+            const otpBox = document.getElementById('otp-input-box');
+            const resendWrapper = document.getElementById('resend-wrapper');
+            const title = document.getElementById('step2-title');
+
+            if (studentHasEmail) {
+                // Silently remove the email question
+                emailBox.style.display = 'none';
+                otpBox.style.display = '';
+                resendWrapper.style.display = '';
+                title.textContent = 'Verify your identity';
+                sendOtp(s.sap_id, s.masked_email, s.name);
+            } else {
+                // Student has no email in DB: ask for email
+                emailBox.style.display = 'block';
+                otpBox.style.display = 'none';
+                resendWrapper.style.display = 'none';
+                title.textContent = 'Enter your email';
+                document.getElementById('customEmailInput').value = '';
+                setStep(2);
+                setTimeout(() => document.getElementById('customEmailInput').focus(), 150);
+            }
+        }
+
+        async function submitCustomEmailAndSendOtp() {
+            const email = document.getElementById('customEmailInput').value.trim();
+            if (!email) {
+                showToast('Please enter an email address', 'error');
+                return;
+            }
+            if (!email.includes('@') || !email.includes('.')) {
+                showToast('Please enter a valid email address', 'error');
+                return;
+            }
+            currentEnteredEmail = email;
+
+            const btn = document.getElementById('btn-send-custom-otp');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+
+            try {
+                const res = await fetch('/api/student/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sap_id: currentSapId, email: email })
+                });
+                const d = await res.json();
+                if (!res.ok) {
+                    showToast(d.detail || 'Failed to send OTP', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Send OTP →';
+                    return;
+                }
+
+                currentMasked = d.masked_email || email;
+                document.getElementById('maskedEmail').textContent = currentMasked;
+                document.getElementById('step2-title').textContent = 'Verify your identity';
+                document.getElementById('email-prompt-box').style.display = 'none';
+                document.getElementById('otp-input-box').style.display = '';
+                document.getElementById('resend-wrapper').style.display = '';
+                showToast('OTP sent successfully!');
+                setTimeout(() => document.getElementById('otpInput').focus(), 150);
+            } catch (e) {
+                showToast('Network error. Try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send OTP →';
+            }
+        }
+
         async function sendOtp(sapId, maskedEmail, name) {
             currentSapId = sapId;
             currentMasked = maskedEmail;
             currentName = name;
 
-            const btn = document.createElement('button'); // temp for UX feedback
             try {
                 const res = await fetch('/api/student/send-otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sap_id: sapId })
                 });
+                const d = await res.json();
                 if (!res.ok) {
-                    const d = await res.json();
                     showToast(d.detail || 'Failed to send OTP', 'error');
                     return;
                 }
-                document.getElementById('maskedEmail').textContent = maskedEmail || 'your registered email';
+                document.getElementById('maskedEmail').textContent = d.masked_email || maskedEmail || 'your registered email';
                 document.getElementById('nav-student-name').textContent = name;
                 document.getElementById('nav-student-name').style.display = '';
                 setStep(2);
+                setTimeout(() => document.getElementById('otpInput').focus(), 150);
             } catch (e) {
                 showToast('Network error. Try again.', 'error');
             }
@@ -735,16 +833,42 @@
             const a = e.target;
             a.textContent = 'Sending…';
             try {
+                const payload = { sap_id: currentSapId };
+                if (currentEnteredEmail) {
+                    payload.email = currentEnteredEmail;
+                }
                 const res = await fetch('/api/student/send-otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sap_id: currentSapId })
+                    body: JSON.stringify(payload)
                 });
                 if (res.ok) { showToast('OTP resent!'); }
                 else { const d = await res.json(); showToast(d.detail || 'Try again in 60s', 'warning'); }
             } catch (e) { showToast('Network error', 'error'); }
             a.textContent = 'Resend';
         }
+
+        // Add Enter key listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailInp = document.getElementById('customEmailInput');
+            if (emailInp) {
+                emailInp.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        submitCustomEmailAndSendOtp();
+                    }
+                });
+            }
+            const otpInp = document.getElementById('otpInput');
+            if (otpInp) {
+                otpInp.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        verifyOtp();
+                    }
+                });
+            }
+        });
 
         /* ─────────────────── Step 2: Verify OTP ─────── */
         async function verifyOtp() {
