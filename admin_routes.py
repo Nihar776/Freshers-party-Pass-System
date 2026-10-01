@@ -52,6 +52,15 @@ class BranchSales(BaseModel):
     upi_percent: float = 0.0
 
 
+class YearSales(BaseModel):
+    year: str
+    passes_sold: int
+    percent_of_total: float
+    cash_amount: float = 0.0
+    cash_percent: float = 0.0
+    upi_amount: float = 0.0
+    upi_percent: float = 0.0
+
 class PaymentModeBreakdown(BaseModel):
     mode: str
     count: int
@@ -80,6 +89,7 @@ class DashboardResponse(BaseModel):
 
     distributor_wise: list[DistributorSales]
     branch_wise: list[BranchSales]
+    year_wise: list[YearSales]
     payment_mode_breakdown: list[PaymentModeBreakdown]
     pass_type_breakdown: list[PassTypeBreakdown]
     food_preference_breakdown: list[FoodPreferenceBreakdown]
@@ -250,6 +260,42 @@ def dashboard(
         for b, c, cash_amt, upi_amt in branch_rows
     ]
 
+    # --- Year-wise ---
+    year_rows = (
+        db.query(
+            Student.year,
+            func.count(Student.id),
+            func.coalesce(func.sum(case((Student.payment_mode == PaymentMode.CASH, Student.amount), else_=0)), 0.0),
+            func.coalesce(func.sum(case((Student.payment_mode == PaymentMode.UPI, Student.amount), else_=0)), 0.0)
+        )
+        .filter(Student.payment_status == PaymentStatus.VERIFIED)
+        .group_by(Student.year)
+        .all()
+    )
+    
+    # Custom sort order for years
+    def year_sort_key(y):
+        y_str = str(y.year or "")
+        if y_str == "FY": return 1
+        if y_str == "SY": return 2
+        if y_str == "TY": return 3
+        if y_str == "LY": return 4
+        return 5
+
+    year_wise = []
+    for yr, c, cash_amt, upi_amt in year_rows:
+        year_wise.append(
+            YearSales(
+                year=yr or "Unknown", passes_sold=c,
+                percent_of_total=round(100 * c / total_verified, 1) if total_verified else 0.0,
+                cash_amount=cash_amt,
+                cash_percent=round(100 * cash_amt / (cash_amt + upi_amt), 1) if (cash_amt + upi_amt) > 0 else 0.0,
+                upi_amount=upi_amt,
+                upi_percent=round(100 * upi_amt / (cash_amt + upi_amt), 1) if (cash_amt + upi_amt) > 0 else 0.0,
+            )
+        )
+    year_wise.sort(key=year_sort_key)
+
     # --- Payment mode breakdown ---
     mode_rows = (
         db.query(Student.payment_mode, func.count(Student.id), func.coalesce(func.sum(Student.amount), 0.0))
@@ -339,6 +385,7 @@ def dashboard(
         total_rejected=total_rejected,
         distributor_wise=distributor_wise,
         branch_wise=branch_wise,
+        year_wise=year_wise,
         payment_mode_breakdown=payment_mode_breakdown,
         pass_type_breakdown=pass_type_breakdown,
         food_preference_breakdown=food_breakdown,
@@ -544,18 +591,21 @@ def export_attendees(
         
         master_ws.append(row)
         
-        branch_name = s.branch or "Unknown"
-        if branch_name not in branch_sheets:
+        y_str = str(s.year or "Unknown").strip()
+        b_str = str(s.branch or "Unknown").strip()
+        sheet_name = f"{y_str}_{b_str}"
+        
+        if sheet_name not in branch_sheets:
             # Excel limits sheet name to 31 chars and bans some special chars
-            safe_title = "".join(c for c in branch_name if c.isalnum() or c in " _-")[:31]
+            safe_title = "".join(c for c in sheet_name if c.isalnum() or c in " _-")[:31]
             if not safe_title: safe_title = "Unknown"
             # Ensure unique
             while safe_title in wb.sheetnames:
                 safe_title = safe_title[:28] + "_1"
-            branch_sheets[branch_name] = wb.create_sheet(title=safe_title)
-            branch_sheets[branch_name].append(headers)
+            branch_sheets[sheet_name] = wb.create_sheet(title=safe_title)
+            branch_sheets[sheet_name].append(headers)
             
-        branch_sheets[branch_name].append(row)
+        branch_sheets[sheet_name].append(row)
     
     output = io.BytesIO()
     wb.save(output)
@@ -591,16 +641,19 @@ def export_sales(
         
         master_ws.append(row)
         
-        branch_name = s.branch or "Unknown"
-        if branch_name not in branch_sheets:
-            safe_title = "".join(c for c in branch_name if c.isalnum() or c in " _-")[:31]
+        y_str = str(s.year or "Unknown").strip()
+        b_str = str(s.branch or "Unknown").strip()
+        sheet_name = f"{y_str}_{b_str}"
+        
+        if sheet_name not in branch_sheets:
+            safe_title = "".join(c for c in sheet_name if c.isalnum() or c in " _-")[:31]
             if not safe_title: safe_title = "Unknown"
             while safe_title in wb.sheetnames:
                 safe_title = safe_title[:28] + "_1"
-            branch_sheets[branch_name] = wb.create_sheet(title=safe_title)
-            branch_sheets[branch_name].append(headers)
+            branch_sheets[sheet_name] = wb.create_sheet(title=safe_title)
+            branch_sheets[sheet_name].append(headers)
             
-        branch_sheets[branch_name].append(row)
+        branch_sheets[sheet_name].append(row)
     
     output = io.BytesIO()
     wb.save(output)

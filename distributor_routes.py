@@ -21,13 +21,14 @@ from database import get_db
 from schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
     FoodPreference, CashHandover, DiscountCode, DiscountType, CashHandoverRequest,
-    HandoverRequestStatus
+    HandoverRequestStatus, PricingEffect, DiscountRuleType
 )
 from session_auth import require_role
 from audit import write_audit_log
 from auth import generate_pass_token, generate_qr_image
 from mailer import send_pass_email
 from config import PASS_PRICE
+from student_routes import get_price_quote, PriceQuoteRequest
 
 router = APIRouter(prefix="/distributor", tags=["distributor"])
 
@@ -127,7 +128,7 @@ def sell_pass(
     payment_mode: PaymentMode = Form(...),
     utr_number: Optional[str] = Form(None),
     email: Optional[str] = Form(None),  # only needed if the roster row lacks one
-    screenshot: Optional[UploadFile] = File(None),
+    phone: Optional[str] = Form(None),
     discount_code: Optional[str] = Form(None),
     background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
@@ -153,26 +154,18 @@ def sell_pass(
     if not resolved_email:
         raise HTTPException(status_code=400, detail="No email on file - please provide one to send the pass")
 
-    # Resolve discount code
+    resolved_phone = phone or student.phone
+
+    # Final price calculation using shared portal logic
+    quote = get_price_quote(PriceQuoteRequest(group_size=1, coupon_code=discount_code), db=db)
+    amount = quote["final_price"]
+
     dc = None
     if discount_code:
         code_upper = discount_code.upper().strip()
         dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
-        if not dc:
-            raise HTTPException(status_code=404, detail="Invalid discount code")
-        if not dc.is_active:
-            raise HTTPException(status_code=400, detail="Discount code is inactive")
-        if dc.max_uses is not None and dc.times_used >= dc.max_uses:
-            raise HTTPException(status_code=400, detail="Discount code usage limit reached")
-
-    # Final price calculation
-    amount = PASS_PRICE
-    if dc:
-        if dc.discount_type == DiscountType.PERCENTAGE:
-            amount = amount * (1.0 - (dc.discount_value / 100.0))
-        elif dc.discount_type == DiscountType.FLAT:
-            amount = max(0.0, amount - dc.discount_value)
-        dc.times_used += 1
+        if dc:
+            dc.times_used += 1
 
     old_snapshot = {"payment_status": student.payment_status.value}
 
@@ -203,6 +196,7 @@ def sell_pass(
             payment_mode=payment_mode,
             amount=amount,
             email=resolved_email,
+            phone=resolved_phone,
             distributor_id=distributor.id,
             utr_number=utr_number,
             payment_screenshot=screenshot_b64,
@@ -272,26 +266,7 @@ def sell_pass(
 # ---------------------------------------------------------------------------
 # Group Sales and Discounts
 # ---------------------------------------------------------------------------
-def calculate_discount(group_size: int, date: Optional[datetime] = None) -> float:
-    if date is None:
-        date = datetime.now()
-    
-    # Mon (21/9): Group of 6 gets 10% off, Group of 8 gets 12% off.
-    # Tue (22/9): Group of 8 gets 10% off, Group of 10 gets 12% off.
-    # Wed (23/9): No discounts.
-    if date.month == 9:
-        if date.day == 21:  # Monday
-            if group_size >= 8:
-                return 0.12
-            elif group_size >= 6:
-                return 0.10
-        elif date.day == 22:  # Tuesday
-            if group_size >= 10:
-                return 0.12
-            elif group_size >= 8:
-                return 0.10
-    
-    return 0.0
+# Removed hardcoded calculate_discount as we use get_price_quote
 
 
 @router.get("/validate-discount-code")
@@ -322,6 +297,8 @@ def sell_group(
     sap_ids: List[str] = Form(...),
     food_preferences: List[str] = Form(None),
     payer_sap_id: str = Form(...),
+    email: Optional[str] = Form(None),
+    phone: Optional[str] = Form(None),
     payment_mode: PaymentMode = Form(...),
     utr_number: Optional[str] = Form(None),
     screenshot: Optional[UploadFile] = File(None),
@@ -355,39 +332,17 @@ def sell_group(
             raise HTTPException(status_code=400, detail=f"No email on file for {student.sap_id} - cannot process group sale")
 
     group_size = len(sap_ids)
-    group_discount_pct = calculate_discount(group_size)
-    total_base_amount = PASS_PRICE * group_size
     
-    # Resolve discount code
+    quote = get_price_quote(PriceQuoteRequest(group_size=group_size, coupon_code=discount_code), db=db)
+    final_total_amount = quote["final_price"]
+    amount_per_student = final_total_amount / group_size
+
     dc = None
     if discount_code:
         code_upper = discount_code.upper().strip()
         dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
-        if not dc:
-            raise HTTPException(status_code=404, detail="Invalid discount code")
-        if not dc.is_active:
-            raise HTTPException(status_code=400, detail="Discount code is inactive")
-        if dc.max_uses is not None and dc.times_used >= dc.max_uses:
-            raise HTTPException(status_code=400, detail="Discount code usage limit reached")
-
-    # Calculate final price using whichever gives the better deal
-    if dc:
-        if dc.discount_type == DiscountType.PERCENTAGE:
-            code_discount_pct = dc.discount_value / 100.0
-            best_discount_pct = max(group_discount_pct, code_discount_pct)
-            final_total_amount = total_base_amount * (1.0 - best_discount_pct)
-        elif dc.discount_type == DiscountType.FLAT:
-            # Group percentage vs Flat amount off total
-            pct_discount_amount = total_base_amount * group_discount_pct
-            best_discount_amount = max(pct_discount_amount, dc.discount_value)
-            final_total_amount = max(0.0, total_base_amount - best_discount_amount)
-    else:
-        final_total_amount = total_base_amount * (1.0 - group_discount_pct)
-
-    amount_per_student = final_total_amount / group_size
-
-    if dc:
-        dc.times_used += 1
+        if dc:
+            dc.times_used += 1
 
     duplicate_warning = False
     screenshot_b64 = None
@@ -455,6 +410,8 @@ def sell_group(
         .where(Student.id == payer_student.id)
         .values(
             is_group_payer=True,
+            email=email or payer_student.email,
+            phone=phone or payer_student.phone,
             utr_number=utr_number,
             payment_screenshot=screenshot_b64,
             screenshot_phash=phash,

@@ -182,6 +182,25 @@
                         </table>
                     </div>
                 </div>
+                <div class="panel">
+                    <h3 class="mb-4">Year-wise Sales</h3>
+                    <div class="table-container">
+                        <table id="year-table" class="table w-full">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Sold</th>
+                                    <th>% of Total</th>
+                                    <th>Cash</th>
+                                    <th>UPI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -905,6 +924,31 @@
                         <td>
                             <div class="text-warning">₹${b.upi_amount}</div>
                             <div class="text-sm text-muted">${b.upi_percent}%</div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            if (data.year_wise) {
+                document.querySelector('#year-table tbody').innerHTML = data.year_wise.map(y => `
+                    <tr>
+                        <td class="font-semibold">${y.year || 'Unknown'}</td>
+                        <td>${y.passes_sold}</td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <span style="min-width: 40px">${y.percent_of_total}%</span>
+                                <div style="flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                                    <div style="width: ${y.percent_of_total}%; height: 100%; background: var(--primary);"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-success">₹${y.cash_amount}</div>
+                            <div class="text-sm text-muted">${y.cash_percent}%</div>
+                        </td>
+                        <td>
+                            <div class="text-warning">₹${y.upi_amount}</div>
+                            <div class="text-sm text-muted">${y.upi_percent}%</div>
                         </td>
                     </tr>
                 `).join('');

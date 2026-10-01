@@ -157,13 +157,35 @@
                         </div>
 
                         <div id="checkout-form" class="hidden">
+                            <div class="form-group">
+                                <label class="form-label">Email Address (Required)</label>
+                                <input type="email" id="payer-email" class="form-control" placeholder="For receiving passes">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" id="payer-phone" class="form-control" placeholder="Optional">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Discount Code</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="discount-code" class="form-control" placeholder="Promo code">
+                                    <button class="btn btn-secondary" id="apply-code-btn">Apply</button>
+                                </div>
+                                <div id="discount-message" class="text-sm mt-1 mb-2"></div>
+                            </div>
+
                             <div class="panel mb-4" style="background: var(--bg-dark); padding: 16px;">
                                 <div class="flex justify-between items-center mb-2">
-                                    <span class="text-muted">Base Price (Fixed)</span>
-                                    <span class="font-bold">₹499</span>
+                                    <span class="text-muted">Total Base Price</span>
+                                    <span class="font-bold" id="base-price-display">₹0</span>
+                                </div>
+                                <div id="promo-discount-row" class="flex justify-between items-center mb-2 hidden text-success">
+                                    <span id="promo-desc">Discount</span>
+                                    <span class="font-bold" id="promo-amount">-₹0</span>
                                 </div>
                                 <div class="flex justify-between items-center mt-4 pt-4" style="border-top: 1px solid var(--border);">
-                                    <span class="font-bold">Total Amount</span>
+                                    <span class="font-bold">Final Amount</span>
                                     <span class="stat-value" id="total-amount" style="font-size: 24px;">₹0</span>
                                 </div>
                             </div>
@@ -230,7 +252,6 @@
         }
         let cart = [];
         let appliedPromo = null;
-        const BASE_PRICE = 499.0;
 
         // --- Core Auth & Toast ---
         function showToast(msg, type = 'success') {
@@ -501,7 +522,7 @@
             if (item) item.food_pref = val;
         }
 
-        function updateCartUI() {
+        async function updateCartUI() {
             const listEl = document.getElementById('cart-list');
             const checkoutEl = document.getElementById('checkout-form');
             
@@ -533,46 +554,49 @@
                 </div>
             `).join('');
             
-            // Calculate pricing
-            const groupSize = cart.length;
-            let groupDiscount = 0;
-            const today = new Date();
-            if (today.getMonth() === 8) { // September
-                if (today.getDate() === 21) { // Monday
-                    if (groupSize >= 8) groupDiscount = 0.12;
-                    else if (groupSize >= 6) groupDiscount = 0.10;
-                } else if (today.getDate() === 22) { // Tuesday
-                    if (groupSize >= 10) groupDiscount = 0.12;
-                    else if (groupSize >= 8) groupDiscount = 0.10;
-                }
+            // Auto-fill email/phone if single student and they have one in roster
+            if (cart.length === 1 && !document.getElementById('payer-email').value && cart[0].email) {
+                document.getElementById('payer-email').value = cart[0].email;
             }
-            
-            const totalBase = BASE_PRICE * groupSize;
-            let finalTotal = 0;
-            
-            document.getElementById('discount-pct').textContent = `${(groupDiscount * 100).toFixed(0)}%`;
-            
-            const promoRow = document.getElementById('promo-discount-row');
-            
-            if (appliedPromo) {
-                promoRow.classList.remove('hidden');
-                if (appliedPromo.type === 'percentage') {
-                    const promoPct = appliedPromo.value / 100.0;
-                    const bestPct = Math.max(groupDiscount, promoPct);
-                    finalTotal = totalBase * (1.0 - bestPct);
-                    document.getElementById('promo-pct').textContent = `${appliedPromo.value}%`;
-                } else if (appliedPromo.type === 'flat') {
-                    const groupDiscountAmount = totalBase * groupDiscount;
-                    const bestAmount = Math.max(groupDiscountAmount, appliedPromo.value);
-                    finalTotal = Math.max(0, totalBase - bestAmount);
-                    document.getElementById('promo-pct').textContent = `₹${appliedPromo.value}`;
+
+            // Calculate pricing via public portal endpoint
+            try {
+                const res = await fetch('/api/student/price-quote', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        group_size: cart.length,
+                        coupon_code: appliedPromo ? appliedPromo.code : null
+                    })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('base-price-display').textContent = `₹${data.total_base.toFixed(2)}`;
+                    
+                    const promoRow = document.getElementById('promo-discount-row');
+                    if (data.discount_amount > 0) {
+                        promoRow.classList.remove('hidden');
+                        document.getElementById('promo-amount').textContent = `-₹${data.discount_amount.toFixed(2)}`;
+                        
+                        if (data.coupon_info) {
+                            document.getElementById('promo-desc').textContent = `Coupon (${data.coupon_info.code})`;
+                            document.getElementById('discount-message').textContent = 'Discount applied successfully!';
+                            document.getElementById('discount-message').className = 'text-sm mt-1 mb-4 text-success';
+                        } else if (data.auto_rule_name) {
+                            document.getElementById('promo-desc').textContent = data.auto_rule_name;
+                        } else {
+                            document.getElementById('promo-desc').textContent = 'Discount Applied';
+                        }
+                    } else {
+                        promoRow.classList.add('hidden');
+                    }
+                    
+                    document.getElementById('total-amount').textContent = `₹${data.final_price.toFixed(2)}`;
                 }
-            } else {
-                promoRow.classList.add('hidden');
-                finalTotal = totalBase * (1.0 - groupDiscount);
+            } catch (err) {
+                console.error("Error calculating price:", err);
             }
-            
-            document.getElementById('total-amount').textContent = `₹${finalTotal.toFixed(2)}`;
         }
 
         // --- Discount Code Logic ---
@@ -589,23 +613,38 @@
             }
             
             try {
-                const res = await fetch(`/distributor/validate-discount-code?code=${encodeURIComponent(codeInput)}`);
+                const res = await fetch('/api/student/price-quote', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        group_size: cart.length,
+                        coupon_code: codeInput
+                    })
+                });
                 if (res.ok) {
                     const data = await res.json();
-                    appliedPromo = data;
-                    msgEl.textContent = 'Discount code applied successfully!';
-                    msgEl.className = 'text-sm mb-4 text-success';
-                    updateCartUI();
+                    if (data.coupon_info) {
+                        appliedPromo = { code: codeInput };
+                        msgEl.textContent = 'Discount code applied successfully!';
+                        msgEl.className = 'text-sm mt-1 mb-4 text-success';
+                        updateCartUI();
+                    } else {
+                        // Sometimes the code is valid but doesn't apply a better discount
+                        appliedPromo = { code: codeInput };
+                        msgEl.textContent = 'Code applied (but other rules give a better discount)';
+                        msgEl.className = 'text-sm mt-1 mb-4 text-success';
+                        updateCartUI();
+                    }
                 } else {
                     const err = await res.json();
                     appliedPromo = null;
                     msgEl.textContent = err.detail || 'Invalid code';
-                    msgEl.className = 'text-sm mb-4 text-danger';
+                    msgEl.className = 'text-sm mt-1 mb-4 text-danger';
                     updateCartUI();
                 }
             } catch (err) {
                 msgEl.textContent = 'Network error checking code';
-                msgEl.className = 'text-sm mb-4 text-danger';
+                msgEl.className = 'text-sm mt-1 mb-4 text-danger';
             }
         });
 
@@ -639,6 +678,11 @@
                 formData.append('payer_sap_id', payer.sap_id);
                 formData.append('payment_mode', mode);
             }
+
+            const emailInput = document.getElementById('payer-email').value.trim();
+            if (emailInput) formData.append('email', emailInput);
+            const phoneInput = document.getElementById('payer-phone').value.trim();
+            if (phoneInput) formData.append('phone', phoneInput);
 
             if (mode === 'upi') {
                 formData.append('utr_number', document.getElementById('utr').value.trim());
