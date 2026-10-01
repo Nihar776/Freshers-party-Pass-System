@@ -28,7 +28,7 @@ from session_auth import require_role
 from audit import verify_chain_integrity, write_audit_log
 from auth import generate_pass_token, generate_qr_image
 from mailer import send_pass_email
-from distributor_routes import calculate_discount, PASS_PRICE
+from student_routes import get_price_quote, PriceQuoteRequest
 
 router = APIRouter(prefix="/admin", tags=["admin-dashboard"])
 
@@ -1025,27 +1025,15 @@ def edit_group(
     group_size = len(final_members)
     
     if group_size > 0:
-        base_sold_at = final_members[0].sold_at
-        group_discount_pct = calculate_discount(group_size, base_sold_at)
-        total_base_amount = PASS_PRICE * group_size
-        
-        # We don't retroactively apply a new Promo code if they didn't have one, 
-        # but if they DID have one, we need to respect it. This requires checking discount_code_id.
         dc_id = final_members[0].discount_code_id
         dc = db.query(DiscountCode).filter(DiscountCode.id == dc_id).first() if dc_id else None
         
-        if dc:
-            if dc.discount_type == DiscountType.PERCENTAGE:
-                code_discount_pct = dc.discount_value / 100.0
-                best_discount_pct = max(group_discount_pct, code_discount_pct)
-                final_total_amount = total_base_amount * (1.0 - best_discount_pct)
-            elif dc.discount_type == DiscountType.FLAT:
-                pct_discount_amount = total_base_amount * group_discount_pct
-                best_discount_amount = max(pct_discount_amount, dc.discount_value)
-                final_total_amount = max(0.0, total_base_amount - best_discount_amount)
-        else:
-            final_total_amount = total_base_amount * (1.0 - group_discount_pct)
-            
+        req = PriceQuoteRequest(
+            group_size=group_size,
+            coupon_code=dc.code if dc else None
+        )
+        quote = get_price_quote(req, db=db)
+        final_total_amount = quote["final_price"]
         amount_per_student = final_total_amount / group_size
         
         for m in final_members:
