@@ -1266,7 +1266,8 @@
                 sap_id: currentSapId,
                 pass_uuid: passUuid,
                 food_preference: foodEnabled ? document.getElementById('foodSelect').value : null,
-                group_sap_ids: isGroup ? groupMembers.slice(1).map(m => m.sap_id) : []
+                group_sap_ids: isGroup ? groupMembers.slice(1).map(m => m.sap_id) : [],
+                coupon_code: typeof appliedCoupon !== 'undefined' ? appliedCoupon : null
             };
 
             try {

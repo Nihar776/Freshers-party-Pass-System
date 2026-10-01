@@ -457,64 +457,25 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
     # Lock the rules table exclusively to serialize concurrent reservations
     db.execute(text("LOCK TABLE discount_rules IN EXCLUSIVE MODE"))
     
-    base_price = settings.get("base_price", 500)
+    quote = get_price_quote(PriceQuoteRequest(group_size=len(all_saps), coupon_code=req.coupon_code), db=db)
+    locked_price = quote["final_price"]
     
-    total_base = base_price * len(all_saps)
-    locked_price = total_base
     rule_applied = None
     applied_label = None
-
-    active_rule = get_active_rule(db, is_group=is_group)
-    if active_rule and active_rule.type.value == "GROUP":
-        if is_group and active_rule.group_size != len(all_saps):
-            pass # ignore group rule if size doesn't match
-        else:
-            rule_applied = active_rule
-            applied_label = active_rule.name
-            if active_rule.pricing_effect == PricingEffect.FIXED:
-                locked_price = active_rule.group_total_price
-            elif active_rule.pricing_effect == PricingEffect.FLAT_OFF:
-                locked_price = max(0.0, total_base - active_rule.discount_value)
-            elif active_rule.pricing_effect == PricingEffect.PERCENT_OFF:
-                locked_price = max(0.0, total_base * (1.0 - (active_rule.discount_value / 100.0)))
-
     dc = None
-    if req.coupon_code:
-        code_upper = req.coupon_code.upper().strip()
+
+    if quote.get("coupon_info"):
+        code_upper = quote["coupon_info"]["code"].upper().strip()
         dc = db.query(DiscountCode).filter(func.upper(DiscountCode.code) == code_upper).first()
-        if not dc:
-            raise HTTPException(status_code=404, detail="Invalid coupon code")
-        if not dc.is_active:
-            raise HTTPException(status_code=400, detail="Coupon code is inactive")
-        if dc.max_uses is not None and dc.times_used >= dc.max_uses:
-            raise HTTPException(status_code=400, detail="Coupon code usage limit reached")
-
-        if dc.required_group_size is not None and dc.required_group_size != len(all_saps):
-            raise HTTPException(status_code=400, detail=f"Coupon code requires exactly {dc.required_group_size} members.")
-
-        dc_type = dc.discount_type.value if hasattr(dc.discount_type, "value") else str(dc.discount_type)
-        if dc_type == "percentage":
-            coupon_price = max(0.0, total_base * (1.0 - (dc.discount_value / 100.0)))
-        elif dc_type == "fixed":
-            coupon_price = dc.discount_value
-        elif dc_type == "flat":
-            coupon_price = max(0.0, total_base - dc.discount_value)
-        else:
-            coupon_price = total_base
-
-        if rule_applied:
-            if coupon_price < locked_price:
-                locked_price = coupon_price
-                applied_label = f"Coupon: {dc.code}"
-                rule_applied = None
-        else:
-            locked_price = coupon_price
+        if dc:
+            dc.times_used += 1
             applied_label = f"Coupon: {dc.code}"
-        
-        # We don't deduct dc.times_used here yet. It gets deducted upon successful PAYMENT/VERIFICATION.
-        # Wait, if we reserve, maybe we hold it? No, keeping it simple.
-
-        dc.times_used += 1
+    elif quote.get("auto_rule_name"):
+        rule_applied = db.query(DiscountRule).filter(DiscountRule.name == quote["auto_rule_name"]).first()
+        applied_label = quote["auto_rule_name"]
+    elif quote.get("rule_name"):
+        rule_applied = db.query(DiscountRule).filter(DiscountRule.name == quote["rule_name"]).first()
+        applied_label = quote["rule_name"]
 
     qr = db.query(UpiQrCode).filter_by(is_active=True).first()
     
