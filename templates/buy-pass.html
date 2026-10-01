@@ -424,19 +424,23 @@
 
                 <!-- Email Prompt (Shown ONLY if student has no email in DB; silently removed if email exists) -->
                 <div id="email-prompt-box" class="form-group" style="display:none; margin-bottom: 20px;">
-                    <p class="step-sub" style="margin-bottom:12px;">We don't have contact info on record for you. Please enter your email and phone number to receive your OTP and pass.</p>
-                    
+                    <p class="step-sub" style="margin-bottom:12px;">We don't have contact info on record for you. Please
+                        enter your email and phone number to receive your OTP and pass.</p>
+
                     <div style="margin-bottom:12px;">
                         <label class="form-label">Email Address <span style="color:var(--danger);">*</span></label>
-                        <input type="email" id="customEmailInput" class="form-control" placeholder="e.g. yourname@gmail.com" autocomplete="email">
+                        <input type="email" id="customEmailInput" class="form-control"
+                            placeholder="e.g. yourname@gmail.com" autocomplete="email">
                     </div>
-                    
+
                     <div style="margin-bottom:16px;">
                         <label class="form-label">Phone Number <span style="color:var(--danger);">*</span></label>
-                        <input type="tel" id="customPhoneInput" class="form-control" placeholder="10-digit number" autocomplete="tel">
+                        <input type="tel" id="customPhoneInput" class="form-control" placeholder="10-digit number"
+                            autocomplete="tel">
                     </div>
-                    
-                    <button class="btn btn-primary" id="btn-send-custom-otp" onclick="submitCustomEmailAndSendOtp()" style="width: 100%;">
+
+                    <button class="btn btn-primary" id="btn-send-custom-otp" onclick="submitCustomEmailAndSendOtp()"
+                        style="width: 100%;">
                         Send OTP →
                     </button>
                 </div>
@@ -448,8 +452,8 @@
 
                     <div class="form-group">
                         <label class="form-label">OTP</label>
-                        <input type="text" id="otpInput" class="form-control" placeholder="Enter 6-digit OTP" maxlength="6"
-                            inputmode="numeric" autocomplete="one-time-code">
+                        <input type="text" id="otpInput" class="form-control" placeholder="Enter 6-digit OTP"
+                            maxlength="6" inputmode="numeric" autocomplete="one-time-code">
                     </div>
 
                     <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="verifyOtp()"
@@ -462,7 +466,8 @@
                     <button class="btn btn-secondary" style="font-size:13px; padding:6px 14px;" onclick="goBack(1)">
                         ← Go back
                     </button>
-                    <span id="resend-wrapper" style="color:var(--text-muted); font-size:13px; margin-left:10px;">Didn't receive it?
+                    <span id="resend-wrapper" style="color:var(--text-muted); font-size:13px; margin-left:10px;">Didn't
+                        receive it?
                         <a href="#" style="color:var(--primary);" onclick="resendOtp(event)">Resend</a>
                     </span>
                 </div>
@@ -488,7 +493,8 @@
                 <div class="form-group" id="coupon-group">
                     <label class="form-label">Have a promo code?</label>
                     <div style="display:flex; gap:8px;">
-                        <input type="text" id="couponInput" class="form-control" placeholder="Type coupon code..." style="flex:1; text-transform:uppercase;">
+                        <input type="text" id="couponInput" class="form-control" placeholder="Type coupon code..."
+                            style="flex:1; text-transform:uppercase;">
                     </div>
                     <div id="coupon-msg" style="font-size:12px; margin-top:4px;"></div>
                 </div>
@@ -623,11 +629,13 @@
     </div><!-- /container -->
 
     <!-- Friend Verify Modal -->
-    <div id="friend-verify-modal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px;">
+    <div id="friend-verify-modal" class="hidden"
+        style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px;">
         <div class="step-panel" style="width:100%; max-width:400px; box-sizing:border-box;">
             <h3 style="margin:0 0 8px 0; font-size: 20px;">Verify Friend</h3>
-            <p id="friend-verify-desc" style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">We don't have contact info for this student.</p>
-            
+            <p id="friend-verify-desc" style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">We don't
+                have contact info for this student.</p>
+
             <div id="friend-email-step">
                 <div class="form-group" style="margin-bottom:12px;">
                     <label class="form-label">Email Address <span style="color:var(--danger)">*</span></label>
@@ -650,7 +658,8 @@
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:8px;">
                     <button class="btn btn-secondary" onclick="closeFriendVerify()">Cancel</button>
-                    <button class="btn btn-primary" id="btn-friend-verify-otp" onclick="verifyFriendOtp()">Verify & Add</button>
+                    <button class="btn btn-primary" id="btn-friend-verify-otp" onclick="verifyFriendOtp()">Verify &
+                        Add</button>
                 </div>
             </div>
         </div>
@@ -673,7 +682,7 @@
         let searchTimer = null;
         let friendTimer = null;
         let foodEnabled = false;
-        
+
         let pendingFriend = null;
         let pendingFriendEmail = '';
         let pendingFriendPhone = '';
@@ -816,7 +825,7 @@
         async function submitCustomEmailAndSendOtp() {
             const email = document.getElementById('customEmailInput').value.trim();
             const phone = document.getElementById('customPhoneInput').value.trim();
-            
+
             if (!email) {
                 showToast('Please enter an email address', 'error');
                 return;
@@ -976,7 +985,7 @@
         /* ─────────────────── Step 3: Price preview ─── */
         let appliedCoupon = null;
         let couponTimeout;
-        
+
         document.getElementById('couponInput').addEventListener('input', (e) => {
             clearTimeout(couponTimeout);
             const val = e.target.value.trim();
@@ -988,87 +997,101 @@
             }
             document.getElementById('coupon-msg').textContent = 'Checking...';
             document.getElementById('coupon-msg').style.color = 'var(--text-muted)';
-            couponTimeout = setTimeout(() => applyCoupon(val), 500);
+            couponTimeout = setTimeout(() => fetchPricePreview(), 500);
         });
 
-        async function applyCoupon(code) {
-            const msg = document.getElementById('coupon-msg');
-            msg.textContent = 'Verifying code...';
-            
-            try {
-                const r = await fetch('/api/student/price-quote', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ group_size: Math.max(1, groupMembers.length), coupon_code: code })
-                });
-                
-                if (!r.ok) {
-                    const d = await r.json();
-                    msg.textContent = d.detail || 'Invalid coupon';
-                    msg.style.color = 'var(--danger)';
-                    appliedCoupon = null;
-                } else {
-                    const data = await r.json();
-                    appliedCoupon = code;
-                    msg.textContent = data.coupon_info ? data.coupon_info.desc + ' applied!' : 'Code applied!';
-                    msg.style.color = 'var(--success)';
-                    
-                    document.getElementById('preview-price').textContent = data.final_price;
-                    const ruleEl = document.getElementById('preview-rule');
-                    if (data.coupon_info) {
-                        ruleEl.textContent = `Applied: ${data.coupon_info.code}`;
-                        ruleEl.style.display = 'block';
-                        ruleEl.className = 'rule-badge badge-success';
-                    } else {
-                        ruleEl.textContent = '';
-                        ruleEl.style.display = 'none';
-                    }
-                }
-            } catch(e) {
-                msg.textContent = 'Error verifying code';
-                msg.style.color = 'var(--danger)';
-            }
-            
-            // if we failed, re-fetch without code
-            if (!appliedCoupon) {
-                fetchPricePreview();
-            }
-        }
+        let currentFetchAborter = null;
 
         async function fetchPricePreview() {
+            if (currentFetchAborter) {
+                currentFetchAborter.abort();
+            }
+            currentFetchAborter = new AbortController();
+            const signal = currentFetchAborter.signal;
+
             try {
-                const code = appliedCoupon;
+                const code = document.getElementById('couponInput').value.trim();
+                const reqBody = { group_size: Math.max(1, groupMembers.length) };
+                if (code) {
+                    reqBody.coupon_code = code;
+                }
+
                 const r = await fetch('/api/student/price-quote', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ group_size: Math.max(1, groupMembers.length), coupon_code: code })
+                    body: JSON.stringify(reqBody),
+                    signal
                 });
+
                 if (r.ok) {
                     const data = await r.json();
+
+                    // Update price display
                     document.getElementById('preview-price').textContent = data.final_price;
                     const ruleEl = document.getElementById('preview-rule');
-                    
+                    const msg = document.getElementById('coupon-msg');
+
                     if (data.coupon_info) {
                         ruleEl.textContent = `Applied: ${data.coupon_info.code}`;
                         ruleEl.style.display = 'block';
                         ruleEl.className = 'rule-badge badge-success';
+
+                        msg.textContent = data.coupon_info.desc + ' applied!';
+                        msg.style.color = 'var(--success)';
+                        appliedCoupon = code; // Lock it in
                     } else if (data.auto_rule_name) {
                         ruleEl.textContent = `Applied: ${data.auto_rule_name}`;
                         ruleEl.style.display = 'block';
                         ruleEl.className = 'rule-badge badge-success';
+
+                        if (code) {
+                            msg.textContent = 'Group discount is a better deal!';
+                            msg.style.color = 'var(--primary)';
+                            appliedCoupon = code;
+                        } else {
+                            msg.textContent = '';
+                            appliedCoupon = null;
+                        }
                     } else {
                         ruleEl.textContent = '';
                         ruleEl.style.display = 'none';
+                        msg.textContent = '';
+                        appliedCoupon = null;
                     }
-                } else if (code) {
-                    // if coupon fails, clear it and retry
-                    appliedCoupon = null;
-                    document.getElementById('couponInput').value = '';
-                    document.getElementById('coupon-msg').textContent = 'Coupon no longer valid for this group size';
-                    document.getElementById('coupon-msg').style.color = 'var(--danger)';
-                    fetchPricePreview();
+
+                } else {
+                    const d = await r.json();
+                    if (code) {
+                        const msg = document.getElementById('coupon-msg');
+                        msg.textContent = d.detail || 'Invalid coupon';
+                        msg.style.color = 'var(--danger)';
+                        appliedCoupon = null; // Mark as invalid
+
+                        // We must fetch again WITHOUT the code to update the price display
+                        const r2 = await fetch('/api/student/price-quote', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ group_size: Math.max(1, groupMembers.length) }),
+                            signal
+                        });
+                        if (r2.ok) {
+                            const data2 = await r2.json();
+                            document.getElementById('preview-price').textContent = data2.final_price;
+                            const ruleEl = document.getElementById('preview-rule');
+                            if (data2.auto_rule_name) {
+                                ruleEl.textContent = `Applied: ${data2.auto_rule_name}`;
+                                ruleEl.style.display = 'block';
+                                ruleEl.className = 'rule-badge badge-success';
+                            } else {
+                                ruleEl.textContent = '';
+                                ruleEl.style.display = 'none';
+                            }
+                        }
+                    }
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                if (e.name !== 'AbortError') console.error(e); 
+            }
         }
 
         /* ─────────────────── Step 3: Friend search ─── */
@@ -1113,6 +1136,7 @@
                                     document.getElementById('friendSearch').value = '';
                                     el.innerHTML = '';
                                     renderMembersList();
+                                    fetchPricePreview();
                                 }
                             });
                         }
@@ -1147,7 +1171,7 @@
             document.getElementById('friendEmailInput').value = '';
             document.getElementById('friendPhoneInput').value = '';
             document.getElementById('friendOtpInput').value = '';
-            
+
             document.getElementById('friend-email-step').style.display = 'block';
             document.getElementById('friend-otp-step').style.display = 'none';
             document.getElementById('friend-verify-modal').classList.remove('hidden');
@@ -1161,7 +1185,7 @@
         async function sendFriendOtp() {
             const email = document.getElementById('friendEmailInput').value.trim();
             const phone = document.getElementById('friendPhoneInput').value.trim();
-            
+
             if (!email || !email.includes('@') || !email.includes('.')) {
                 showToast('Please enter a valid email', 'error'); return;
             }
@@ -1208,17 +1232,17 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sap_id: pendingFriend.sap_id, otp: otp })
                 });
-                
+
                 if (!res.ok) {
                     const d = await res.json();
                     showToast(d.detail || 'Invalid OTP', 'error');
                 } else {
                     showToast('Friend verified!');
-                    groupMembers.push({ 
-                        sap_id: pendingFriend.sap_id, 
-                        name: pendingFriend.name, 
-                        branch: pendingFriend.branch, 
-                        year: pendingFriend.year 
+                    groupMembers.push({
+                        sap_id: pendingFriend.sap_id,
+                        name: pendingFriend.name,
+                        branch: pendingFriend.branch,
+                        year: pendingFriend.year
                     });
                     document.getElementById('friendSearch').value = '';
                     document.getElementById('friendResults').innerHTML = '';
