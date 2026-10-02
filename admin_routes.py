@@ -61,6 +61,17 @@ class YearSales(BaseModel):
     upi_amount: float = 0.0
     upi_percent: float = 0.0
 
+class YearBranchCell(BaseModel):
+    year: str
+    branch: str
+    sold: int = 0
+    verified: int = 0
+    pending: int = 0
+    cash_amount: float = 0.0
+    upi_amount: float = 0.0
+    total_amount: float = 0.0
+    roster_count: int = 0
+
 class PaymentModeBreakdown(BaseModel):
     mode: str
     count: int
@@ -90,6 +101,7 @@ class DashboardResponse(BaseModel):
     distributor_wise: list[DistributorSales]
     branch_wise: list[BranchSales]
     year_wise: list[YearSales]
+    year_branch_matrix: list[YearBranchCell]
     payment_mode_breakdown: list[PaymentModeBreakdown]
     pass_type_breakdown: list[PassTypeBreakdown]
     food_preference_breakdown: list[FoodPreferenceBreakdown]
@@ -296,6 +308,50 @@ def dashboard(
         )
     year_wise.sort(key=year_sort_key)
 
+    # --- Year x Branch matrix ---
+    from sqlalchemy import case
+    YEARS = ['FY', 'SY', 'TY', 'LY']
+    BRANCHES = ['CE', 'CSE', 'IT', 'AIML']
+    
+    # All sold (verified + pending)
+    yb_sold_rows = (
+        db.query(
+            Student.year, Student.branch,
+            func.count(Student.id),
+            func.count(case((Student.payment_status == PaymentStatus.VERIFIED, 1))),
+            func.count(case((Student.payment_status == PaymentStatus.PENDING_VERIFICATION, 1))),
+            func.coalesce(func.sum(case((Student.payment_mode == PaymentMode.CASH, Student.amount), else_=0)), 0.0),
+            func.coalesce(func.sum(case((Student.payment_mode == PaymentMode.UPI, Student.amount), else_=0)), 0.0),
+        )
+        .filter(Student.payment_status.in_([PaymentStatus.VERIFIED, PaymentStatus.PENDING_VERIFICATION]))
+        .group_by(Student.year, Student.branch)
+        .all()
+    )
+    
+    # Roster counts per year/branch
+    yb_roster_rows = (
+        db.query(Student.year, Student.branch, func.count(Student.id))
+        .group_by(Student.year, Student.branch)
+        .all()
+    )
+    roster_map = {(str(yr or '').upper(), str(br or '').upper()): c for yr, br, c in yb_roster_rows}
+    
+    yb_map = {}
+    for yr, br, sold, verified, pending, cash_amt, upi_amt in yb_sold_rows:
+        key = (str(yr or '').upper(), str(br or '').upper())
+        yb_map[key] = (sold, verified, pending, float(cash_amt), float(upi_amt))
+    
+    year_branch_matrix = []
+    for yr in YEARS:
+        for br in BRANCHES:
+            key = (yr, br)
+            sold, verified, pending, cash_a, upi_a = yb_map.get(key, (0, 0, 0, 0.0, 0.0))
+            year_branch_matrix.append(YearBranchCell(
+                year=yr, branch=br, sold=sold, verified=verified, pending=pending,
+                cash_amount=cash_a, upi_amount=upi_a, total_amount=cash_a + upi_a,
+                roster_count=roster_map.get(key, 0)
+            ))
+
     # --- Payment mode breakdown ---
     mode_rows = (
         db.query(Student.payment_mode, func.count(Student.id), func.coalesce(func.sum(Student.amount), 0.0))
@@ -386,6 +442,7 @@ def dashboard(
         distributor_wise=distributor_wise,
         branch_wise=branch_wise,
         year_wise=year_wise,
+        year_branch_matrix=year_branch_matrix,
         payment_mode_breakdown=payment_mode_breakdown,
         pass_type_breakdown=pass_type_breakdown,
         food_preference_breakdown=food_breakdown,

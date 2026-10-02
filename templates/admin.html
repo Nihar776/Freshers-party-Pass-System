@@ -163,6 +163,36 @@
                         <button class="btn btn-primary w-full mt-2" onclick="saveGlobalSettings()">Apply Configuration</button>
                     </div>
                 </div>
+                <div class="panel" style="grid-column: span 2;">
+                    <h3 class="mb-4" style="display:flex; align-items:center; gap:10px;">
+                        📊 Year × Branch Sales Matrix
+                        <span class="badge badge-primary" style="font-size: 0.7rem;">Live</span>
+                    </h3>
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table id="yb-matrix-table" class="table w-full" style="border-collapse: separate; border-spacing: 0;">
+                            <thead>
+                                <tr>
+                                    <th style="background: var(--card-bg); position: sticky; left: 0; z-index: 2; min-width: 60px;"></th>
+                                    <th style="text-align: center; min-width: 160px;">CE</th>
+                                    <th style="text-align: center; min-width: 160px;">CSE</th>
+                                    <th style="text-align: center; min-width: 160px;">IT</th>
+                                    <th style="text-align: center; min-width: 160px;">AIML</th>
+                                    <th style="text-align: center; min-width: 130px; background: rgba(99,102,241,0.08);">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="yb-matrix-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-muted);">
+                        <span>✅ = Verified</span>
+                        <span>⏳ = Pending</span>
+                        <span style="color: var(--success);">■ Cash</span>
+                        <span style="color: var(--warning);">■ UPI</span>
+                        <span>Progress = Sold / Roster</span>
+                    </div>
+                </div>
                 <div class="panel">
                     <h3 class="mb-4">Branch-wise Sales</h3>
                     <div class="table-container">
@@ -956,6 +986,111 @@
                         </td>
                     </tr>
                 `).join('');
+            }
+
+            // --- Year x Branch Matrix ---
+            if (data.year_branch_matrix) {
+                const YEARS = ['FY', 'SY', 'TY', 'LY'];
+                const BRANCHES = ['CE', 'CSE', 'IT', 'AIML'];
+                const yearColors = { FY: '#6366f1', SY: '#06b6d4', TY: '#8b5cf6', LY: '#f59e0b' };
+                
+                // Build lookup
+                const cellMap = {};
+                data.year_branch_matrix.forEach(c => {
+                    cellMap[c.year + '_' + c.branch] = c;
+                });
+                
+                // Compute row totals
+                const rowTotals = {};
+                YEARS.forEach(yr => {
+                    rowTotals[yr] = { sold: 0, verified: 0, pending: 0, cash: 0, upi: 0, roster: 0 };
+                    BRANCHES.forEach(br => {
+                        const c = cellMap[yr + '_' + br];
+                        if (c) {
+                            rowTotals[yr].sold += c.sold;
+                            rowTotals[yr].verified += c.verified;
+                            rowTotals[yr].pending += c.pending;
+                            rowTotals[yr].cash += c.cash_amount;
+                            rowTotals[yr].upi += c.upi_amount;
+                            rowTotals[yr].roster += c.roster_count;
+                        }
+                    });
+                });
+                
+                // Compute column totals
+                const colTotals = {};
+                BRANCHES.forEach(br => {
+                    colTotals[br] = { sold: 0, verified: 0, pending: 0, cash: 0, upi: 0, roster: 0 };
+                    YEARS.forEach(yr => {
+                        const c = cellMap[yr + '_' + br];
+                        if (c) {
+                            colTotals[br].sold += c.sold;
+                            colTotals[br].verified += c.verified;
+                            colTotals[br].pending += c.pending;
+                            colTotals[br].cash += c.cash_amount;
+                            colTotals[br].upi += c.upi_amount;
+                            colTotals[br].roster += c.roster_count;
+                        }
+                    });
+                });
+                
+                // Grand total
+                const grand = { sold: 0, verified: 0, pending: 0, cash: 0, upi: 0, roster: 0 };
+                YEARS.forEach(yr => {
+                    grand.sold += rowTotals[yr].sold;
+                    grand.verified += rowTotals[yr].verified;
+                    grand.pending += rowTotals[yr].pending;
+                    grand.cash += rowTotals[yr].cash;
+                    grand.upi += rowTotals[yr].upi;
+                    grand.roster += rowTotals[yr].roster;
+                });
+                
+                function renderCell(sold, verified, pending, cash, upi, roster, accent) {
+                    const pct = roster > 0 ? Math.round((sold / roster) * 100) : 0;
+                    const total = cash + upi;
+                    return `
+                        <div style="text-align: center; padding: 6px;">
+                            <div style="font-size: 1.4rem; font-weight: 700; color: ${accent || 'var(--text)'};">${sold}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
+                                ✅ ${verified} &nbsp; ⏳ ${pending}
+                            </div>
+                            <div style="width: 100%; height: 4px; background: var(--border); border-radius: 2px; margin: 6px 0 4px; overflow: hidden;">
+                                <div style="width: ${pct}%; height: 100%; background: ${accent || 'var(--primary)'}; transition: width 0.5s;"></div>
+                            </div>
+                            <div style="font-size: 0.65rem; color: var(--text-muted);">${sold}/${roster} (${pct}%)</div>
+                            <div style="font-size: 0.7rem; margin-top: 4px; display: flex; justify-content: center; gap: 8px;">
+                                <span style="color: var(--success);">₹${Math.round(cash)}</span>
+                                <span style="color: var(--warning);">₹${Math.round(upi)}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                let matrixHTML = '';
+                YEARS.forEach(yr => {
+                    matrixHTML += `<tr>`;
+                    matrixHTML += `<td style="font-weight: 700; font-size: 1rem; background: var(--card-bg); position: sticky; left: 0; z-index: 1; vertical-align: middle; text-align: center; border-left: 3px solid ${yearColors[yr]}; padding: 8px;">${yr}</td>`;
+                    BRANCHES.forEach(br => {
+                        const c = cellMap[yr + '_' + br] || { sold: 0, verified: 0, pending: 0, cash_amount: 0, upi_amount: 0, roster_count: 0 };
+                        matrixHTML += `<td style="border: 1px solid var(--border); padding: 0;">${renderCell(c.sold, c.verified, c.pending, c.cash_amount, c.upi_amount, c.roster_count, yearColors[yr])}</td>`;
+                    });
+                    // Row total
+                    const rt = rowTotals[yr];
+                    matrixHTML += `<td style="border: 1px solid var(--border); padding: 0; background: rgba(99,102,241,0.04);">${renderCell(rt.sold, rt.verified, rt.pending, rt.cash, rt.upi, rt.roster, yearColors[yr])}</td>`;
+                    matrixHTML += `</tr>`;
+                });
+                
+                // Column totals row
+                matrixHTML += `<tr style="background: rgba(99,102,241,0.04);">`;
+                matrixHTML += `<td style="font-weight: 700; font-size: 0.85rem; background: rgba(99,102,241,0.08); position: sticky; left: 0; z-index: 1; text-align: center; padding: 8px;">TOTAL</td>`;
+                BRANCHES.forEach(br => {
+                    const ct = colTotals[br];
+                    matrixHTML += `<td style="border: 1px solid var(--border); padding: 0;">${renderCell(ct.sold, ct.verified, ct.pending, ct.cash, ct.upi, ct.roster, '#6366f1')}</td>`;
+                });
+                matrixHTML += `<td style="border: 2px solid var(--primary); padding: 0; background: rgba(99,102,241,0.08);">${renderCell(grand.sold, grand.verified, grand.pending, grand.cash, grand.upi, grand.roster, '#6366f1')}</td>`;
+                matrixHTML += `</tr>`;
+                
+                document.getElementById('yb-matrix-body').innerHTML = matrixHTML;
             }
             
             if (data.food_preference_breakdown) {
