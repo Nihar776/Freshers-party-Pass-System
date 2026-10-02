@@ -579,6 +579,14 @@ def export_attendees(
     
     branch_sheets = {}
     
+    years = ["FY", "SY", "TY", "LY"]
+    branches = ["CE", "CSE", "IT", "AIML"]
+    for y in years:
+        for b in branches:
+            sheet_name = f"{y}_{b}"
+            branch_sheets[sheet_name] = wb.create_sheet(title=sheet_name)
+            branch_sheets[sheet_name].append(headers)
+    
     for s in students:
         scanned_by = s.scanned_by.full_name if s.scanned_by else "Unknown"
         entered_at = (s.entered_at + timedelta(hours=5, minutes=30)).strftime("%Y-%m-%d %H:%M:%S") if s.entered_at else "Unknown"
@@ -632,6 +640,14 @@ def export_sales(
     master_ws.append(headers)
     
     branch_sheets = {}
+    
+    years = ["FY", "SY", "TY", "LY"]
+    branches = ["CE", "CSE", "IT", "AIML"]
+    for y in years:
+        for b in branches:
+            sheet_name = f"{y}_{b}"
+            branch_sheets[sheet_name] = wb.create_sheet(title=sheet_name)
+            branch_sheets[sheet_name].append(headers)
     
     for s in students:
         distributor = s.distributor.full_name if s.distributor else "Unknown"

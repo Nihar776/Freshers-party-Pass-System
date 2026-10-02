@@ -57,6 +57,7 @@ class StudentSearchResult(BaseModel):
     branch: str
     year: Optional[str] = None
     email: Optional[str] = None
+    phone: Optional[str] = None
     gender: Optional[str]
     payment_status: PaymentStatus
 
@@ -296,6 +297,7 @@ def validate_discount_code(
 def sell_group(
     sap_ids: List[str] = Form(...),
     food_preferences: List[str] = Form(None),
+    phones: List[str] = Form(None),
     payer_sap_id: str = Form(...),
     email: Optional[str] = Form(None),
     phone: Optional[str] = Form(None),
@@ -389,7 +391,6 @@ def sell_group(
         db.rollback()
         raise HTTPException(status_code=409, detail="One or more passes were sold by someone else - refresh and check")
 
-    # Update food preferences individually since they vary per student
     if food_preferences and len(food_preferences) == len(sap_ids):
         # Map sap_id to its food preference
         pref_map = dict(zip(sap_ids, food_preferences))
@@ -399,6 +400,12 @@ def sell_group(
     else:
         for student in students:
             student.food_preference = FoodPreference.VEG
+
+    if phones and len(phones) == len(sap_ids):
+        phone_map = dict(zip(sap_ids, phones))
+        for student in students:
+            if phone_map.get(student.sap_id):
+                student.phone = phone_map[student.sap_id]
 
     payer_student = next((s for s in students if s.sap_id == payer_sap_id), None)
     if not payer_student:
