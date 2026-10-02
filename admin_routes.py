@@ -754,6 +754,7 @@ async def override_student(
     payment_mode: Optional[PaymentMode] = Form(None),
     utr_number: Optional[str] = Form(None),
     email: Optional[str] = Form(None),
+    phone: Optional[str] = Form(None),
     screenshot: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(*ADMIN_ONLY)),
@@ -778,6 +779,7 @@ async def override_student(
     if payment_status is not None:
         student.payment_status = payment_status
         new_snapshot["payment_status"] = payment_status.value if hasattr(payment_status, "value") else str(payment_status)
+        
         if payment_status == PaymentStatus.NOT_PURCHASED:
             student.group_id = None
             student.amount = 0.0
@@ -785,6 +787,37 @@ async def override_student(
             student.utr_number = None
             student.payment_screenshot = None
             student.screenshot_phash = None
+            student.sold_at = None
+            student.distributor_id = None
+            student.payment_mode = None
+            student.is_group_payer = False
+            student.discount_code_id = None
+            student.verified_at = None
+            
+            # Unblock any active orders
+            from schema_v2 import OnlineOrder, OrderMember
+            active_orders = db.query(OnlineOrder).join(OrderMember).filter(
+                OrderMember.sap_id == student.sap_id,
+                OnlineOrder.status.in_([PaymentStatus.RESERVED, PaymentStatus.PENDING_VERIFICATION])
+            ).all()
+            for order in active_orders:
+                order.status = PaymentStatus.REJECTED
+                order.rejection_reason = "Admin Override"
+                
+        elif payment_status in [PaymentStatus.VERIFIED, PaymentStatus.PENDING_VERIFICATION]:
+            if not student.sold_at:
+                student.sold_at = func.now()
+            if not student.distributor_id:
+                student.distributor_id = admin.id
+            if payment_status == PaymentStatus.VERIFIED and not student.verified_by_id:
+                student.verified_by_id = admin.id
+                student.verified_at = func.now()
+            
+            if student.amount is None or student.amount == 0.0:
+                from student_routes import get_price_quote, PriceQuoteRequest
+                quote = get_price_quote(PriceQuoteRequest(group_size=1), db=db)
+                student.amount = quote["final_price"]
+                new_snapshot["amount_assigned"] = student.amount
     if is_used is not None:
         student.is_used = is_used
         new_snapshot["is_used"] = is_used
@@ -801,6 +834,10 @@ async def override_student(
     if email is not None:
         student.email = email
         new_snapshot["email"] = email
+    
+    if phone is not None:
+        student.phone = phone
+        new_snapshot["phone"] = phone
         
     if screenshot is not None:
         ss_bytes = await screenshot.read()
@@ -1312,6 +1349,33 @@ def toggle_discount_code(
         times_used=dc.times_used, is_active=dc.is_active,
         created_at=dc.created_at.isoformat()
     )
+
+@router.delete("/discount-codes/{code_id}")
+def delete_discount_code(
+    code_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    from sqlalchemy.exc import IntegrityError
+    from schema_v2 import OnlineOrder, Student
+    dc = db.query(DiscountCode).filter(DiscountCode.id == code_id).first()
+    if not dc:
+        raise HTTPException(status_code=404, detail="Discount code not found")
+    
+    if dc.times_used > 0:
+        raise HTTPException(status_code=400, detail="Cannot delete this discount code because it has successful sales. Please deactivate it instead.")
+        
+    # It has 0 successful uses, but might have phantom expired/rejected reservations blocking deletion
+    db.query(OnlineOrder).filter(OnlineOrder.discount_code_id == dc.id).update({"discount_code_id": None})
+    db.query(Student).filter(Student.discount_code_id == dc.id).update({"discount_code_id": None})
+    
+    try:
+        db.delete(dc)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Cannot delete this discount code because it is locked by database constraints.")
+    return {"message": "Discount code deleted"}
 
 
 # ---------------------------------------------------------------------------

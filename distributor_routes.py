@@ -131,6 +131,7 @@ def sell_pass(
     email: Optional[str] = Form(None),  # only needed if the roster row lacks one
     phone: Optional[str] = Form(None),
     discount_code: Optional[str] = Form(None),
+    screenshot: Optional[UploadFile] = File(None),
     background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
     distributor: User = Depends(require_role(UserRole.DISTRIBUTOR, UserRole.ADMIN)),

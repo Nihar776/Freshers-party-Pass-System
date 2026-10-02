@@ -822,6 +822,11 @@ def reject_online_order(
     order.status = PaymentStatus.REJECTED
     order.rejection_reason = payload.reason
     order.approved_by_id = treasurer.id
+    if order.discount_code_id:
+        from schema_v2 import DiscountCode
+        dc = db.query(DiscountCode).filter_by(id=order.discount_code_id).first()
+        if dc and dc.times_used > 0:
+            dc.times_used -= 1
     
     leader = order.leader
         

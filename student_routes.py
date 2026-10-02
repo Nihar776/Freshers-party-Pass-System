@@ -114,10 +114,16 @@ def get_enrolled_count(db: Session, settings: dict) -> int:
 
     # 2. Online Order count
     # Expire lazy holds
-    db.query(OnlineOrder).filter(
+    expired_orders = db.query(OnlineOrder).filter(
         OnlineOrder.status == PaymentStatus.RESERVED,
         OnlineOrder.reservation_expires_at < now
-    ).update({"status": PaymentStatus.EXPIRED}, synchronize_session=False)
+    ).all()
+    for o in expired_orders:
+        o.status = PaymentStatus.EXPIRED
+        if o.discount_code_id:
+            dc = db.query(DiscountCode).filter_by(id=o.discount_code_id).first()
+            if dc and dc.times_used > 0:
+                dc.times_used -= 1
     db.flush()
     
     online_count = db.query(OrderMember).join(OnlineOrder).filter(

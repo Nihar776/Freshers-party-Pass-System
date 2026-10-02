@@ -627,6 +627,10 @@
                 <input type="email" id="edit-email" class="form-control" placeholder="Student Email">
             </div>
             <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" id="edit-phone" class="form-control" placeholder="10-digit number" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
+            </div>
+            <div class="form-group">
                 <label class="form-label">Payment Status</label>
                 <select id="edit-status" class="form-control" onchange="toggleEditPaymentFields()">
                     <option value="not_purchased">Not Purchased</option>
@@ -1049,7 +1053,7 @@
                     <td><span class="badge ${badgeClass}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_', ' ')}</span></td>
                     <td>${s.is_used ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-neutral">No</span>'}</td>
                     <td>
-                        <button class="btn btn-secondary py-1 px-3 text-sm" style="margin-right: 4px;" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}', '${s.food_preference}', '${s.email || ''}')">Edit</button>
+                        <button class="btn btn-secondary py-1 px-3 text-sm" style="margin-right: 4px;" onclick="openEditModal(${s.id}, '${s.payment_status}', ${s.is_used}, '${s.payment_mode}', '${s.food_preference}', '${s.email || ''}', '${s.phone || ''}')">Edit</button>
                         ${s.payment_status === 'verified' ? `<button class="btn btn-secondary py-1 px-3 text-sm" onclick="resendEmail('${s.sap_id}')">Resend Mail</button>` : ''}
                     </td>
                 </tr>
@@ -1287,12 +1291,13 @@
             }
         }
 
-        function openEditModal(id, currentStatus, currentUsed, paymentMode, foodPref, currentEmail) {
+        function openEditModal(id, currentStatus, currentUsed, paymentMode, foodPref, currentEmail, currentPhone) {
             currentEditStudentId = id;
             document.getElementById('edit-status').value = currentStatus;
             document.getElementById('edit-used').value = currentUsed.toString();
             document.getElementById('edit-food-pref').value = foodPref || 'veg';
             document.getElementById('edit-email').value = currentEmail || '';
+            document.getElementById('edit-phone').value = currentPhone || '';
             
             const screenshotBtn = document.getElementById('screenshot-btn-container');
             if (paymentMode === 'upi') {
@@ -1337,12 +1342,14 @@
             const used = document.getElementById('edit-used').value;
             const foodPref = document.getElementById('edit-food-pref').value;
             const email = document.getElementById('edit-email').value.trim();
+            const phone = document.getElementById('edit-phone').value.trim();
             
             const formData = new FormData();
             formData.append('payment_status', status);
             formData.append('is_used', used === 'true');
             formData.append('food_preference', foodPref);
             formData.append('email', email);
+            if (phone) formData.append('phone', phone);
             
             if (status === 'verified') {
                 formData.append('payment_mode', document.getElementById('edit-payment-mode').value);
@@ -1735,6 +1742,7 @@
                             <button class="btn btn-sm ${c.is_active ? 'btn-danger' : 'btn-primary'}" onclick="toggleDiscountCode(${c.id})">
                                 ${c.is_active ? 'Deactivate' : 'Activate'}
                             </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDiscountCode(${c.id})">Delete</button>
                         </td>
                     </tr>
                 `).join('');
@@ -1774,6 +1782,22 @@
                 } else {
                     const data = await res.json();
                     showToast(data.detail || 'Failed to create discount code', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function deleteDiscountCode(id) {
+            if (!confirm('Are you sure you want to delete this discount code?')) return;
+            try {
+                const res = await fetch(`/admin/discount-codes/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Discount code deleted successfully');
+                    loadDiscountCodes();
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Failed to delete discount code', 'error');
                 }
             } catch (err) {
                 showToast('Network error', 'error');
