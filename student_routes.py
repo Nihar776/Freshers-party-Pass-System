@@ -434,7 +434,7 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
                 "message": "Resumed existing reservation",
                 "order_reference": existing_order.order_reference,
                 "locked_price": existing_order.locked_total_price,
-                "reservation_expires_at": existing_order.reservation_expires_at,
+                "reservation_expires_at": existing_order.reservation_expires_at.isoformat() + "Z",
                 "qr_id": existing_order.upi_qr_shown_id
             }
         else:
@@ -524,7 +524,7 @@ def reserve_pass(req: ReserveRequest, db: Session = Depends(get_db)):
         "order_reference": order.order_reference,
         "locked_price": locked_price,
         "rule_name": applied_label or "",
-        "reservation_expires_at": order.reservation_expires_at,
+        "reservation_expires_at": order.reservation_expires_at.isoformat() + "Z",
         "qr_id": qr.id if qr else None
     }
 

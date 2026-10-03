@@ -479,7 +479,10 @@ def my_sales(
 ):
     rows = (
         db.query(Student)
-        .filter(Student.distributor_id == distributor.id)
+        .filter(
+            Student.distributor_id == distributor.id,
+            Student.payment_status != PaymentStatus.NOT_PURCHASED
+        )
         .order_by(Student.sold_at.desc())
         .all()
     )
@@ -513,7 +516,7 @@ def my_cash_balance(
     return CashBalanceResponse(
         total_cash_collected=total_cash,
         total_handed_over=total_handed_over,
-        outstanding_with_you=total_cash - total_handed_over,
+        outstanding_with_you=max(0.0, total_cash - total_handed_over),
     )
 
 
@@ -537,7 +540,7 @@ def get_handover_status(
         CashHandover.distributor_id == distributor.id
     ).scalar()
     
-    outstanding = total_cash - total_handed_over
+    outstanding = max(0.0, total_cash - total_handed_over)
 
     # Fetch latest pending/rejected request
     latest_req = db.query(CashHandoverRequest).filter(

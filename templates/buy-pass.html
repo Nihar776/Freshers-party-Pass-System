@@ -566,13 +566,16 @@
                 <!-- UPI QR -->
                 <div class="qr-block" id="qr-block">
                     <p class="text-muted text-sm" style="margin-bottom:12px;">Scan with any UPI app</p>
-                    <img id="qr-img" src="" alt="UPI QR Code" style="display:none;">
+                    <img id="qr-img" src="" alt="UPI QR Code" style="display:none;" crossorigin="anonymous">
                     <div id="qr-placeholder"
                         style="width:180px; height:180px; margin:0 auto 12px; background:var(--bg-surface); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--text-muted);">
                         Loading QR…
                     </div>
                     <div class="upi-id" id="qr-upi-id">—</div>
                     <div class="payee" id="qr-payee">—</div>
+                    <button id="btn-download-qr" style="display:none; margin:16px auto 0; padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer; border:none; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; transition:transform 0.15s,box-shadow 0.15s; box-shadow:0 2px 8px rgba(99,102,241,0.3);" onclick="downloadQr()" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        ⬇️ Download QR Code
+                    </button>
                 </div>
 
                 <!-- UTR + Screenshot -->
@@ -1284,11 +1287,8 @@
                 }
                 const data = await res.json();
                 lockedPrice = data.locked_price;
-                holdExpiresAt = new Date(
-                    data.reservation_expires_at.endsWith('Z') || data.reservation_expires_at.includes('+')
-                        ? data.reservation_expires_at
-                        : data.reservation_expires_at + 'Z'
-                );
+                // Server always returns UTC with Z suffix now
+                holdExpiresAt = new Date(data.reservation_expires_at);
 
                 document.getElementById('payAmount').textContent = lockedPrice;
                 document.getElementById('pay-rule').textContent = data.rule_name || '';
@@ -1312,12 +1312,42 @@
                 document.getElementById('qr-upi-id').textContent = qr.upi_id;
                 document.getElementById('qr-payee').textContent = qr.payee_name ? `Pay to: ${qr.payee_name}` : '';
                 const upiLink = `upi://pay?pa=${encodeURIComponent(qr.upi_id)}&pn=${encodeURIComponent(qr.payee_name || '')}&am=${lockedPrice}&cu=INR`;
-                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(upiLink)}`;
                 const img = document.getElementById('qr-img');
                 img.src = qrApiUrl;
                 img.style.display = 'block';
                 document.getElementById('qr-placeholder').style.display = 'none';
+                document.getElementById('btn-download-qr').style.display = 'inline-block';
             } catch (e) { }
+        }
+
+        function downloadQr() {
+            const img = document.getElementById('qr-img');
+            if (!img.src) return;
+            const canvas = document.createElement('canvas');
+            const size = 400;
+            canvas.width = size + 40;
+            canvas.height = size + 80;
+            const ctx = canvas.getContext('2d');
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // QR image
+            ctx.drawImage(img, 20, 20, size, size);
+            // Amount text
+            ctx.fillStyle = '#111';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.textAlign = 'center';
+            const amt = document.getElementById('payAmount').textContent;
+            ctx.fillText(`Pay ₹${amt}`, canvas.width / 2, size + 48);
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#666';
+            ctx.fillText(document.getElementById('qr-upi-id').textContent, canvas.width / 2, size + 68);
+            // Download
+            const link = document.createElement('a');
+            link.download = `upi-payment-qr-${amt}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
         }
 
         /* ─────────────────── Countdown ─────────────── */

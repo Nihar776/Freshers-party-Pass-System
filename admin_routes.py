@@ -620,6 +620,58 @@ def check_audit_integrity(
 # ---------------------------------------------------------------------------
 # Export & Overrides
 # ---------------------------------------------------------------------------
+@router.get("/export/screenshots")
+def export_screenshots_zip(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(*ADMIN_ONLY)),
+):
+    import zipfile
+    import re
+
+    orders = db.query(OnlineOrder).filter(
+        OnlineOrder.payment_screenshot.isnot(None),
+        OnlineOrder.status.in_([PaymentStatus.PENDING_VERIFICATION, PaymentStatus.VERIFIED])
+    ).all()
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for order in orders:
+            leader = order.leader
+            if not leader:
+                continue
+
+            # Determine suffix
+            member_count = len(order.members) if order.members else 1
+            suffix = "solo" if member_count <= 1 else f"group_of_{member_count}"
+
+            year = (leader.year or "NA").upper()
+            branch = (leader.branch or "NA").upper()
+            name = re.sub(r'[^\w\s-]', '', leader.name or "unknown").strip().replace(' ', '_')
+
+            filename = f"{year}-{branch}-{name}-{suffix}"
+
+            # Decode base64 screenshot
+            try:
+                img_data = base64.b64decode(order.payment_screenshot)
+            except Exception:
+                continue
+
+            # Detect extension from image header
+            ext = ".jpg"
+            if img_data[:4] == b'\x89PNG':
+                ext = ".png"
+            elif img_data[:4] == b'RIFF':
+                ext = ".webp"
+
+            zf.writestr(f"{filename}{ext}", img_data)
+
+    buf.seek(0)
+    return StreamingResponse(
+        buf,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=payment_screenshots.zip"},
+    )
+
 @router.get("/export/attendees")
 def export_attendees(
     db: Session = Depends(get_db),
