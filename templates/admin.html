@@ -1233,16 +1233,10 @@
 
         // --- Masking ---
         function maskSapId(sap) {
-            if (!sap) return '';
-            sap = String(sap);
-            if (sap.length > 4) return sap.substring(0, sap.length - 4) + '****';
-            return sap;
+            return sap || '';
         }
         function maskEmail(email) {
-            if (!email) return 'No email';
-            const parts = email.split('@');
-            if (parts.length === 2) return parts[0][0] + '****@' + parts[1];
-            return email;
+            return email || 'No email';
         }
 
         async function loadStudents() {
@@ -1269,7 +1263,7 @@
                     <td><input type="checkbox" class="student-checkbox" value="${s.id}"></td>
                     <td><span class="badge badge-neutral" style="font-family: monospace;">${skip + idx + 1}</span></td>
                     <td class="font-semibold">${s.name}</td>
-                    <td class="text-muted text-sm">Year ${s.year || '?'} · ${s.branch}<br>${maskSapId(s.sap_id)} · ${maskEmail(s.email)}</td>
+                    <td class="text-muted text-sm">${s.year || '?'} · ${s.branch}<br>${maskSapId(s.sap_id)} · ${maskEmail(s.email)}<br>${s.phone || 'No phone'}</td>
                     <td><span class="badge ${badgeClass}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_', ' ')}</span></td>
                     <td>${s.is_used ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-neutral">No</span>'}</td>
                     <td>
@@ -1373,7 +1367,7 @@
                                     <td class="text-muted text-sm">${maskSapId(m.sap_id)}</td>
                                     <td>
                                         <div class="font-semibold">${m.name}</div>
-                                        <div class="text-muted text-xs">Year ${m.year || '?'} · ${m.branch} · ${maskEmail(m.email)}</div>
+                                        <div class="text-muted text-xs">${m.year || '?'} · ${m.branch} · ${maskEmail(m.email)} · ${m.phone || 'No phone'}</div>
                                     </td>
                                     <td>₹${m.amount ? m.amount.toFixed(0) : 0}</td>
                                 </tr>

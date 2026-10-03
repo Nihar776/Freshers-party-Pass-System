@@ -495,7 +495,7 @@
                 
                 return `<tr>
                     <td class="font-semibold">${s.name}</td>
-                    <td>Year ${s.year || '?'} · ${maskSapId(s.sap_id)}<br><small class="text-muted">${maskEmail(s.email)}</small></td>
+                    <td>${s.year || '?'} · ${maskSapId(s.sap_id)}<br><small class="text-muted">${maskEmail(s.email)}</small></td>
                     <td><span class="badge ${s.payment_mode === 'cash' ? 'badge-success' : 'badge-neutral'}">${s.payment_mode || '-'}</span></td>
                     <td>₹${(s.amount || 0).toFixed(2)}</td>
                     <td><span class="badge ${badgeClass}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_', ' ')}</span></td>
@@ -589,7 +589,7 @@
                     div.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                         <div>
                                             <div class="name">${s.name} <span class="badge ${s.payment_status}">${s.payment_status === 'verified' ? 'purchased' : s.payment_status.replace('_',' ')}</span></div>
-                                            <div class="meta">Year ${s.year || '?'} · ${s.branch} · ${maskSapId(s.sap_id)} · ${maskEmail(s.email)}</div>
+                                            <div class="meta">${s.year || '?'} · ${s.branch} · ${maskSapId(s.sap_id)} · ${maskEmail(s.email)}</div>
                                         </div>
                                       </div>`;
 
@@ -670,7 +670,7 @@
                 <div class="cart-item">
                     <div>
                         <div class="font-semibold">${s.name}</div>
-                        <div class="text-muted text-sm">Year ${s.year || '?'} · ${s.branch} · ${maskSapId(s.sap_id)} · ${maskEmail(s.email)}</div>
+                        <div class="text-muted text-sm">${s.year || '?'} · ${s.branch} · ${maskSapId(s.sap_id)} · ${maskEmail(s.email)}</div>
                     </div>
                     <div class="cart-item-actions">
                         <label class="flex items-center gap-2" style="cursor: pointer;">

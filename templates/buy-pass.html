@@ -774,7 +774,7 @@
                                     ${taken ? s.payment_status.replace(/_/g, ' ') : 'Available'}
                                 </span>
                             </div>
-                            <div class="meta">Year ${s.year || '?'} · ${s.branch} · ${s.masked_sap_id} · ${s.masked_email || 'No email'}</div>
+                            <div class="meta">${s.year || '?'} · ${s.branch} · ${s.masked_sap_id} · ${s.masked_email || 'No email'}</div>
                         </div>
                         ${!taken ? '<span style="color:var(--primary);font-size:13px;font-weight:600;">Select →</span>' : ''}
                     `;
@@ -1125,7 +1125,7 @@
                         div.innerHTML = `
                             <div>
                                 <div class="name">${s.name}</div>
-                                <div class="meta">Year ${s.year || '?'} · ${s.branch} · ${s.masked_sap_id} · ${s.masked_email || 'No email'}</div>
+                                <div class="meta">${s.year || '?'} · ${s.branch} · ${s.masked_sap_id} · ${s.masked_email || 'No email'}</div>
                             </div>
                             ${!taken ? '<span style="color:var(--primary);font-size:13px;">+ Add</span>' : '<span style="font-size:12px;color:var(--text-muted);">Unavailable</span>'}
                         `;
@@ -1155,7 +1155,7 @@
                     <div>
                         <span class="font-semibold">${m.name}</span>
                         ${i === 0 ? '<span class="badge badge-primary" style="margin-left:6px;font-size:10px;">You</span>' : ''}
-                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${m.sap_id} · ${m.branch}${m.year ? ` · Year ${m.year}` : ''}</div>
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${m.sap_id} · ${m.branch}${m.year ? ` · ${m.year}` : ''}</div>
                     </div>
                     ${i > 0 ? `<button class="remove-btn" onclick="removeMember(${i})">×</button>` : ''}
                 </div>

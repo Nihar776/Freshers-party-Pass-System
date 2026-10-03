@@ -183,6 +183,7 @@ class AdminStudentSummary(BaseModel):
     name: str
     year: Optional[str] = None
     email: Optional[str] = None
+    phone: Optional[str] = None
     branch: str
     payment_status: PaymentStatus
     payment_mode: Optional[PaymentMode] = None
@@ -406,7 +407,7 @@ def dashboard(
         Student.payment_mode == PaymentMode.CASH, Student.payment_status == PaymentStatus.VERIFIED
     ).scalar()
     all_handed_over = db.query(func.coalesce(func.sum(CashHandover.amount), 0.0)).scalar()
-    cash_outstanding = all_cash_collected - all_handed_over
+    cash_outstanding = max(0.0, all_cash_collected - all_handed_over)
 
     # --- Expenses / net funds ---
     total_expenses = db.query(func.coalesce(func.sum(Expense.amount), 0.0)).scalar()
@@ -577,7 +578,7 @@ def sellers_detail(
         result.append(AdminSellerDetail(
             id=s.id, name=s.full_name, passes_sold=passes_sold,
             cash_collected=cash_collected, upi_collected=upi_collected,
-            outstanding_cash=cash_collected - handed_over
+            outstanding_cash=max(0.0, cash_collected - handed_over)
         ))
     return result
 
@@ -801,7 +802,7 @@ def list_reservations(db: Session = Depends(get_db), admin: User = Depends(requi
     
     res = []
     for o in orders:
-        members = [{"sap_id": m.sap_id, "name": m.student.name if m.student else m.sap_id} for m in o.members]
+        members = [{"sap_id": m.sap_id, "name": m.student.name if m.student else m.sap_id, "email": m.student.email if m.student else None, "phone": m.student.phone if m.student else None, "year": m.student.year if m.student else None, "branch": m.student.branch if m.student else None} for m in o.members]
         res.append({
             "id": o.id,
             "order_reference": o.order_reference,
