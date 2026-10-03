@@ -1123,41 +1123,36 @@
                 });
                 
                 // Header
-                matrixText += '📊 *Year × Branch Breakdown*\n';
-                matrixText += '```\n';
-                matrixText += '       CE    CSE    IT   AIML  TOTAL\n';
-                matrixText += '─────────────────────────────────────\n';
+                matrixText += '📊 *Year × Branch Breakdown*\n\n';
                 
                 let grandSold = 0, grandRoster = 0;
                 const colSold = {};
-                BRANCHES.forEach(b => colSold[b] = 0);
+                const colRoster = {};
+                BRANCHES.forEach(b => {
+                    colSold[b] = 0;
+                    colRoster[b] = 0;
+                });
                 
                 YEARS.forEach(yr => {
-                    let rowSold = 0, rowRoster = 0;
-                    let row = yr.padEnd(4);
+                    let rowParts = [];
                     BRANCHES.forEach(br => {
                         const c = cellMap[yr + '_' + br] || { sold: 0, roster_count: 0 };
-                        const cellStr = `${c.sold}/${c.roster_count}`;
-                        row += cellStr.padStart(7);
-                        rowSold += c.sold;
-                        rowRoster += c.roster_count;
-                        colSold[br] = (colSold[br] || 0) + c.sold;
+                        rowParts.push(`${br} ${c.sold}/${c.roster_count}`);
+                        colSold[br] += c.sold;
+                        colRoster[br] += c.roster_count;
+                        grandSold += c.sold;
+                        grandRoster += c.roster_count;
                     });
-                    grandSold += rowSold;
-                    grandRoster += rowRoster;
-                    row += `${rowSold}/${rowRoster}`.padStart(7);
-                    matrixText += row + '\n';
+                    matrixText += `*${yr}* | ${rowParts.join(' | ')}\n`;
                 });
                 
-                matrixText += '─────────────────────────────────────\n';
-                let totRow = 'TOT ';
+                matrixText += '\n';
+                let totParts = [];
                 BRANCHES.forEach(br => {
-                    const colR = lastDashboardData.year_branch_matrix.filter(c => c.branch === br).reduce((s, c) => s + c.roster_count, 0);
-                    totRow += `${colSold[br]}/${colR}`.padStart(7);
+                    totParts.push(`${br} ${colSold[br]}/${colRoster[br]}`);
                 });
-                totRow += `${grandSold}/${grandRoster}`.padStart(7);
-                matrixText += totRow + '\n';
-                matrixText += '```';
+                matrixText += `*TOT* | ${totParts.join(' | ')}\n`;
+                matrixText += `*GRAND TOTAL: ${grandSold} / ${grandRoster}*`;
             } else {
                 matrixText = 'No data available.';
             }
