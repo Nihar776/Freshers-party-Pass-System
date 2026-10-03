@@ -9,3 +9,4 @@ code_context.txt
 security_tester.py
 seed_mock_data.py
 seed.py
+*.xlsx

@@ -684,20 +684,10 @@ def export_attendees(
     master_ws = wb.active
     master_ws.title = "Master Data"
     
-    headers = ["Name", "SAP ID", "Branch", "Entered At", "Scanned By", "Food Pref", "Food Taken", "Food Taken At", "Food Scanned By"]
+    headers = ["Sr No", "SAP ID", "Name", "Year", "Branch", "Entered At", "Scanned By", "Food Pref", "Food Taken", "Food Taken At", "Food Scanned By"]
     master_ws.append(headers)
     
-    branch_sheets = {}
-    
-    years = ["FY", "SY", "TY", "LY"]
-    branches = ["CE", "CSE", "IT", "AIML"]
-    for y in years:
-        for b in branches:
-            sheet_name = f"{y}_{b}"
-            branch_sheets[sheet_name] = wb.create_sheet(title=sheet_name)
-            branch_sheets[sheet_name].append(headers)
-    
-    for s in students:
+    for idx, s in enumerate(students):
         scanned_by = s.scanned_by.full_name if s.scanned_by else "Unknown"
         entered_at = (s.entered_at + timedelta(hours=5, minutes=30)).strftime("%Y-%m-%d %H:%M:%S") if s.entered_at else "Unknown"
         food_val = (s.food_preference.value if hasattr(s.food_preference, "value") else str(s.food_preference or "")).lower()
@@ -705,25 +695,22 @@ def export_attendees(
         food_taken = "Yes" if s.food_received else "No"
         food_taken_at = (s.food_received_at + timedelta(hours=5, minutes=30)).strftime("%Y-%m-%d %H:%M:%S") if s.food_received_at else ""
         food_scanned = s.food_scanned_by.full_name if s.food_scanned_by else ""
-        row = [s.name, s.sap_id, s.branch, entered_at, scanned_by, food_pref, food_taken, food_taken_at, food_scanned]
+        
+        row = [
+            idx + 1,
+            s.sap_id,
+            s.name,
+            s.year or "",
+            s.branch or "",
+            entered_at,
+            scanned_by,
+            food_pref,
+            food_taken,
+            food_taken_at,
+            food_scanned
+        ]
         
         master_ws.append(row)
-        
-        y_str = str(s.year or "Unknown").strip()
-        b_str = str(s.branch or "Unknown").strip()
-        sheet_name = f"{y_str}_{b_str}"
-        
-        if sheet_name not in branch_sheets:
-            # Excel limits sheet name to 31 chars and bans some special chars
-            safe_title = "".join(c for c in sheet_name if c.isalnum() or c in " _-")[:31]
-            if not safe_title: safe_title = "Unknown"
-            # Ensure unique
-            while safe_title in wb.sheetnames:
-                safe_title = safe_title[:28] + "_1"
-            branch_sheets[sheet_name] = wb.create_sheet(title=safe_title)
-            branch_sheets[sheet_name].append(headers)
-            
-        branch_sheets[sheet_name].append(row)
     
     output = io.BytesIO()
     wb.save(output)
@@ -740,47 +727,81 @@ def export_sales(
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(*ADMIN_ONLY)),
 ):
+    from openpyxl.styles import Alignment
     students = db.query(Student).filter(Student.payment_status != PaymentStatus.NOT_PURCHASED).all()
     
     wb = openpyxl.Workbook()
     master_ws = wb.active
     master_ws.title = "Master Data"
     
-    headers = ["Name", "SAP ID", "Email", "Branch", "Pass Type", "Amount", "Payment Mode", "Status", "Distributor"]
+    headers = ["Sr No", "SAP ID", "Name", "Year", "Branch", "Food Pref", "Solo/Group", "Paid By", "Amount Paid", "Seller"]
     master_ws.append(headers)
     
-    branch_sheets = {}
-    
-    years = ["FY", "SY", "TY", "LY"]
-    branches = ["CE", "CSE", "IT", "AIML"]
-    for y in years:
-        for b in branches:
-            sheet_name = f"{y}_{b}"
-            branch_sheets[sheet_name] = wb.create_sheet(title=sheet_name)
-            branch_sheets[sheet_name].append(headers)
-    
+    groups_dict = {}
     for s in students:
-        distributor = s.distributor.full_name if s.distributor else "Unknown"
-        pass_type = s.pass_type.value if s.pass_type else ""
-        payment_mode = s.payment_mode.value if s.payment_mode else ""
-        row = [s.name, s.sap_id, s.email, s.branch, pass_type, s.amount or 0, payment_mode, s.payment_status.value, distributor]
+        gid = s.group_id if s.group_id else f"solo_{s.id}"
+        if gid not in groups_dict:
+            groups_dict[gid] = []
+        groups_dict[gid].append(s)
         
-        master_ws.append(row)
-        
-        y_str = str(s.year or "Unknown").strip()
-        b_str = str(s.branch or "Unknown").strip()
-        sheet_name = f"{y_str}_{b_str}"
-        
-        if sheet_name not in branch_sheets:
-            safe_title = "".join(c for c in sheet_name if c.isalnum() or c in " _-")[:31]
-            if not safe_title: safe_title = "Unknown"
-            while safe_title in wb.sheetnames:
-                safe_title = safe_title[:28] + "_1"
-            branch_sheets[sheet_name] = wb.create_sheet(title=safe_title)
-            branch_sheets[sheet_name].append(headers)
-            
-        branch_sheets[sheet_name].append(row)
+    group_counter = 1
+    processed_groups = []
     
+    for gid, members in groups_dict.items():
+        members.sort(key=lambda s: s.is_group_payer, reverse=True)
+        is_group = len(members) > 1 or (members[0].pass_type and members[0].pass_type.value == 'group')
+        group_label = f"Group-{group_counter}" if is_group else "Solo"
+        if is_group:
+            group_counter += 1
+            
+        payer_name = members[0].name
+        total_amount = sum(m.amount or 0 for m in members)
+        seller = members[0].distributor.full_name if members[0].distributor else "Public Portal"
+        
+        processed_groups.append({
+            "members": members,
+            "label": group_label,
+            "payer": payer_name,
+            "amount": total_amount,
+            "seller": seller
+        })
+        
+    sr_no = 1
+    current_row = 2
+    center_aligned = Alignment(vertical='center', horizontal='center')
+    
+    for pg in processed_groups:
+        start_row = current_row
+        for m in pg["members"]:
+            food_val = (m.food_preference.value if hasattr(m.food_preference, "value") else str(m.food_preference or "")).lower()
+            food_pref = "Jain" if food_val == "jain" else "Non-Jain"
+            
+            row = [
+                sr_no,
+                m.sap_id,
+                m.name,
+                m.year or "",
+                m.branch or "",
+                food_pref,
+                pg["label"],
+                pg["payer"],
+                pg["amount"],
+                pg["seller"]
+            ]
+            master_ws.append(row)
+            sr_no += 1
+            current_row += 1
+            
+        end_row = current_row - 1
+        if end_row > start_row:
+            master_ws.merge_cells(start_row=start_row, start_column=7, end_row=end_row, end_column=7)
+            master_ws.merge_cells(start_row=start_row, start_column=8, end_row=end_row, end_column=8)
+            master_ws.merge_cells(start_row=start_row, start_column=9, end_row=end_row, end_column=9)
+            master_ws.merge_cells(start_row=start_row, start_column=10, end_row=end_row, end_column=10)
+            
+            for col in (7, 8, 9, 10):
+                master_ws.cell(row=start_row, column=col).alignment = center_aligned
+
     output = io.BytesIO()
     wb.save(output)
     output.seek(0)
