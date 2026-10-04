@@ -12,3 +12,4 @@ seed_mock_data.py
 seed.py
 *.xlsx
 .pytest_cache/
+csvs
