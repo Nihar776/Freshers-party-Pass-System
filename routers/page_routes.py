@@ -7,7 +7,7 @@ from db.schema_v2 import User, UserRole
 from core.session_auth import get_current_user, require_role
 
 router = APIRouter(tags=["pages"])
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 @router.get("/login-page", response_class=HTMLResponse)
