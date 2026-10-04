@@ -18,17 +18,17 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from datetime import datetime, date, timedelta
-from database import get_db
-from schema_v2 import (
+from db.database import get_db
+from db.schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
     FoodPreference, Expense, CashHandover, AuditLog, DiscountCode, DiscountType,
     OnlineOrder, OrderMember
 )
-from session_auth import require_role
-from audit import verify_chain_integrity, write_audit_log
-from auth import generate_pass_token, generate_qr_image
-from mailer import send_pass_email
-from student_routes import get_price_quote, PriceQuoteRequest
+from core.session_auth import require_role
+from services.audit import verify_chain_integrity, write_audit_log
+from core.auth import generate_pass_token, generate_qr_image
+from services.mailer import send_pass_email
+from routers.student_routes import get_price_quote, PriceQuoteRequest
 
 router = APIRouter(prefix="/admin", tags=["admin-dashboard"])
 
@@ -926,7 +926,7 @@ async def override_student(
             student.verified_at = None
             
             # Unblock any active orders
-            from schema_v2 import OnlineOrder, OrderMember
+            from db.schema_v2 import OnlineOrder, OrderMember
             active_orders = db.query(OnlineOrder).join(OrderMember).filter(
                 OrderMember.sap_id == student.sap_id,
                 OnlineOrder.status.in_([PaymentStatus.RESERVED, PaymentStatus.PENDING_VERIFICATION])
@@ -945,7 +945,7 @@ async def override_student(
                 student.verified_at = func.now()
             
             if student.amount is None or student.amount == 0.0:
-                from student_routes import get_price_quote, PriceQuoteRequest
+                from routers.student_routes import get_price_quote, PriceQuoteRequest
                 quote = get_price_quote(PriceQuoteRequest(group_size=1), db=db)
                 student.amount = quote["final_price"]
                 new_snapshot["amount_assigned"] = student.amount
@@ -1375,7 +1375,7 @@ def create_discount_code(
     )
 
     # Auto generate a DiscountRule for the code
-    from schema_v2 import DiscountRule, DiscountRuleType, PricingEffect
+    from db.schema_v2 import DiscountRule, DiscountRuleType, PricingEffect
     pe = PricingEffect.PERCENT_OFF if dc.discount_type.value == "percentage" else (PricingEffect.FIXED if dc.discount_type.value == "fixed" else PricingEffect.FLAT_OFF)
     dr = DiscountRule(
         name=f"Code: {dc.code}",
@@ -1488,7 +1488,7 @@ def delete_discount_code(
     admin: User = Depends(require_role(*ADMIN_ONLY)),
 ):
     from sqlalchemy.exc import IntegrityError
-    from schema_v2 import OnlineOrder, Student
+    from db.schema_v2 import OnlineOrder, Student
     dc = db.query(DiscountCode).filter(DiscountCode.id == code_id).first()
     if not dc:
         raise HTTPException(status_code=404, detail="Discount code not found")
@@ -1512,7 +1512,7 @@ def delete_discount_code(
 # ---------------------------------------------------------------------------
 # Global Settings
 # ---------------------------------------------------------------------------
-from settings_manager import get_settings, save_settings
+from core.settings_manager import get_settings, save_settings
 
 class SettingsPayload(BaseModel):
     scanner_mode: str

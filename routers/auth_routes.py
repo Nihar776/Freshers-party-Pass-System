@@ -8,11 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from database import get_db
-from schema_v2 import User, UserRole
-from security import hash_password, verify_password
-from session_auth import create_session_token, require_role, get_current_user, SESSION_COOKIE_NAME
-from config import IS_PRODUCTION
+from db.database import get_db
+from db.schema_v2 import User, UserRole
+from core.security import hash_password, verify_password
+from core.session_auth import create_session_token, require_role, get_current_user, SESSION_COOKIE_NAME
+from core.config import IS_PRODUCTION
 
 router = APIRouter()
 

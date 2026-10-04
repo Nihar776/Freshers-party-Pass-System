@@ -5,7 +5,7 @@ SQLAlchemy engine + session factory for the SQLite database.
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from config import DATABASE_URL
+from core.config import DATABASE_URL
 
 # Fix URL for SQLAlchemy 1.4+ if provided as postgres://
 if DATABASE_URL.startswith("postgres://"):

@@ -12,7 +12,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from schema_v2 import AuditLog
+from db.schema_v2 import AuditLog
 
 GENESIS_HASH = "0" * 64
 

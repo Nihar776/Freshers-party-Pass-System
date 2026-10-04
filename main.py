@@ -10,21 +10,21 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from database import Base, engine
+from db.database import Base, engine
 import schema_v2  # noqa: F401 - importing registers all tables on the shared Base
 
-from auth_routes import router as auth_router
-from roster_routes import router as roster_router
-from distributor_routes import router as distributor_router
-from treasurer_routes import router as treasurer_router
-from volunteer_routes import router as gate_router
-from admin_routes import router as admin_router
-from bootstrap_routes import router as bootstrap_router
-from page_routes import router as page_router
-from student_routes import router as student_router
-from admin_config_routes import router as admin_config_router
+from routers.auth_routes import router as auth_router
+from routers.roster_routes import router as roster_router
+from routers.distributor_routes import router as distributor_router
+from routers.treasurer_routes import router as treasurer_router
+from routers.volunteer_routes import router as gate_router
+from routers.admin_routes import router as admin_router
+from routers.bootstrap_routes import router as bootstrap_router
+from routers.page_routes import router as page_router
+from routers.student_routes import router as student_router
+from routers.admin_config_routes import router as admin_config_router
 
-from config import EVENT_ID, EVENT_NAME
+from core.config import EVENT_ID, EVENT_NAME
 
 # Creates every table (students, users, expenses, cash_handovers,
 # budget_allocations, audit_log) if they don't exist yet.

@@ -10,14 +10,14 @@ from pydantic import BaseModel
 from io import BytesIO
 from PIL import Image
 
-from database import get_db, engine
-from schema_v2 import (
+from db.database import get_db, engine
+from db.schema_v2 import (
     Student, PaymentStatus, DiscountRule, DiscountRuleType, ConditionType,
     Combinator, UpiQrCode, OnlineOrder, OrderMember, SaleChannel, PricingEffect,
     DiscountCode, DiscountType
 )
-from settings_manager import get_settings
-from mailer import send_otp_email
+from core.settings_manager import get_settings
+from services.mailer import send_otp_email
 
 router = APIRouter(prefix="/api/student", tags=["student_portal"])
 
@@ -256,7 +256,7 @@ def send_otp(req: SendOtpRequest, request: Request, background_tasks: Background
     db.commit()
     
     try:
-        from mailer import send_otp_email
+        from services.mailer import send_otp_email
         background_tasks.add_task(send_otp_email, target_email, student.name, otp)
     except Exception as e:
         pass # The task will be queued and handle its own errors
@@ -595,7 +595,7 @@ def upload_payment(req: UploadPaymentRequest, background_tasks: BackgroundTasks,
     
     leader_member = db.query(OrderMember).filter(OrderMember.order_id == order.id, OrderMember.sap_id == req.sap_id).first()
     if leader_member and leader_member.student and leader_member.student.email:
-        from mailer import send_pending_confirmation_email
+        from services.mailer import send_pending_confirmation_email
         background_tasks.add_task(
             send_pending_confirmation_email,
             recipient_email=leader_member.student.email,

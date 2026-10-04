@@ -17,18 +17,18 @@ from sqlalchemy import update, func
 from sqlalchemy.orm import Session
 from PIL import Image
 
-from database import get_db
-from schema_v2 import (
+from db.database import get_db
+from db.schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, PassType,
     FoodPreference, CashHandover, DiscountCode, DiscountType, CashHandoverRequest,
     HandoverRequestStatus, PricingEffect, DiscountRuleType
 )
-from session_auth import require_role
-from audit import write_audit_log
-from auth import generate_pass_token, generate_qr_image
-from mailer import send_pass_email
-from config import PASS_PRICE
-from student_routes import get_price_quote, PriceQuoteRequest
+from core.session_auth import require_role
+from services.audit import write_audit_log
+from core.auth import generate_pass_token, generate_qr_image
+from services.mailer import send_pass_email
+from core.config import PASS_PRICE
+from routers.student_routes import get_price_quote, PriceQuoteRequest
 
 router = APIRouter(prefix="/distributor", tags=["distributor"])
 

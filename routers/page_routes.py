@@ -2,9 +2,9 @@ from pathlib import Path
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from database import get_db
-from schema_v2 import User, UserRole
-from session_auth import get_current_user, require_role
+from db.database import get_db
+from db.schema_v2 import User, UserRole
+from core.session_auth import get_current_user, require_role
 
 router = APIRouter(tags=["pages"])
 BASE_DIR = Path(__file__).resolve().parent

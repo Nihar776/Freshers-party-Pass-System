@@ -17,7 +17,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from database import Base  # shared Base/metadata - same registry as the rest of the app
+from db.database import Base  # shared Base/metadata - same registry as the rest of the app
 
 
 def _uuid() -> str:

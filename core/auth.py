@@ -23,7 +23,7 @@ import jwt
 import qrcode
 from qrcode.image.pil import PilImage
 
-from config import SECRET_KEY, JWT_ALGORITHM, EVENT_ID, PASS_TOKEN_TTL_HOURS
+from core.config import SECRET_KEY, JWT_ALGORITHM, EVENT_ID, PASS_TOKEN_TTL_HOURS
 
 
 class InvalidPassToken(Exception):

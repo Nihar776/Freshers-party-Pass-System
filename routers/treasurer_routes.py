@@ -15,16 +15,16 @@ from pydantic import BaseModel
 from sqlalchemy import func, update
 from sqlalchemy.orm import Session
 
-from database import get_db
-from schema_v2 import (
+from db.database import get_db
+from db.schema_v2 import (
     Student, User, UserRole, PaymentStatus, PaymentMode, SaleChannel,
     CashHandover, Expense, BudgetAllocation, FundType,
     CashHandoverRequest, HandoverRequestStatus
 )
-from session_auth import require_role
-from audit import write_audit_log
-from auth import generate_pass_token, generate_qr_image
-from mailer import send_pass_email
+from core.session_auth import require_role
+from services.audit import write_audit_log
+from core.auth import generate_pass_token, generate_qr_image
+from services.mailer import send_pass_email
 
 router = APIRouter(prefix="/treasurer", tags=["treasurer"])
 
@@ -664,7 +664,7 @@ def finance_summary(
 # ---------------------------------------------------------------------------
 # Online Orders Verification
 # ---------------------------------------------------------------------------
-from schema_v2 import OnlineOrder, OrderMember
+from db.schema_v2 import OnlineOrder, OrderMember
 
 class PendingOnlineOrderItem(BaseModel):
     order_id: int
@@ -823,7 +823,7 @@ def reject_online_order(
     order.rejection_reason = payload.reason
     order.approved_by_id = treasurer.id
     if order.discount_code_id:
-        from schema_v2 import DiscountCode
+        from db.schema_v2 import DiscountCode
         dc = db.query(DiscountCode).filter_by(id=order.discount_code_id).first()
         if dc and dc.times_used > 0:
             dc.times_used -= 1
@@ -831,7 +831,7 @@ def reject_online_order(
     leader = order.leader
         
     if leader and leader.email:
-        from mailer import send_rejection_email
+        from services.mailer import send_rejection_email
         background_tasks.add_task(
             send_rejection_email,
             recipient_email=leader.email,

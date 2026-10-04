@@ -15,10 +15,10 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from database import get_db
-from schema_v2 import Student, User, UserRole, PaymentStatus
-from session_auth import require_role
-from audit import write_audit_log
+from db.database import get_db
+from db.schema_v2 import Student, User, UserRole, PaymentStatus
+from core.session_auth import require_role
+from services.audit import write_audit_log
 
 router = APIRouter(prefix="/admin/roster", tags=["roster"])
 

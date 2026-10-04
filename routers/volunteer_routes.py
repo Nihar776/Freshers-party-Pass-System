@@ -16,12 +16,12 @@ from pydantic import BaseModel
 from sqlalchemy import update, func
 from sqlalchemy.orm import Session
 
-from database import get_db
-from schema_v2 import Student, User, UserRole, PaymentStatus
-from session_auth import require_role
-from auth import verify_pass_token, InvalidPassToken
-from audit import write_audit_log
-from config import EVENT_ID
+from db.database import get_db
+from db.schema_v2 import Student, User, UserRole, PaymentStatus
+from core.session_auth import require_role
+from core.auth import verify_pass_token, InvalidPassToken
+from services.audit import write_audit_log
+from core.config import EVENT_ID
 
 router = APIRouter(tags=["gate"])
 GATE_ROLES = (UserRole.VOLUNTEER, UserRole.ADMIN)
@@ -45,7 +45,7 @@ class GateStats(BaseModel):
     total_entered: int
     pending_entry: int
     
-from settings_manager import get_current_scanner_mode
+from core.settings_manager import get_current_scanner_mode
 
 @router.get("/scanner-mode")
 def get_scanner_mode(volunteer: User = Depends(require_role(*GATE_ROLES))):

@@ -1,8 +1,8 @@
 import os
 from sqlalchemy.orm import Session
-from database import SessionLocal
-from schema_v2 import DiscountRule, DiscountRuleType, PricingEffect, Combinator, ActivationCondition, ConditionType
-from settings_manager import get_settings, save_settings
+from db.database import SessionLocal
+from db.schema_v2 import DiscountRule, DiscountRuleType, PricingEffect, Combinator, ActivationCondition, ConditionType
+from core.settings_manager import get_settings, save_settings
 
 def seed_online_sales():
     db: Session = SessionLocal()

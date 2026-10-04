@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from database import get_db
-from schema_v2 import User, UserRole, DiscountRule, DiscountRuleType, PricingEffect, Combinator, ConditionType, ActivationCondition, UpiQrCode
-from session_auth import require_role
-from settings_manager import get_settings, save_settings
+from db.database import get_db
+from db.schema_v2 import User, UserRole, DiscountRule, DiscountRuleType, PricingEffect, Combinator, ConditionType, ActivationCondition, UpiQrCode
+from core.session_auth import require_role
+from core.settings_manager import get_settings, save_settings
 
 router = APIRouter(prefix="/admin", tags=["admin-rules"])
 
@@ -110,7 +110,7 @@ def create_rule(payload: RuleCreate, db: Session = Depends(get_db), admin: User 
         if not base_code:
             base_code = f"RULE{rule.id}"
             
-        from schema_v2 import DiscountCode, DiscountType
+        from db.schema_v2 import DiscountCode, DiscountType
         existing = db.query(DiscountCode).filter(DiscountCode.code == base_code).first()
         suffix = 1
         final_code = base_code

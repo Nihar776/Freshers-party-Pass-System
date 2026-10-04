@@ -15,9 +15,9 @@ import jwt
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
-from config import SESSION_SECRET_KEY, JWT_ALGORITHM, SESSION_TTL_HOURS
-from database import get_db
-from schema_v2 import User, UserRole
+from core.config import SESSION_SECRET_KEY, JWT_ALGORITHM, SESSION_TTL_HOURS
+from db.database import get_db
+from db.schema_v2 import User, UserRole
 
 SESSION_COOKIE_NAME = "session_token"
 

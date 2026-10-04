@@ -13,10 +13,10 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from database import get_db
-from schema_v2 import User, UserRole
-from security import hash_password
-from config import BOOTSTRAP_SECRET
+from db.database import get_db
+from db.schema_v2 import User, UserRole
+from core.security import hash_password
+from core.config import BOOTSTRAP_SECRET
 
 router = APIRouter(tags=["bootstrap"])
 BASE_DIR = Path(__file__).resolve().parent

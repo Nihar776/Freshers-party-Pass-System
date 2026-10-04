@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from io import BytesIO
 
-from config import (
+from core.config import (
     SMTP_HOST,
     SMTP_PORT,
     SMTP_USER,

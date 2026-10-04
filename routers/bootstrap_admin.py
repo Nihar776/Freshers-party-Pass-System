@@ -13,10 +13,10 @@ live, or against the production DB via its connection string:
 import getpass
 import sys
 
-from database import Base, engine, SessionLocal
-import schema_v2
-from schema_v2 import User, UserRole
-from security import hash_password
+from db.database import Base, engine, SessionLocal
+from db import schema_v2
+from db.schema_v2 import User, UserRole
+from core.security import hash_password
 
 
 def main():
