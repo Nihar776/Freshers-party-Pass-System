@@ -13,3 +13,4 @@ seed.py
 *.xlsx
 .pytest_cache/
 csvs
+frontend/
