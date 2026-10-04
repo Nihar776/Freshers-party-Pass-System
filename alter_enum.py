@@ -1,5 +1,0 @@
-from database import engine
-from sqlalchemy import text
-with engine.connect() as conn:
-    conn.execute(text("ALTER TYPE discounttype ADD VALUE 'fixed'"))
-    conn.commit()
