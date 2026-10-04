@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from db.database import Base, engine
-import schema_v2  # noqa: F401 - importing registers all tables on the shared Base
+from db import schema_v2  # noqa: F401 - importing registers all tables on the shared Base
 
 from routers.auth_routes import router as auth_router
 from routers.roster_routes import router as roster_router
