@@ -10,3 +10,5 @@ security_tester.py
 seed_mock_data.py
 seed.py
 *.xlsx
+frontend/
+.tmp_templates/
