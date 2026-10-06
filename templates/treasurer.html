@@ -362,9 +362,15 @@
         }
 
         // --- Queue ---
+        let lastVerifyHash = '';
         async function loadQueue() {
             const res = await fetch('/treasurer/pending-verifications');
             pendingVerifyItems = await res.json();
+            
+            const newHash = JSON.stringify(pendingVerifyItems);
+            if (newHash === lastVerifyHash) return; // Skip re-rendering if nothing changed
+            lastVerifyHash = newHash;
+            
             renderVerifyQueue();
         }
 
@@ -394,7 +400,7 @@
                     </div>
                     <div style="flex-shrink:0;">
                         ${item.has_screenshot ? 
-                          `<img id="thumb-${item.payer_student_id}" src="" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; background: var(--bg-body); border: 1px solid var(--border);" onclick="viewScreenshot(${item.payer_student_id})" alt="Loading..." title="Click to view full screenshot">` :
+                          `<img id="thumb-${item.payer_student_id}" src="/treasurer/pending-verifications/${item.payer_student_id}/raw-screenshot" loading="lazy" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; background: var(--bg-body); border: 1px solid var(--border);" onclick="viewScreenshot(${item.payer_student_id})" alt="Loading..." title="Click to view full screenshot">` :
                           `<div style="width: 80px; height: 80px; background: var(--bg-body); border-radius: 8px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-size:12px; border: 1px solid var(--border);">No SS</div>`
                         }
                     </div>
@@ -431,19 +437,6 @@
                     </div>
                 </div>
             `).join('');
-            
-            // Load thumbnails lazily
-            items.forEach(item => {
-                if (item.has_screenshot) {
-                    fetch(`/treasurer/pending-verifications/${item.payer_student_id}/screenshot`)
-                      .then(r => r.json())
-                      .then(data => { 
-                          const img = document.getElementById('thumb-' + item.payer_student_id);
-                          if(img) img.src = data.screenshot_base64; 
-                      })
-                      .catch(err => console.error(err));
-                }
-            });
         }
 
         async function bulkApproveVerify() {
@@ -453,12 +446,17 @@
             
             document.body.style.cursor = 'wait';
             let success = 0;
-            for (let gid of checked) {
-                const res = await fetch(`/treasurer/verify-group/${gid}`, { method: 'POST' });
-                if(res.ok) success++;
-            }
+            
+            await Promise.all(checked.map(async gid => {
+                try {
+                    const res = await fetch(`/treasurer/verify-group/${gid}`, { method: 'POST' });
+                    if(res.ok) success++;
+                } catch(e) {}
+            }));
+            
             document.body.style.cursor = 'default';
             showToast(`Approved ${success}/${checked.length} groups`);
+            lastVerifyHash = ''; // Force refresh
             loadQueue();
         }
 
@@ -471,16 +469,21 @@
             
             document.body.style.cursor = 'wait';
             let success = 0;
-            for (let gid of checked) {
-                const res = await fetch(`/treasurer/reject-group/${gid}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reason })
-                });
-                if(res.ok) success++;
-            }
+            
+            await Promise.all(checked.map(async gid => {
+                try {
+                    const res = await fetch(`/treasurer/reject-group/${gid}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason })
+                    });
+                    if(res.ok) success++;
+                } catch(e) {}
+            }));
+            
             document.body.style.cursor = 'default';
             showToast(`Rejected ${success}/${checked.length} groups`);
+            lastVerifyHash = ''; // Force refresh
             loadQueue();
         }
 
@@ -561,9 +564,15 @@
         }
 
         // --- Online Queue ---
+        let lastOnlineHash = '';
         async function loadOnlineQueue() {
             const res = await fetch('/treasurer/online/pending');
             pendingOnlineItems = await res.json();
+            
+            const newHash = JSON.stringify(pendingOnlineItems);
+            if (newHash === lastOnlineHash) return; // Skip re-rendering if nothing changed
+            lastOnlineHash = newHash;
+            
             renderOnlineQueue();
         }
 
@@ -593,7 +602,7 @@
                     </div>
                     <div style="flex-shrink:0;">
                         ${item.has_screenshot ? 
-                          `<img id="othumb-${item.order_id}" src="" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; background: var(--bg-body); border: 1px solid var(--border);" onclick="viewOnlineScreenshot(${item.order_id})" alt="Loading..." title="Click to view full screenshot">` :
+                          `<img id="othumb-${item.order_id}" src="/treasurer/online/pending/${item.order_id}/raw-screenshot" loading="lazy" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; background: var(--bg-body); border: 1px solid var(--border);" onclick="viewOnlineScreenshot(${item.order_id})" alt="Loading..." title="Click to view full screenshot">` :
                           `<div style="width: 80px; height: 80px; background: var(--bg-body); border-radius: 8px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-size:12px; border: 1px solid var(--border);">No SS</div>`
                         }
                     </div>
@@ -630,19 +639,6 @@
                     </div>
                 </div>
             `).join('');
-            
-            // Load thumbnails lazily
-            items.forEach(item => {
-                if (item.has_screenshot) {
-                    fetch(`/treasurer/online/pending/${item.order_id}/screenshot`)
-                      .then(r => r.json())
-                      .then(data => { 
-                          const img = document.getElementById('othumb-' + item.order_id);
-                          if(img) img.src = data.screenshot_base64; 
-                      })
-                      .catch(err => console.error(err));
-                }
-            });
         }
 
         async function bulkApproveOnline() {
@@ -652,12 +648,17 @@
             
             document.body.style.cursor = 'wait';
             let success = 0;
-            for (let oid of checked) {
-                const res = await fetch(`/treasurer/online/verify/${oid}`, { method: 'POST' });
-                if(res.ok) success++;
-            }
+            
+            await Promise.all(checked.map(async oid => {
+                try {
+                    const res = await fetch(`/treasurer/online/verify/${oid}`, { method: 'POST' });
+                    if(res.ok) success++;
+                } catch(e) {}
+            }));
+            
             document.body.style.cursor = 'default';
             showToast(`Approved ${success}/${checked.length} online orders`);
+            lastOnlineHash = ''; // Force refresh
             loadOnlineQueue();
         }
 
@@ -670,16 +671,21 @@
             
             document.body.style.cursor = 'wait';
             let success = 0;
-            for (let oid of checked) {
-                const res = await fetch(`/treasurer/online/reject/${oid}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reason })
-                });
-                if(res.ok) success++;
-            }
+            
+            await Promise.all(checked.map(async oid => {
+                try {
+                    const res = await fetch(`/treasurer/online/reject/${oid}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason })
+                    });
+                    if(res.ok) success++;
+                } catch(e) {}
+            }));
+            
             document.body.style.cursor = 'default';
             showToast(`Rejected ${success}/${checked.length} online orders`);
+            lastOnlineHash = ''; // Force refresh
             loadOnlineQueue();
         }
 

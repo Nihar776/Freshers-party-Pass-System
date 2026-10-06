@@ -10,10 +10,10 @@ cannot.
 import base64
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Form, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Form, File, UploadFile, Response
 from pydantic import BaseModel
 from sqlalchemy import func, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from database import get_db
 from schema_v2 import (
@@ -119,6 +119,7 @@ def pending_verifications(
 ):
     rows = (
         db.query(Student)
+        .options(defer(Student.payment_screenshot))
         .filter(Student.payment_status == PaymentStatus.PENDING_VERIFICATION)
         .order_by(Student.sold_at.asc())
         .all()
@@ -150,7 +151,7 @@ def pending_verifications(
             distributor_name=payer.distributor.full_name if payer.distributor else "unknown",
             sold_at=payer.sold_at.isoformat() if payer.sold_at else None,
             duplicate_screenshot_warning=dup,
-            has_screenshot=bool(payer.payment_screenshot),
+            has_screenshot=bool(payer.screenshot_phash),
             members=[
                 VerificationMemberItem(
                     student_id=m.id, sap_id=m.sap_id, name=m.name, email=m.email, branch=m.branch
@@ -173,6 +174,29 @@ def get_screenshot(
     if not student or not student.payment_screenshot:
         raise HTTPException(status_code=404, detail="No screenshot on file")
     return {"sap_id": student.sap_id, "screenshot_base64": student.payment_screenshot}
+
+
+@router.get("/pending-verifications/{student_id}/raw-screenshot")
+def get_raw_screenshot(
+    student_id: int,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student or not student.payment_screenshot:
+        raise HTTPException(status_code=404, detail="No screenshot on file")
+    
+    data_str = student.payment_screenshot
+    if "," in data_str:
+        header, base64_data = data_str.split(",", 1)
+        mime_type = header.split(";")[0].replace("data:", "")
+    else:
+        base64_data = data_str
+        mime_type = "image/jpeg"
+        
+    return Response(content=base64.b64decode(base64_data), media_type=mime_type)
+
+
 
 
 @router.post("/verify-group/{group_id}", response_model=VerifyActionResult)
@@ -683,7 +707,7 @@ def pending_online_verifications(
     db: Session = Depends(get_db),
     treasurer: User = Depends(require_role(*TREASURY_ROLES)),
 ):
-    orders = db.query(OnlineOrder).filter(
+    orders = db.query(OnlineOrder).options(defer(OnlineOrder.payment_screenshot)).filter(
         OnlineOrder.status == PaymentStatus.PENDING_VERIFICATION
     ).order_by(OnlineOrder.created_at.asc()).all()
 
@@ -719,7 +743,7 @@ def pending_online_verifications(
             utr_number=order.utr_number,
             created_at=order.created_at.isoformat(),
             duplicate_screenshot_warning=dup,
-            has_screenshot=bool(order.payment_screenshot),
+            has_screenshot=bool(order.screenshot_phash),
             members=members,
             leader_sap_id=order.leader_sap_id
         ))
@@ -736,6 +760,27 @@ def get_online_screenshot(
     if not order or not order.payment_screenshot:
         raise HTTPException(status_code=404, detail="No screenshot on file")
     return {"order_reference": order.order_reference, "screenshot_base64": order.payment_screenshot}
+
+
+@router.get("/online/pending/{order_id}/raw-screenshot")
+def get_raw_online_screenshot(
+    order_id: int,
+    db: Session = Depends(get_db),
+    treasurer: User = Depends(require_role(*TREASURY_ROLES)),
+):
+    order = db.query(OnlineOrder).filter(OnlineOrder.id == order_id).first()
+    if not order or not order.payment_screenshot:
+        raise HTTPException(status_code=404, detail="No screenshot on file")
+    
+    data_str = order.payment_screenshot
+    if "," in data_str:
+        header, base64_data = data_str.split(",", 1)
+        mime_type = header.split(";")[0].replace("data:", "")
+    else:
+        base64_data = data_str
+        mime_type = "image/jpeg"
+        
+    return Response(content=base64.b64decode(base64_data), media_type=mime_type)
 
 
 @router.post("/online/verify/{order_id}", response_model=VerifyActionResult)
