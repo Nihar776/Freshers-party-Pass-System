@@ -257,7 +257,7 @@ class BasePriceConfig(BaseModel):
     hold_time_minutes: Optional[int] = 30
 
 @router.get("/config")
-def get_admin_config(admin: User = Depends(require_role(*ADMIN_ONLY))):
+def get_admin_config():
     st = get_settings()
     return {
         "base_price": st.get("base_price", 500.0),

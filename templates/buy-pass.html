@@ -526,12 +526,12 @@
                     <div id="friendResults" class="grid gap-2" style="margin-top:6px;"></div>
                 </div>
 
-                <p class="text-xs text-muted" style="text-align:center; margin-bottom:12px; font-size:13px;">
+                <p class="text-xs text-muted" id="reserve-text" style="text-align:center; margin-bottom:12px; font-size:13px;">
                     Your reservation will be held for 30 minutes to complete the payment.
                 </p>
                 <button class="btn btn-primary" style="width:100%; padding:13px;" onclick="reservePass()"
                     id="btn-reserve">
-                    Next
+                    Reserve Slot
                 </button>
                 <div style="text-align:center; margin-top:16px;">
                     <a href="#" onclick="location.reload(); return false;"
@@ -685,6 +685,7 @@
         let searchTimer = null;
         let friendTimer = null;
         let foodEnabled = false;
+        let holdTimeMinutes = 30;
 
         let pendingFriend = null;
         let pendingFriendEmail = '';
@@ -730,7 +731,12 @@
                     const cfg = await r.json();
                     foodEnabled = !!cfg.food_enabled;
                     lockedPrice = cfg.base_price || 500;
+                    if (cfg.hold_time_minutes) {
+                        holdTimeMinutes = cfg.hold_time_minutes;
+                    }
                     document.getElementById('preview-price').textContent = lockedPrice;
+                    document.getElementById('reserve-text').textContent = `Your reservation will be held for ${holdTimeMinutes} minutes to complete the payment.`;
+                    document.getElementById('countdown').textContent = `${holdTimeMinutes}:00`;
                 }
             } catch (e) { }
             if (foodEnabled) {
@@ -1282,7 +1288,7 @@
                 if (!res.ok) {
                     const d = await res.json();
                     showToast(d.detail || 'Reservation failed', 'error');
-                    btn.disabled = false; btn.textContent = 'Reserve Slot (holds for 30 min)';
+                    btn.disabled = false; btn.textContent = 'Reserve Slot';
                     return;
                 }
                 const data = await res.json();
@@ -1300,7 +1306,7 @@
                 setStep(4);
             } catch (err) {
                 showToast('Network error', 'error');
-                btn.disabled = false; btn.textContent = 'Reserve Slot (holds for 30 min)';
+                btn.disabled = false; btn.textContent = 'Reserve Slot';
             }
         }
 

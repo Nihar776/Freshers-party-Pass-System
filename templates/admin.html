@@ -1632,7 +1632,7 @@
                         <td>${r.leader_sap_id}</td>
                         <td><span class="badge ${r.status==='RESERVED'?'badge-warning':'badge-success'}">${r.status}</span></td>
                         <td>${r.members.map(m => m.sap_id).join(', ')}</td>
-                        <td>${r.expires_at ? new Date(r.expires_at).toLocaleTimeString() : 'N/A'}</td>
+                        <td>${r.expires_at ? new Date(r.expires_at).toLocaleString() : 'N/A'}</td>
                         <td>
                             <button class="btn btn-sm btn-secondary" onclick="editReservationGroup(${r.id}, '${r.members.map(m=>m.sap_id).join(',')}')">Edit Group</button>
                             <button class="btn btn-sm btn-danger" onclick="cancelReservationAdmin(${r.id})">Cancel Lock</button>

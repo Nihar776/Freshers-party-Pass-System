@@ -817,20 +817,30 @@ def export_sales(
 
 @router.get("/reservations")
 def list_reservations(db: Session = Depends(get_db), admin: User = Depends(require_role(*ADMIN_ONLY))):
+    now = datetime.utcnow()
     orders = db.query(OnlineOrder).filter(
         OnlineOrder.status.in_([PaymentStatus.RESERVED, PaymentStatus.PENDING_VERIFICATION])
     ).all()
     
     res = []
     for o in orders:
+        if o.status == PaymentStatus.RESERVED and o.reservation_expires_at and o.reservation_expires_at < now:
+            o.status = PaymentStatus.EXPIRED
+            if o.discount_code_id:
+                old_dc = db.query(DiscountCode).filter(DiscountCode.id == o.discount_code_id).first()
+                if old_dc and old_dc.times_used > 0:
+                    old_dc.times_used -= 1
+            db.commit()
+            continue
+
         members = [{"sap_id": m.sap_id, "name": m.student.name if m.student else m.sap_id, "email": m.student.email if m.student else None, "phone": m.student.phone if m.student else None, "year": m.student.year if m.student else None, "branch": m.student.branch if m.student else None} for m in o.members]
         res.append({
             "id": o.id,
             "order_reference": o.order_reference,
             "leader_sap_id": o.leader_sap_id,
             "status": o.status,
-            "expires_at": o.reservation_expires_at.isoformat() if o.reservation_expires_at else None,
-            "created_at": o.created_at.isoformat(),
+            "expires_at": o.reservation_expires_at.isoformat() + "Z" if o.reservation_expires_at else None,
+            "created_at": o.created_at.isoformat() + "Z",
             "members": members,
             "total_amount": sum(m.locked_price for m in o.members)
         })
