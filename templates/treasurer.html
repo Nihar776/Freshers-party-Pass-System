@@ -88,7 +88,17 @@
         <div id="verify-tab" class="tab-content active">
             <div class="flex justify-between items-center mb-4">
                 <h3 id="queue-title">Pending UPI Approvals (Distributor)</h3>
-                <button class="btn btn-secondary" onclick="loadQueue()">Refresh</button>
+                <div class="flex gap-2">
+                    <input type="text" id="verify-search" class="form-control" placeholder="Search UTR, name, SAP ID..." onkeyup="renderVerifyQueue()" style="width: 250px;">
+                    <button class="btn btn-secondary" onclick="loadQueue()">Refresh</button>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 mb-4 items-center" id="verify-bulk-actions" style="display: none;">
+                <input type="checkbox" id="verify-select-all" onclick="toggleSelectAll('verify-cb', this.checked)" style="width:18px; height:18px; cursor:pointer;"> 
+                <label for="verify-select-all" class="font-bold cursor-pointer text-sm mr-2">Select All</label>
+                <button class="btn btn-success" onclick="bulkApproveVerify()">Approve Selected</button>
+                <button class="btn btn-danger" onclick="bulkRejectVerify()">Reject Selected</button>
             </div>
             
             <div id="queue-list">
@@ -100,7 +110,17 @@
         <div id="online-tab" class="tab-content">
             <div class="flex justify-between items-center mb-4">
                 <h3 id="online-queue-title">Pending Online Portal Approvals</h3>
-                <button class="btn btn-secondary" onclick="loadOnlineQueue()">Refresh</button>
+                <div class="flex gap-2">
+                    <input type="text" id="online-search" class="form-control" placeholder="Search UTR, ref, name..." onkeyup="renderOnlineQueue()" style="width: 250px;">
+                    <button class="btn btn-secondary" onclick="loadOnlineQueue()">Refresh</button>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 mb-4 items-center" id="online-bulk-actions" style="display: none;">
+                <input type="checkbox" id="online-select-all" onclick="toggleSelectAll('online-cb', this.checked)" style="width:18px; height:18px; cursor:pointer;"> 
+                <label for="online-select-all" class="font-bold cursor-pointer text-sm mr-2">Select All</label>
+                <button class="btn btn-success" onclick="bulkApproveOnline()">Approve Selected</button>
+                <button class="btn btn-danger" onclick="bulkRejectOnline()">Reject Selected</button>
             </div>
             
             <div id="online-queue-list">
@@ -334,51 +354,134 @@
             if (tab === 'history') loadHistory();
         }
 
+        let pendingVerifyItems = [];
+        let pendingOnlineItems = [];
+
+        function toggleSelectAll(className, isChecked) {
+            document.querySelectorAll('.' + className).forEach(cb => cb.checked = isChecked);
+        }
+
         // --- Queue ---
         async function loadQueue() {
             const res = await fetch('/treasurer/pending-verifications');
-            const items = await res.json();
+            pendingVerifyItems = await res.json();
+            renderVerifyQueue();
+        }
+
+        function renderVerifyQueue() {
+            const query = (document.getElementById('verify-search').value || '').toLowerCase();
+            const items = pendingVerifyItems.filter(item => {
+                const searchStr = `${item.utr_number} ${item.distributor_name} ${item.members.map(m=>m.sap_id+' '+m.name).join(' ')}`.toLowerCase();
+                return searchStr.includes(query);
+            });
+            
             const el = document.getElementById('queue-list');
             document.getElementById('queue-title').textContent = `Pending UPI Approvals (${items.length})`;
             
             if (items.length === 0) {
-                el.innerHTML = `<div class="panel text-center text-muted">No pending verifications 🎉</div>`;
+                el.innerHTML = `<div class="panel text-center text-muted">No pending verifications matching search 🎉</div>`;
+                document.getElementById('verify-bulk-actions').style.display = 'none';
                 return;
             }
             
+            document.getElementById('verify-bulk-actions').style.display = 'flex';
+            document.getElementById('verify-select-all').checked = false;
+            
             el.innerHTML = items.map(item => `
-                <div class="queue-card">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <div class="font-bold" style="font-size: 16px;">
-                                ${item.member_count > 1 ? 'Group Payment' : 'Single Payment'} 
-                                <span class="badge badge-neutral ml-2">${item.member_count} Member(s)</span>
-                            </div>
-                            <div class="text-muted mt-2">
-                                <details>
-                                    <summary class="cursor-pointer font-semibold text-primary">View Members</summary>
-                                    <div class="mt-2 ml-4">
-                                        ${item.members.map(m => `<div>- ${m.name} (${m.sap_id})${m.email ? ' · ' + m.email : ''}</div>`).join('')}
-                                    </div>
-                                </details>
-                            </div>
-                            <div class="font-bold mt-2 text-success">Total: ₹${item.total_amount}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-bold">UTR: ${item.utr_number || 'N/A'}</div>
-                            <div class="text-muted text-sm mt-1">Sold by ${item.distributor_name}</div>
-                        </div>
+                <div class="queue-card flex gap-4">
+                    <div style="flex-shrink:0; padding-top:4px;">
+                        <input type="checkbox" class="verify-cb" value="${item.group_id}" style="width:20px; height:20px; cursor:pointer;">
                     </div>
-                    
-                    ${item.duplicate_screenshot_warning ? '<div class="badge badge-warning mb-4">⚠ Screenshot reused elsewhere</div>' : ''}
-                    
-                    <div class="flex gap-4 mt-4">
-                        <button class="btn btn-secondary" onclick="viewScreenshot(${item.payer_student_id})">🔍 View Screenshot</button>
-                        <button class="btn btn-success" onclick="approveGroup('${item.group_id}')" style="flex:1">Approve Group</button>
-                        <button class="btn btn-danger" onclick="openRejectGroup('${item.group_id}')" style="flex:1">Reject Group</button>
+                    <div style="flex-shrink:0;">
+                        ${item.has_screenshot ? 
+                          `<img id="thumb-${item.payer_student_id}" src="" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; background: var(--bg-body); border: 1px solid var(--border);" onclick="viewScreenshot(${item.payer_student_id})" alt="Loading..." title="Click to view full screenshot">` :
+                          `<div style="width: 80px; height: 80px; background: var(--bg-body); border-radius: 8px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-size:12px; border: 1px solid var(--border);">No SS</div>`
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="font-bold" style="font-size: 16px;">
+                                    ${item.member_count > 1 ? 'Group Payment' : 'Single Payment'} 
+                                    <span class="badge badge-neutral ml-2">${item.member_count} Member(s)</span>
+                                </div>
+                                <div class="text-muted mt-2">
+                                    <details>
+                                        <summary class="cursor-pointer font-semibold text-primary">View Members</summary>
+                                        <div class="mt-2 ml-4">
+                                            ${item.members.map(m => `<div>- ${m.name} (${m.sap_id})${m.email ? ' · ' + m.email : ''}</div>`).join('')}
+                                        </div>
+                                    </details>
+                                </div>
+                                <div class="font-bold mt-2 text-success">Total: ₹${item.total_amount}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">UTR: ${item.utr_number || 'N/A'}</div>
+                                <div class="text-muted text-sm mt-1">Sold by ${item.distributor_name}</div>
+                            </div>
+                        </div>
+                        
+                        ${item.duplicate_screenshot_warning ? '<div class="badge badge-warning mb-4">⚠ Screenshot reused elsewhere</div>' : ''}
+                        
+                        <div class="flex gap-4 mt-4">
+                            <button class="btn btn-secondary" onclick="viewScreenshot(${item.payer_student_id})">🔍 View Full Screenshot</button>
+                            <button class="btn btn-success" onclick="approveGroup('${item.group_id}')" style="flex:1">Approve Group</button>
+                            <button class="btn btn-danger" onclick="openRejectGroup('${item.group_id}')" style="flex:1">Reject Group</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
+            
+            // Load thumbnails lazily
+            items.forEach(item => {
+                if (item.has_screenshot) {
+                    fetch(`/treasurer/pending-verifications/${item.payer_student_id}/screenshot`)
+                      .then(r => r.json())
+                      .then(data => { 
+                          const img = document.getElementById('thumb-' + item.payer_student_id);
+                          if(img) img.src = data.screenshot_base64; 
+                      })
+                      .catch(err => console.error(err));
+                }
+            });
+        }
+
+        async function bulkApproveVerify() {
+            const checked = Array.from(document.querySelectorAll('.verify-cb:checked')).map(cb => cb.value);
+            if(checked.length === 0) return showToast("Select at least one group", "warning");
+            if(!confirm(`Approve ${checked.length} selected group(s)?`)) return;
+            
+            document.body.style.cursor = 'wait';
+            let success = 0;
+            for (let gid of checked) {
+                const res = await fetch(`/treasurer/verify-group/${gid}`, { method: 'POST' });
+                if(res.ok) success++;
+            }
+            document.body.style.cursor = 'default';
+            showToast(`Approved ${success}/${checked.length} groups`);
+            loadQueue();
+        }
+
+        async function bulkRejectVerify() {
+            const checked = Array.from(document.querySelectorAll('.verify-cb:checked')).map(cb => cb.value);
+            if(checked.length === 0) return showToast("Select at least one group", "warning");
+            
+            const reason = prompt(`Enter rejection reason for ${checked.length} group(s):`);
+            if(!reason) return;
+            
+            document.body.style.cursor = 'wait';
+            let success = 0;
+            for (let gid of checked) {
+                const res = await fetch(`/treasurer/reject-group/${gid}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                if(res.ok) success++;
+            }
+            document.body.style.cursor = 'default';
+            showToast(`Rejected ${success}/${checked.length} groups`);
+            loadQueue();
         }
 
         // --- Modals ---
@@ -460,48 +563,124 @@
         // --- Online Queue ---
         async function loadOnlineQueue() {
             const res = await fetch('/treasurer/online/pending');
-            const items = await res.json();
+            pendingOnlineItems = await res.json();
+            renderOnlineQueue();
+        }
+
+        function renderOnlineQueue() {
+            const query = (document.getElementById('online-search').value || '').toLowerCase();
+            const items = pendingOnlineItems.filter(item => {
+                const searchStr = `${item.utr_number} ${item.order_reference} ${item.members.map(m=>m.sap_id+' '+m.name).join(' ')}`.toLowerCase();
+                return searchStr.includes(query);
+            });
+            
             const el = document.getElementById('online-queue-list');
             document.getElementById('online-queue-title').textContent = `Pending Online Approvals (${items.length})`;
             
             if (items.length === 0) {
-                el.innerHTML = `<div class="panel text-center text-muted">No pending online orders 🎉</div>`;
+                el.innerHTML = `<div class="panel text-center text-muted">No pending online orders matching search 🎉</div>`;
+                document.getElementById('online-bulk-actions').style.display = 'none';
                 return;
             }
             
+            document.getElementById('online-bulk-actions').style.display = 'flex';
+            document.getElementById('online-select-all').checked = false;
+            
             el.innerHTML = items.map(item => `
-                <div class="queue-card">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <div class="font-bold" style="font-size: 16px;">
-                                ${item.member_count > 1 ? 'Group Purchase' : 'Single Purchase'} 
-                                <span class="badge badge-neutral ml-2">${item.member_count} Member(s)</span>
-                            </div>
-                            <div class="text-muted mt-2">
-                                <details>
-                                    <summary class="cursor-pointer font-semibold text-primary">View Members</summary>
-                                    <div class="mt-2 ml-4">
-                                        ${item.members.map(m => `<div>- ${m.name} (${m.sap_id})${m.email ? ' · ' + m.email : ''}</div>`).join('')}
-                                    </div>
-                                </details>
-                            </div>
-                            <div class="font-bold mt-2 text-success">Total: ₹${item.total_amount}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-bold">UTR: ${item.utr_number || 'N/A'}</div>
-                            <div class="text-muted text-sm mt-1">Ref: ${item.order_reference.substring(0,8)}...</div>
-                        </div>
+                <div class="queue-card flex gap-4">
+                    <div style="flex-shrink:0; padding-top:4px;">
+                        <input type="checkbox" class="online-cb" value="${item.order_id}" style="width:20px; height:20px; cursor:pointer;">
                     </div>
-                    
-                    ${item.duplicate_screenshot_warning ? '<div class="badge badge-warning mb-4">⚠ Screenshot reused elsewhere</div>' : ''}
-                    
-                    <div class="flex gap-4 mt-4">
-                        <button class="btn btn-secondary" onclick="viewOnlineScreenshot(${item.order_id})">🔍 View Screenshot</button>
-                        <button class="btn btn-success" onclick="approveOnlineOrder(${item.order_id})" style="flex:1">Approve</button>
-                        <button class="btn btn-danger" onclick="openRejectOnlineOrder(${item.order_id})" style="flex:1">Reject</button>
+                    <div style="flex-shrink:0;">
+                        ${item.has_screenshot ? 
+                          `<img id="othumb-${item.order_id}" src="" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; background: var(--bg-body); border: 1px solid var(--border);" onclick="viewOnlineScreenshot(${item.order_id})" alt="Loading..." title="Click to view full screenshot">` :
+                          `<div style="width: 80px; height: 80px; background: var(--bg-body); border-radius: 8px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-size:12px; border: 1px solid var(--border);">No SS</div>`
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="font-bold" style="font-size: 16px;">
+                                    ${item.member_count > 1 ? 'Group Purchase' : 'Single Purchase'} 
+                                    <span class="badge badge-neutral ml-2">${item.member_count} Member(s)</span>
+                                </div>
+                                <div class="text-muted mt-2">
+                                    <details>
+                                        <summary class="cursor-pointer font-semibold text-primary">View Members</summary>
+                                        <div class="mt-2 ml-4">
+                                            ${item.members.map(m => `<div>- ${m.name} (${m.sap_id})${m.email ? ' · ' + m.email : ''}</div>`).join('')}
+                                        </div>
+                                    </details>
+                                </div>
+                                <div class="font-bold mt-2 text-success">Total: ₹${item.total_amount}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold">UTR: ${item.utr_number || 'N/A'}</div>
+                                <div class="text-muted text-sm mt-1">Ref: ${item.order_reference.substring(0,8)}...</div>
+                            </div>
+                        </div>
+                        
+                        ${item.duplicate_screenshot_warning ? '<div class="badge badge-warning mb-4">⚠ Screenshot reused elsewhere</div>' : ''}
+                        
+                        <div class="flex gap-4 mt-4">
+                            <button class="btn btn-secondary" onclick="viewOnlineScreenshot(${item.order_id})">🔍 View Full Screenshot</button>
+                            <button class="btn btn-success" onclick="approveOnlineOrder(${item.order_id})" style="flex:1">Approve</button>
+                            <button class="btn btn-danger" onclick="openRejectOnlineOrder(${item.order_id})" style="flex:1">Reject</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
+            
+            // Load thumbnails lazily
+            items.forEach(item => {
+                if (item.has_screenshot) {
+                    fetch(`/treasurer/online/pending/${item.order_id}/screenshot`)
+                      .then(r => r.json())
+                      .then(data => { 
+                          const img = document.getElementById('othumb-' + item.order_id);
+                          if(img) img.src = data.screenshot_base64; 
+                      })
+                      .catch(err => console.error(err));
+                }
+            });
+        }
+
+        async function bulkApproveOnline() {
+            const checked = Array.from(document.querySelectorAll('.online-cb:checked')).map(cb => cb.value);
+            if(checked.length === 0) return showToast("Select at least one order", "warning");
+            if(!confirm(`Approve ${checked.length} selected order(s)?`)) return;
+            
+            document.body.style.cursor = 'wait';
+            let success = 0;
+            for (let oid of checked) {
+                const res = await fetch(`/treasurer/online/verify/${oid}`, { method: 'POST' });
+                if(res.ok) success++;
+            }
+            document.body.style.cursor = 'default';
+            showToast(`Approved ${success}/${checked.length} online orders`);
+            loadOnlineQueue();
+        }
+
+        async function bulkRejectOnline() {
+            const checked = Array.from(document.querySelectorAll('.online-cb:checked')).map(cb => cb.value);
+            if(checked.length === 0) return showToast("Select at least one order", "warning");
+            
+            const reason = prompt(`Enter rejection reason for ${checked.length} order(s):`);
+            if(!reason) return;
+            
+            document.body.style.cursor = 'wait';
+            let success = 0;
+            for (let oid of checked) {
+                const res = await fetch(`/treasurer/online/reject/${oid}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                if(res.ok) success++;
+            }
+            document.body.style.cursor = 'default';
+            showToast(`Rejected ${success}/${checked.length} online orders`);
+            loadOnlineQueue();
         }
 
         async function viewOnlineScreenshot(id) {
