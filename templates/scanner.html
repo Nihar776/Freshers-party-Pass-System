@@ -224,7 +224,7 @@
             } else {
                 bannerEl.className = "banner go";
                 statusWordEl.textContent = "APPROVED";
-                statusSubEl.textContent = message || "Issue wristband now";
+                statusSubEl.textContent = message || "Allow Entry";
             }
             
             bannerEl.querySelectorAll('.detail-row').forEach(e => e.remove());
@@ -284,7 +284,7 @@
                 if (res.ok) {
                     const data = await res.json();
                     currentScannerMode = data.mode;
-                    document.getElementById('scanner-mode-label').textContent = currentScannerMode === 'gate' ? 'Gate Entry (Wristbands)' : 'Food Distribution (Meals)';
+                    document.getElementById('scanner-mode-label').textContent = currentScannerMode === 'gate' ? 'Gate Entry' : 'Food counter';
                 }
             } catch (e) {}
         }
