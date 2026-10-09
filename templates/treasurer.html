@@ -264,9 +264,11 @@
                             <thead>
                                 <tr>
                                     <th>Date</th>
+                                    <th>Screenshot</th>
                                     <th>Student</th>
                                     <th>Amount</th>
                                     <th>Verified By</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -908,17 +910,27 @@
             // Render UPI
             const upiTbody = document.querySelector('#history-upi-table tbody');
             if (data.verified_upi.length === 0) {
-                upiTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No verified UPI payments</td></tr>';
+                upiTbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No verified UPI payments</td></tr>';
             } else {
                 upiTbody.innerHTML = data.verified_upi.map(u => `
                     <tr>
                         <td>${u.verified_at ? formatIST(u.verified_at) : 'N/A'}</td>
                         <td>
+                            ${u.has_screenshot ? 
+                                `<img src="/treasurer/pending-verifications/${u.id}/raw-screenshot" loading="lazy" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; background: var(--bg-body); border: 1px solid var(--border);" onclick="viewScreenshot(${u.id})" alt="SS" title="View Screenshot">` :
+                                `<div style="width: 40px; height: 40px; background: var(--bg-body); border-radius: 4px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-size:10px; border: 1px solid var(--border);">No SS</div>`
+                            }
+                        </td>
+                        <td>
                             <div class="font-semibold">${u.name}</div>
                             <div class="text-sm text-muted">${u.sap_id}</div>
+                            <div class="text-xs text-muted">UTR: ${u.utr_number || 'N/A'}</div>
                         </td>
                         <td class="font-bold text-success">₹${u.amount}</td>
                         <td>${u.verified_by_name}</td>
+                        <td>
+                            <button class="btn btn-secondary py-1 px-3 text-sm" onclick="resendEmail('${u.sap_id}')">Resend Mail</button>
+                        </td>
                     </tr>
                 `).join('');
             }
@@ -936,6 +948,23 @@
                         <td>${c.treasurer_name}</td>
                     </tr>
                 `).join('');
+            }
+        }
+
+        async function resendEmail(sapId) {
+            if (!confirm('Are you sure you want to resend the pass email to this student?')) return;
+            
+            showToast('Triggering resend in background...', 'warning');
+            try {
+                const res = await fetch(`/admin/resend-email/${sapId}`, { method: 'POST' });
+                if (res.ok) {
+                    showToast('Email queued for resend successfully');
+                } else {
+                    const data = await res.json();
+                    showToast(data.detail || 'Failed to resend email', 'error');
+                }
+            } catch(e) {
+                showToast('Network error while resending', 'error');
             }
         }
 

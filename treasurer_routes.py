@@ -520,7 +520,9 @@ def get_treasurer_history(
             "name": s.name,
             "amount": s.amount,
             "verified_at": s.verified_at.isoformat() if s.verified_at else None,
-            "verified_by_name": s.verified_by.full_name if s.verified_by else "System"
+            "verified_by_name": s.verified_by.full_name if s.verified_by else "System",
+            "has_screenshot": bool(s.screenshot_phash),
+            "utr_number": s.utr_number
         }
         for s in upi_students
     ]
